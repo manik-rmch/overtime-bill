@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Overtime Bill - RMCH</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'SolaimanLipi', 'Kalpurush', Arial, sans-serif;
+            color: #000;
+            background-color: #f0f0f0;
+            font-size: 10.5px;
+        }
+        .page-container {
+            width: 200mm;
+            height: 287mm;
+            margin: 10px auto;
+            padding: 5mm 8mm;
+            background: #fff;
+            border: 1px solid #ccc;
+            position: relative;
+            box-sizing: border-box;
+            transform-origin: top center; /* জুম করার জন্য সেন্টার পয়েন্ট */
+            transition: transform 0.2s ease;
+        }
+        .content-area {
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            margin: 0 0 5px 0;
+            font-size: 15px;
+        }
+        .header-info-line {
+            text-align: center;
+            font-size: 11.5px;
+            font-weight: normal;
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+        .basic-pay-line {
+            text-align: center;
+            font-size: 11.5px;
+            font-weight: normal;
+            margin-bottom: 6px;
+        }
+
+        .inline-select-box {
+            display: inline-block;
+            position: relative;
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .inline-select-box select {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+        .inline-select-box span {
+            display: inline-block;
+            padding: 0 2px;
+            white-space: nowrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 1.5px 2px;
+            text-align: center;
+            font-size: 10.5px;
+            white-space: nowrap;
+        }
+        th {
+            font-weight: bold;
+            background-color: #fff;
+        }
+        td select {
+            font-size: 10.5px;
+            font-family: inherit;
+            border: none;
+            background: transparent;
+            text-align: center;
+            outline: none;
+        }
+        td input {
+            width: 95%;
+            text-align: center;
+            border: none;
+            font-size: 10.5px;
+            font-family: inherit;
+            background: transparent;
+        }
+        td input:focus, td select:focus {
+            outline: 1px solid #999;
+        }
+        .date-cell-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            font-weight: normal;
+        }
+        .day-select {
+            border: none;
+            background: transparent;
+            font-size: 10.5px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            text-align: center;
+            padding: 0;
+            font-weight: normal !important;
+        }
+        .fixed-month-year {
+            font-weight: normal;
+        }
+        
+        .footer-section {
+            position: absolute;
+            bottom: 10mm;
+            left: 8mm;
+            right: 8mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .signature-box {
+            text-align: center;
+            font-size: 10.5px;
+            line-height: 1.3;
+            flex: 1;
+        }
+        .btn-container {
+            margin: 5px auto;
+            width: 200mm;
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            align-items: center;
+            background: #e4e4e4;
+            padding: 6px;
+            border-radius: 5px;
+        }
+        .zoom-group {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-right: auto;
+        }
+        .zoom-btn {
+            background: #607D8B;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 7px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .zoom-text {
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+        .save-indicator {
+            font-size: 10px;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 5px;
+            display: none;
+        }
+        .btn {
+            background-color: #008CBA;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+        .btn-reset {
+            background-color: #f44336;
+        }
+        .btn-download {
+            background-color: #ff9800;
+        }
+        .action-btn {
+            padding: 1px 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 1px;
+            font-size: 10.5px;
+        }
+        .btn-add {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        .btn-remove {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+
+        @media print {
+            html, body {
+                background: none;
+                height: 100vh;
+                overflow: hidden;
+            }
+            .btn-container, .no-print {
+                display: none !important;
+            }
+            .page-container {
+                border: none;
+                padding: 5mm 8mm;
+                margin: 0 auto;
+                width: 100%;
+                height: 100vh;
+                position: relative;
+                box-sizing: border-box;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+                transform: scale(1) !important; /* প্রিন্ট করার সময় জুম ১০০০% স্বাভাবিক থাকবে */
+            }
+            .footer-section {
+                position: absolute;
+                bottom: 8mm;
+                left: 8mm;
+                right: 8mm;
+            }
+            select, input {
+                border: none !important;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+            }
+            .inline-select-box {
+                border-bottom: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- কন্ট্রোল বাটন ও জুম অপশন -->
+<div class="btn-container no-print">
+    <div class="zoom-group">
+        <span>জুম:</span>
+        <button class="zoom-btn" onclick="zoomPage(-0.1)">-</button>
+        <span id="zoomVal" class="zoom-text">১০০%</span>
+        <button class="zoom-btn" onclick="zoomPage(0.1)">+</button>
+        <button class="zoom-btn" style="background:#888;" onclick="resetZoom()">রিসেট</button>
+    </div>
+    <span id="saveStatus" class="save-indicator">✓ অটো সেভ হয়েছে</span>
+    <button class="btn btn-reset" onclick="resetData()">🔄 নতুন বিল/রিসেট</button>
+    <button class="btn btn-download" onclick="saveAsHtmlFile()">📄 HTML ফাইল সেভ করুন</button>
+    <button class="btn" onclick="window.print()">🖨️ প্রিন্ট / PDF সেভ করুন</button>
+</div>
+
+<div class="page-container" id="pageContainer">
+    <div class="content-area">
+
+        <h2>রাজশাহী মেডিকেল কলেজ হাসপাতালের গাড়িচালকদের অধিকাল ভাতার বিল</h2>
+
+        <div class="header-info-line">
+            গাড়ি নং <span id="carNoDisplay" style="font-weight: bold;">অজ ২৬-০২৮</span> 
+            গাড়ি চালকের নাম 
+            <span class="inline-select-box">
+                <span id="driverText">মোঃ সিরাজুল ইসলাম</span>
+                <select id="driverSelect" onchange="updateDriverInfo()">
+                    <option value="0">মোঃ সিরাজুল ইসলাম</option>
+                    <option value="1">মোঃ আশরাফুল আলী</option>
+                    <option value="2">মোঃ আব্দুর রহমান</option>
+                    <option value="3">মোঃ আমির হোসেন</option>
+                    <option value="4">মোঃ মিজানুর রহমান</option>
+                    <option value="5">মোঃ মানিক</option>
+                </select>
+            </span>
+            এর <br>
+            <span class="inline-select-box">
+                <span id="yearText">২০২৬</span>
+                <select id="yearSelect" onchange="onMonthOrYearChange()">
+                    <option value="২০২৬" selected>২০২৬</option>
+                    <option value="২০২৭">২০২৭</option>
+                    <option value="২০২৮">২০২৮</option>
+                </select>
+            </span>
+            সালের 
+            <span class="inline-select-box">
+                <span id="monthText">সেপ্টেম্বর</span>
+                <select id="monthSelect" onchange="onMonthOrYearChange()">
+                    <option value="31" data-month="01" data-name="জানুয়ারি">জানুয়ারি</option>
+                    <option value="28" data-month="02" data-name="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
+                    <option value="31" data-month="03" data-name="মার্চ">মার্চ</option>
+                    <option value="30" data-month="04" data-name="এপ্রিল">এপ্রিল</option>
+                    <option value="31" data-month="05" data-name="মে">মে</option>
+                    <option value="30" data-month="06" data-name="জুন">জুন</option>
+                    <option value="31" data-month="07" data-name="জুলাই">জুলাই</option>
+                    <option value="31" data-month="08" data-name="আগস্ট">আগস্ট</option>
+                    <option value="30" data-month="09" data-name="সেপ্টেম্বর" selected>সেপ্টেম্বর</option>
+                    <option value="31" data-month="10" data-name="অক্টোবর">অক্টোবর</option>
+                    <option value="30" data-month="11" data-name="নভেম্বর">নভেম্বর</option>
+                    <option value="31" data-month="12" data-name="ডিসেম্বর">ডিসেম্বর</option>
+                </select>
+            </span>
+            মাসের অধিকাল ভাতার বিল।
+        </div>
+
+        <div class="basic-pay-line">
+            মূল বেতন <span id="basicPayBn" style="font-weight: bold;">৩০,২৩০</span>/=
+        </div>
+
+        <table id="overtimeTable">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width: 11%;">তারিখ</th>
+                    <th rowspan="2" style="width: 18%;">বারের নাম / ডিউটির স্থান</th>
+                    <th colspan="2" style="width: 26%;">নিয়মিত সময়ের বাহিরে অতিরিক্ত সময়</th>
+                    <th rowspan="2" style="width: 12%;">অতিরিক্ত<br>কর্ম ঘণ্টা</th>
+                    <th rowspan="2" style="width: 11%;">প্রতি ঘণ্টার রেট</th>
+                    <th rowspan="2" style="width: 11%;">টাকার পরিমাণ</th>
+                    <th rowspan="2" style="width: 11%;">মন্তব্য</th>
+                    <th rowspan="2" class="no-print">অ্যাকশন</th>
+                </tr>
+                <tr>
+                    <th style="width: 13%;">হইতে</th>
+                    <th style="width: 13%;">পর্যন্ত</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="date-cell-container">
+                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">০৯/২০২৬</span>
+                        </div>
+                    </td>
+                    <td>
+                        <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
+                            <option value="" selected></option>
+                            <option value="শুক্রবার">শুক্রবার</option>
+                            <option value="সরকারি ছুটি">সরকারি ছুটি</option>
+                            <option value="অতিরিক্ত">অতিরিক্ত</option>
+                            <option value="ঢাকা">ঢাকা</option>
+                            <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
+                            <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
+                            <option value="ঈদের ছুটি">ঈদের ছুটি</option>
+                        </select>
+                    </td>
+                    <td><input type="text" class="start-time" value="" oninput="handleTimeInput(this)"></td>
+                    <td><input type="text" class="end-time" value="" oninput="handleTimeInput(this)"></td>
+                    <td><span class="hours">০</span></td>
+                    <td><span class="rate">0.00</span></td>
+                    <td><span class="amount">0.00</span></td>
+                    <td><input type="text" class="remarks" value="" oninput="triggerAutoSave()"></td>
+                    <td class="no-print">
+                        <button class="action-btn btn-add" onclick="addRow(this)">+</button>
+                        <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr style="font-weight: bold;">
+                    <td colspan="4" style="text-align: right;">মোট:</td>
+                    <td><span id="totalHours">০</span> ঘণ্টা</td>
+                    <td>-</td>
+                    <td><span id="grandTotal">০</span>/=</td>
+                    <td colspan="2">টাকা</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div style="margin-top: 8px; font-weight: bold; text-align: center;">
+            (<span id="inWords"></span>)
+        </div>
+    </div>
+
+    <!-- স্বাক্ষর অংশ -->
+    <div class="footer-section">
+        <div class="signature-box">
+            ...................................<br>
+            (<span id="driverSignatureName">মোঃ সিরাজুল ইসলাম</span>)<br>
+            গাড়ি চালক<br>
+            রাজশাহী মেডিকেল কলেজ হাসপাতাল।<br>
+            মোবাইলঃ <span id="driverMobile">০১৭১৫-২৪৯৭১৮</span>
+        </div>
+        <div class="signature-box">
+            ...................................<br>
+            ড্রাইভার ইনচার্জ<br>
+            রাজশাহী মেডিকেল কলেজ হাসপাতাল।
+        </div>
+        <div class="signature-box">
+            ...................................<br>
+            প্রশাসনিক কর্মকর্তা<br>
+            রাজশাহী মেডিকেল কলেজ হাসপাতাল।
+        </div>
+    </div>
+</div>
+
+<script>
+    const driversData = [
+        { name: "মোঃ সিরাজুল ইসলাম", basicPay: 30230, carNo: "অজ ২৬-০২৮", mobile: "০১৭১৫-২৪৯৭১৮" },
+        { name: "মোঃ আশরাফুল আলী", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০১০", mobile: "০১৭১৬-১৯২১০৪" },
+        { name: "মোঃ আব্দুর রহমান", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০২০", mobile: "০১৮৪৩-৮৬৫৭২২" },
+        { name: "মোঃ আমির হোসেন", basicPay: 20290, carNo: "ঢাকা মেট্রো ঘ-১১-৬৬৬৮", mobile: "০১৭১২-৫৪২৩৫৯" },
+        { name: "মোঃ মিজানুর রহমান", basicPay: 13040, carNo: "ঢাকা মেট্রো ছ-৭১-৩৩৪৩", mobile: "০১৭৫৩-৫২১১৮৮" },
+        { name: "মোঃ মানিক", basicPay: 10190, carNo: "রাজ মেট্রো ছ-৭১-০০১৭", mobile: "০১৭২৯-৮১৫২৯১" }
+    ];
+
+    // ==========================================
+    // জুম ইন-আউট ফাংশন (ZOOM FUNCTIONALITY)
+    // ==========================================
+    let currentZoom = 1.0;
+
+    function zoomPage(step) {
+        currentZoom += step;
+        if (currentZoom < 0.6) currentZoom = 0.6; // সর্বনিম্ন ৬০%
+        if (currentZoom > 2.0) currentZoom = 2.0; // সর্বোচ্চ ২০০%
+        
+        applyZoom();
+    }
+
+    function resetZoom() {
+        currentZoom = 1.0;
+        applyZoom();
+    }
+
+    function applyZoom() {
+        let container = document.getElementById('pageContainer');
+        container.style.transform = `scale(${currentZoom})`;
+        document.getElementById('zoomVal').innerText = toBanglaNum(Math.round(currentZoom * 100)) + '%';
+    }
+
+    function toBanglaNum(num) {
+        if (num === null || num === undefined) return '';
+        const banglaDigits = {'0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯', '.': '.'};
+        return num.toString().replace(/[0-9.]/g, digit => banglaDigits[digit] || digit);
+    }
+
+    function engToBanglaText(str) {
+        if (!str) return '';
+        const banglaDigits = {'0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'};
+        return str.toString().replace(/[0-9]/g, digit => banglaDigits[digit] || digit);
+    }
+
+    function parseBanglaOrEnglishNum(str) {
+        if (!str) return 0;
+        const banglaToEng = {'০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'};
+        let engStr = str.toString().replace(/[০-৯]/g, d => banglaToEng[d]);
+        let val = parseFloat(engStr);
+        return isNaN(val) ? 0 : val;
+    }
+
+    function numToBanglaWords(num) {
+        if (num === 0) return 'শূন্য টাকা মাত্র';
+        const units = ['', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
+                       'এগারো', 'বারো', 'তেরো', 'চোদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
+                       'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আঠাশ', 'উনত্রিশ', 'ত্রিশ',
+                       'একত্রিশ', 'বত্রিশ', 'তেতাল্লিশ', 'চৌথিশ', 'পঁয়তাল্লিশ', 'ছত্রিশ', 'সাইত্রিশ', 'আটত্রিশ', 'উনচল্লিশ', 'চল্লিশ',
+                       'একচল্লিশ', 'বিয়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতান্ন', 'আটান্ন', 'উনপঞ্চাশ', 'পঞ্চাশ',
+                       'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চৌয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'উনষাট', 'ষাট',
+                       'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'উনসত্তর', 'সত্তর',
+                       'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চৌহাত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'উনাশি', 'অশি',
+                       'একাশি', 'বিরাশি', 'তৈরাশি', 'চৌরাশি', 'পঁচাশি', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'উননব্বই', 'নব্বই',
+                       'একানব্বই', 'বায়ানব্বই', 'তিয়ানব্বই', 'চৌয়ানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'];
+
+        function convertGroup(n) {
+            let str = '';
+            if (n >= 100) { str += units[Math.floor(n / 100)] + ' শত '; n %= 100; }
+            if (n > 0) { str += units[n] + ' '; }
+            return str;
+        }
+
+        let words = '';
+        let crore = Math.floor(num / 10000000); num %= 10000000;
+        let lakh = Math.floor(num / 100000); num %= 100000;
+        let thousand = Math.floor(num / 1000); num %= 1000;
+
+        if (crore > 0) words += convertGroup(crore) + 'কোটি ';
+        if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
+        if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
+        if (num > 0) words += convertGroup(num);
+
+        return words.trim() + ' টাকা মাত্র';
+    }
+
+    function extractTimeInHours(str) {
+        if (!str) return NaN;
+        
+        const banglaToEng = {'০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'};
+        let engStr = str.replace(/[০-৯]/g, d => banglaToEng[d]);
+
+        let matches = engStr.match(/(\d+)(?::(\d+))?/);
+        if (!matches) return NaN;
+
+        let hours = parseFloat(matches[1]);
+        let minutes = matches[2] ? parseFloat(matches[2]) : 0;
+
+        let totalHours = hours + (minutes / 60);
+
+        let lower = str.toLowerCase();
+        let isPM = lower.includes('রাত') || lower.includes('বিকাল') || lower.includes('সন্ধ্যা') || lower.includes('দুপুর') || lower.includes('pm');
+        let isAM = lower.includes('সকাল') || lower.includes('am');
+
+        if (isPM && hours < 12) totalHours += 12;
+        if (isAM && hours === 12) totalHours -= 12;
+
+        return totalHours;
+    }
+
+    function handleTimeInput(elem) {
+        elem.value = engToBanglaText(elem.value);
+        autoCalculateHours(elem);
+    }
+
+    function autoCalculateHours(elem) {
+        let row = elem.closest('tr');
+        let startText = row.querySelector('.start-time').value;
+        let endText = row.querySelector('.end-time').value;
+        let hoursSpan = row.querySelector('.hours');
+
+        let startHour = extractTimeInHours(startText);
+        let endHour = extractTimeInHours(endText);
+
+        if (!isNaN(startHour) && !isNaN(endHour)) {
+            let diff = endHour - startHour;
+            if (diff <= 0) diff += 24;
+            
+            diff = Math.round(diff * 100) / 100;
+            hoursSpan.innerText = toBanglaNum(diff);
+        } else {
+            hoursSpan.innerText = '০';
+        }
+        calculateAll();
+        triggerAutoSave();
+    }
+
+    let currentBasicPay = 30230;
+
+    function populateDayDropdown(selectElement, selectedDay = 1) {
+        let monthSelect = document.getElementById('monthSelect');
+        let daysInMonth = parseInt(monthSelect.value) || 31;
+
+        selectElement.innerHTML = '';
+        for (let i = 1; i <= daysInMonth; i++) {
+            let dayStr = i < 10 ? '0' + i : i.toString();
+            let option = document.createElement('option');
+            option.value = i;
+            option.innerText = toBanglaNum(dayStr);
+            if (i === parseInt(selectedDay)) option.selected = true;
+            selectElement.appendChild(option);
+        }
+    }
+
+    function updateDriverInfo() {
+        let driverSelect = document.getElementById('driverSelect');
+        let selectedIndex = parseInt(driverSelect.value);
+        let driver = driversData[selectedIndex];
+
+        currentBasicPay = driver.basicPay;
+
+        document.getElementById('driverText').innerText = driver.name;
+        document.getElementById('carNoDisplay').innerText = driver.carNo;
+        document.getElementById('basicPayBn').innerText = toBanglaNum(driver.basicPay.toLocaleString('en-IN'));
+        document.getElementById('driverSignatureName').innerText = driver.name;
+        document.getElementById('driverMobile').innerText = driver.mobile;
+
+        calculateAll();
+        triggerAutoSave();
+    }
+
+    function onMonthOrYearChange() {
+        let monthSelect = document.getElementById('monthSelect');
+        let yearSelect = document.getElementById('yearSelect');
+
+        let selectedOption = monthSelect.options[monthSelect.selectedIndex];
+        let monthCode = selectedOption.getAttribute('data-month');
+        let monthName = selectedOption.getAttribute('data-name');
+        let year = yearSelect.value;
+
+        document.getElementById('monthText').innerText = monthName;
+        document.getElementById('yearText').innerText = year;
+
+        let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
+        document.querySelectorAll('.fixed-month-year').forEach(el => {
+            el.innerText = monthYearStr;
+        });
+
+        document.querySelectorAll('.day-select').forEach(selectEl => {
+            let currentSelected = selectEl.value || 1;
+            populateDayDropdown(selectEl, currentSelected);
+        });
+
+        calculateAll();
+        triggerAutoSave();
+    }
+
+    function calculateAll() {
+        let daysInMonth = parseInt(document.getElementById('monthSelect').value) || 30;
+        let rawRate = currentBasicPay / daysInMonth / 8;
+        let hourlyRate = (Math.floor(rawRate * 100) / 100).toFixed(2); 
+
+        let rows = document.querySelectorAll('#overtimeTable tbody tr');
+        let totalHours = 0;
+        let grandTotal = 0;
+
+        rows.forEach(row => {
+            let hoursSpan = row.querySelector('.hours');
+            let hours = parseBanglaOrEnglishNum(hoursSpan.innerText);
+
+            let amount = hours * hourlyRate;
+
+            row.querySelector('.rate').innerText = toBanglaNum(hourlyRate);
+            row.querySelector('.amount').innerText = toBanglaNum(amount.toFixed(2));
+
+            totalHours += hours;
+            grandTotal += amount;
+        });
+
+        let totalTakaOnly = Math.floor(grandTotal);
+
+        document.getElementById('totalHours').innerText = toBanglaNum(totalHours);
+        document.getElementById('grandTotal').innerText = toBanglaNum(totalTakaOnly);
+        document.getElementById('inWords').innerText = numToBanglaWords(totalTakaOnly);
+    }
+
+    function addRow(btn) {
+        let currentTr = btn.closest('tr');
+        let currentDaySelect = currentTr.querySelector('.day-select');
+        let currentDay = currentDaySelect ? parseInt(currentDaySelect.value) : 1;
+        
+        let daysInMonth = parseInt(document.getElementById('monthSelect').value) || 31;
+        let nextDay = currentDay < daysInMonth ? currentDay + 1 : currentDay;
+
+        let monthSelect = document.getElementById('monthSelect');
+        let yearSelect = document.getElementById('yearSelect');
+        let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
+        let year = yearSelect.value;
+        let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
+
+        let newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>
+                <div class="date-cell-container">
+                    <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                </div>
+            </td>
+            <td>
+                <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
+                    <option value="" selected></option>
+                    <option value="শুক্রবার">শুক্রবার</option>
+                    <option value="সরকারি ছুটি">সরকারি ছুটি</option>
+                    <option value="অতিরিক্ত">অতিরিক্ত</option>
+                    <option value="ঢাকা">ঢাকা</option>
+                    <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
+                    <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
+                    <option value="ঈদের ছুটি">ঈদের ছুটি</option>
+                </select>
+            </td>
+            <td><input type="text" class="start-time" value="" oninput="handleTimeInput(this)"></td>
+            <td><input type="text" class="end-time" value="" oninput="handleTimeInput(this)"></td>
+            <td><span class="hours">০</span></td>
+            <td><span class="rate">0.00</span></td>
+            <td><span class="amount">0.00</span></td>
+            <td><input type="text" class="remarks" value="" oninput="triggerAutoSave()"></td>
+            <td class="no-print">
+                <button class="action-btn btn-add" onclick="addRow(this)">+</button>
+                <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
+            </td>
+        `;
+        
+        currentTr.parentNode.insertBefore(newRow, currentTr.nextSibling);
+        let newDaySelect = newRow.querySelector('.day-select');
+        populateDayDropdown(newDaySelect, nextDay);
+        calculateAll();
+        triggerAutoSave();
+    }
+
+    function deleteRow(btn) {
+        let tbody = document.querySelector('#overtimeTable tbody');
+        if (tbody.querySelectorAll('tr').length > 1) {
+            let row = btn.closest('tr');
+            row.remove();
+            calculateAll();
+            triggerAutoSave();
+        } else {
+            alert('সর্বনিম্ন একটি রো থাকতে হবে!');
+        }
+    }
+
+    // ==========================================
+    // অটো সেভ মেকানিজম
+    // ==========================================
+    let saveTimeout = null;
+
+    function triggerAutoSave() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            saveDataToStorage();
+        }, 300);
+    }
+
+    function saveDataToStorage() {
+        let rows = [];
+        document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
+            rows.push({
+                day: row.querySelector('.day-select').value,
+                dutyPlace: row.querySelector('.duty-place').value,
+                startTime: row.querySelector('.start-time').value,
+                endTime: row.querySelector('.end-time').value,
+                remarks: row.querySelector('.remarks').value
+            });
+        });
+
+        let data = {
+            driverIndex: document.getElementById('driverSelect').value,
+            year: document.getElementById('yearSelect').value,
+            monthIndex: document.getElementById('monthSelect').selectedIndex,
+            rows: rows
+        };
+
+        let jsonStr = JSON.stringify(data);
+
+        try {
+            localStorage.setItem('rmch_autosaver_v3', jsonStr);
+        } catch(e) {
+            document.cookie = "rmch_autosaver_v3=" + encodeURIComponent(jsonStr) + ";path=/;max-age=31536000";
+        }
+
+        let statusEl = document.getElementById('saveStatus');
+        statusEl.style.display = 'inline';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 1500);
+    }
+
+    function loadSavedDataFromStorage() {
+        let saved = null;
+        try {
+            saved = localStorage.getItem('rmch_autosaver_v3');
+        } catch(e) {}
+
+        if (!saved) {
+            let name = "rmch_autosaver_v3=";
+            let ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(name) == 0) saved = decodeURIComponent(c.substring(name.length, c.length));
+            }
+        }
+
+        if (!saved) return;
+
+        try {
+            let data = JSON.parse(saved);
+
+            document.getElementById('driverSelect').value = data.driverIndex;
+            document.getElementById('yearSelect').value = data.year;
+            document.getElementById('monthSelect').selectedIndex = data.monthIndex;
+
+            updateDriverInfo();
+            onMonthOrYearChange();
+
+            let tbody = document.querySelector('#overtimeTable tbody');
+            tbody.innerHTML = '';
+
+            data.rows.forEach(r => {
+                let monthSelect = document.getElementById('monthSelect');
+                let yearSelect = document.getElementById('yearSelect');
+                let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
+                let year = yearSelect.value;
+                let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
+
+                let newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>
+                        <div class="date-cell-container">
+                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
+                            <option value=""></option>
+                            <option value="শুক্রবার">শুক্রবার</option>
+                            <option value="সরকারি ছুটি">সরকারি ছুটি</option>
+                            <option value="অতিরিক্ত">অতিরিক্ত</option>
+                            <option value="ঢাকা">ঢাকা</option>
+                            <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
+                            <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
+                            <option value="ঈদের ছুটি">ঈদের ছুটি</option>
+                        </select>
+                    </td>
+                    <td><input type="text" class="start-time" value="${r.startTime}" oninput="handleTimeInput(this)"></td>
+                    <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
+                    <td><span class="hours">০</span></td>
+                    <td><span class="rate">0.00</span></td>
+                    <td><span class="amount">0.00</span></td>
+                    <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
+                    <td class="no-print">
+                        <button class="action-btn btn-add" onclick="addRow(this)">+</button>
+                        <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
+                    </td>
+                `;
+                tbody.appendChild(newRow);
+
+                let daySelect = newRow.querySelector('.day-select');
+                populateDayDropdown(daySelect, r.day);
+                newRow.querySelector('.duty-place').value = r.dutyPlace;
+                autoCalculateHours(newRow.querySelector('.start-time'));
+            });
+
+            calculateAll();
+        } catch(err) {}
+    }
+
+    function resetData() {
+        if (confirm("আপনি কি নতুন কাজ শুরু করতে চান? বর্তমান ডাটা মুছে যাবে।")) {
+            try { localStorage.removeItem('rmch_autosaver_v3'); } catch(e){}
+            document.cookie = "rmch_autosaver_v3=;path=/;max-age=0";
+            location.reload();
+        }
+    }
+
+    function saveAsHtmlFile() {
+        document.querySelectorAll('input').forEach(input => {
+            input.setAttribute('value', input.value);
+        });
+
+        document.querySelectorAll('select').forEach(select => {
+            let options = select.querySelectorAll('option');
+            options.forEach(opt => opt.removeAttribute('selected'));
+            if (select.selectedIndex >= 0) {
+                options[select.selectedIndex].setAttribute('selected', 'selected');
+            }
+        });
+
+        let driverName = document.getElementById('driverText').innerText;
+        let monthName = document.getElementById('monthText').innerText;
+        let fileName = `Overtime_${driverName}_${monthName}.html`;
+
+        let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+        let blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        let link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+    }
+
+    // প্রাথমিক লোড
+    document.querySelectorAll('.day-select').forEach(selectEl => {
+        populateDayDropdown(selectEl, 1);
+    });
+    
+    updateDriverInfo();
+    onMonthOrYearChange();
+    loadSavedDataFromStorage();
+</script>
+
+</body>
+</html>
