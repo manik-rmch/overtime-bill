@@ -28,7 +28,7 @@
             border: 1px solid #ccc;
             position: relative;
             box-sizing: border-box;
-            transform-origin: top center; /* জুম করার জন্য সেন্টার পয়েন্ট */
+            transform-origin: top center;
             transition: transform 0.2s ease;
         }
         .content-area {
@@ -247,7 +247,7 @@
                 box-sizing: border-box;
                 page-break-after: avoid;
                 page-break-inside: avoid;
-                transform: scale(1) !important; /* প্রিন্ট করার সময় জুম ১০০০% স্বাভাবিক থাকবে */
+                transform: scale(1) !important;
             }
             .footer-section {
                 position: absolute;
@@ -269,7 +269,6 @@
 </head>
 <body>
 
-<!-- কন্ট্রোল বাটন ও জুম অপশন -->
 <div class="btn-container no-print">
     <div class="zoom-group">
         <span>জুম:</span>
@@ -401,7 +400,6 @@
         </div>
     </div>
 
-    <!-- স্বাক্ষর অংশ -->
     <div class="footer-section">
         <div class="signature-box">
             ...................................<br>
@@ -433,16 +431,12 @@
         { name: "মোঃ মানিক", basicPay: 10190, carNo: "রাজ মেট্রো ছ-৭১-০০১৭", mobile: "০১৭২৯-৮১৫২৯১" }
     ];
 
-    // ==========================================
-    // জুম ইন-আউট ফাংশন (ZOOM FUNCTIONALITY)
-    // ==========================================
     let currentZoom = 1.0;
 
     function zoomPage(step) {
         currentZoom += step;
-        if (currentZoom < 0.6) currentZoom = 0.6; // সর্বনিম্ন ৬০%
-        if (currentZoom > 2.0) currentZoom = 2.0; // সর্বোচ্চ ২০০%
-        
+        if (currentZoom < 0.6) currentZoom = 0.6;
+        if (currentZoom > 2.0) currentZoom = 2.0;
         applyZoom();
     }
 
@@ -478,38 +472,47 @@
     }
 
     function numToBanglaWords(num) {
-        if (num === 0) return 'শূন্য টাকা মাত্র';
-        const units = ['', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
-                       'এগারো', 'বারো', 'তেরো', 'চোদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
-                       'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আঠাশ', 'উনত্রিশ', 'ত্রিশ',
-                       'একত্রিশ', 'বত্রিশ', 'তেতাল্লিশ', 'চৌথিশ', 'পঁয়তাল্লিশ', 'ছত্রিশ', 'সাইত্রিশ', 'আটত্রিশ', 'উনচল্লিশ', 'চল্লিশ',
-                       'একচল্লিশ', 'বিয়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতান্ন', 'আটান্ন', 'উনপঞ্চাশ', 'পঞ্চাশ',
-                       'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চৌয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'উনষাট', 'ষাট',
-                       'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'উনসত্তর', 'সত্তর',
-                       'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চৌহাত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'উনাশি', 'অশি',
-                       'একাশি', 'বিরাশি', 'তৈরাশি', 'চৌরাশি', 'পঁচাশি', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'উননব্বই', 'নব্বই',
-                       'একানব্বই', 'বায়ানব্বই', 'তিয়ানব্বই', 'চৌয়ানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'];
+    if (num === 0) return 'শূন্য টাকা মাত্র';
+    
+    const units = [
+        '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
+        'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
+        'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
+        'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
+        'একচল্লিশ', 'বিয়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
+        'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
+        'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
+        'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
+        'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
+        'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
+    ];
 
-        function convertGroup(n) {
-            let str = '';
-            if (n >= 100) { str += units[Math.floor(n / 100)] + ' শত '; n %= 100; }
-            if (n > 0) { str += units[n] + ' '; }
-            return str;
+    function convertGroup(n) {
+        let str = '';
+        if (n >= 100) { 
+            str += units[Math.floor(n / 100)] + ' শত '; 
+            n %= 100; 
         }
-
-        let words = '';
-        let crore = Math.floor(num / 10000000); num %= 10000000;
-        let lakh = Math.floor(num / 100000); num %= 100000;
-        let thousand = Math.floor(num / 1000); num %= 1000;
-
-        if (crore > 0) words += convertGroup(crore) + 'কোটি ';
-        if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
-        if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
-        if (num > 0) words += convertGroup(num);
-
-        return words.trim() + ' টাকা মাত্র';
+        if (n > 0) { 
+            str += units[n] + ' '; 
+        }
+        return str;
     }
 
+    let words = '';
+    let crore = Math.floor(num / 10000000); num %= 10000000;
+    let lakh = Math.floor(num / 100000); num %= 100000;
+    let thousand = Math.floor(num / 1000); num %= 1000;
+
+    if (crore > 0) words += convertGroup(crore) + 'কোটি ';
+    if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
+    if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
+    if (num > 0) words += convertGroup(num);
+
+    return words.trim() + ' টাকা মাত্র';
+}
+
+    // টাইম লজিক সংশোধিত ভার্সন
     function extractTimeInHours(str) {
         if (!str) return NaN;
         
@@ -522,16 +525,23 @@
         let hours = parseFloat(matches[1]);
         let minutes = matches[2] ? parseFloat(matches[2]) : 0;
 
-        let totalHours = hours + (minutes / 60);
-
         let lower = str.toLowerCase();
-        let isPM = lower.includes('রাত') || lower.includes('বিকাল') || lower.includes('সন্ধ্যা') || lower.includes('দুপুর') || lower.includes('pm');
-        let isAM = lower.includes('সকাল') || lower.includes('am');
+        let isNightOrPM = lower.includes('রাত') || lower.includes('বিকাল') || lower.includes('সন্ধ্যা') || lower.includes('দুপুর') || lower.includes('pm');
+        let isAM = lower.includes('সকাল') || lower.includes('am') || lower.includes('ভোর');
 
-        if (isPM && hours < 12) totalHours += 12;
-        if (isAM && hours === 12) totalHours -= 12;
+        if (hours === 12) {
+            if (isNightOrPM && !lower.includes('দুপুর')) {
+                hours = 0; // রাত ১২ টা = ০ ঘণ্টা
+            } else if (isAM) {
+                hours = 0;
+            }
+        } else {
+            if (isNightOrPM && hours < 12) {
+                hours += 12;
+            }
+        }
 
-        return totalHours;
+        return hours + (minutes / 60);
     }
 
     function handleTimeInput(elem) {
@@ -714,9 +724,6 @@
         }
     }
 
-    // ==========================================
-    // অটো সেভ মেকানিজম
-    // ==========================================
     let saveTimeout = null;
 
     function triggerAutoSave() {
@@ -870,7 +877,6 @@
         link.click();
     }
 
-    // প্রাথমিক লোড
     document.querySelectorAll('.day-select').forEach(selectEl => {
         populateDayDropdown(selectEl, 1);
     });
