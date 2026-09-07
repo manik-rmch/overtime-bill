@@ -148,34 +148,54 @@
             line-height: 1.3;
             flex: 1;
         }
+
+        /* --- বাটন ও কন্ট্রোল কন্টেইনার (সেন্টার এ্যালাইনমেন্ট) --- */
         .btn-container {
-            margin: 5px auto;
+            margin: 10px auto;
             width: 200mm;
-            text-align: right;
             display: flex;
-            justify-content: flex-end;
-            gap: 6px;
+            justify-content: center; /* সেন্টারে এ্যালাইন করার জন্য */
+            gap: 10px;
             align-items: center;
-            background: #e4e4e4;
-            padding: 6px;
-            border-radius: 5px;
+            background: #ffffff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            border: 1px solid #cbd5e1;
         }
         .zoom-group {
             display: flex;
             align-items: center;
-            gap: 3px;
-            background: #fff;
-            padding: 2px 6px;
+            gap: 4px;
+            background: #f8fafc;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+        }
+        .search-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f8fafc;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+        }
+        .search-group select {
+            padding: 3px 6px;
+            font-size: 11px;
+            border: 1px solid #cbd5e1;
             border-radius: 4px;
-            border: 1px solid #ccc;
-            margin-right: auto;
+            background: #fff;
+            outline: none;
         }
         .zoom-btn {
-            background: #607D8B;
+            background: #475569;
             color: #fff;
             border: none;
-            border-radius: 3px;
-            padding: 2px 7px;
+            border-radius: 4px;
+            padding: 3px 8px;
             cursor: pointer;
             font-size: 12px;
             font-weight: bold;
@@ -186,46 +206,57 @@
             min-width: 40px;
             text-align: center;
         }
+        .right-btn-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
         .save-indicator {
-            font-size: 10px;
-            color: #4CAF50;
+            font-size: 11px;
+            color: #16a34a;
             font-weight: bold;
-            margin-right: 5px;
             display: none;
+            margin-right: 4px;
         }
         .btn {
-            background-color: #008CBA;
+            background-color: #0284c7;
             color: white;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border: none;
             cursor: pointer;
             font-size: 11px;
-            border-radius: 4px;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: opacity 0.2s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn-cloud-save {
+            background-color: #16a34a;
+        }
+        .btn-cloud-load {
+            background-color: #9333ea;
         }
         .btn-reset {
-            background-color: #f44336;
-        }
-        .btn-download {
-            background-color: #ff9800;
+            background-color: #dc2626;
         }
         .action-btn {
-            padding: 1px 4px;
+            padding: 2px 6px;
             font-weight: bold;
             cursor: pointer;
             margin: 0 1px;
-            font-size: 10.5px;
+            font-size: 11px;
+            border-radius: 3px;
+            border: none;
         }
         .btn-add {
-            background-color: #4CAF50;
+            background-color: #16a34a;
             color: white;
-            border: none;
-            border-radius: 3px;
         }
         .btn-remove {
-            background-color: #f44336;
+            background-color: #dc2626;
             color: white;
-            border: none;
-            border-radius: 3px;
         }
 
         @media print {
@@ -269,18 +300,58 @@
 </head>
 <body>
 
+<!-- কন্ট্রোল বাটন ও ফিল্টার সেকশন (সেন্টার এ্যালাইনড) -->
 <div class="btn-container no-print">
     <div class="zoom-group">
         <span>জুম:</span>
         <button class="zoom-btn" onclick="zoomPage(-0.1)">-</button>
         <span id="zoomVal" class="zoom-text">১০০%</span>
         <button class="zoom-btn" onclick="zoomPage(0.1)">+</button>
-        <button class="zoom-btn" style="background:#888;" onclick="resetZoom()">রিসেট</button>
+        <button class="zoom-btn" style="background:#64748b;" onclick="resetZoom()">রিসেট</button>
     </div>
-    <span id="saveStatus" class="save-indicator">✓ অটো সেভ হয়েছে</span>
-    <button class="btn btn-reset" onclick="resetData()">🔄 নতুন বিল/রিসেট</button>
-    <button class="btn btn-download" onclick="saveAsHtmlFile()">📄 HTML ফাইল সেভ করুন</button>
-    <button class="btn" onclick="window.print()">🖨️ প্রিন্ট / PDF সেভ করুন</button>
+
+    <!-- ৩টি ফিল্টার বিশিষ্ট ক্লাউড সার্চ অপশন (ডিফল্ট ফাঁকা/ব্ল্যাঙ্ক) -->
+    <div class="search-group">
+        <span style="font-weight:bold; font-size:11px;">পুরোনো বিল:</span>
+        <select id="searchDriver">
+            <option value="" selected disabled hidden>চালকের নাম বেছে নিন</option>
+            <option value="0">মোঃ সিরাজুল ইসলাম</option>
+            <option value="1">মোঃ আশরাফুল আলী</option>
+            <option value="2">মোঃ আব্দুর রহমান</option>
+            <option value="3">মোঃ আমির হোসেন</option>
+            <option value="4">মোঃ মিজানুর রহমান</option>
+            <option value="5">মোঃ মানিক</option>
+        </select>
+        <select id="searchMonth">
+            <option value="" selected disabled hidden>মাস বেছে নিন</option>
+            <option value="01">জানুয়ারি</option>
+            <option value="02">ফেব্রুয়ারি</option>
+            <option value="03">মার্চ</option>
+            <option value="04">এপ্রিল</option>
+            <option value="05">মে</option>
+            <option value="06">জুন</option>
+            <option value="07">জুলাই</option>
+            <option value="08">আগস্ট</option>
+            <option value="09">সেপ্টেম্বর</option>
+            <option value="10">অক্টোবর</option>
+            <option value="11">নভেম্বর</option>
+            <option value="12">ডিসেম্বর</option>
+        </select>
+        <select id="searchYear">
+            <option value="" selected disabled hidden>সাল বেছে নিন</option>
+            <option value="২০২৬">২০২৬</option>
+            <option value="২০২৭">২০২৭</option>
+            <option value="২০২৮">২০২৮</option>
+        </select>
+        <button class="btn btn-cloud-load" onclick="loadFromCloud()">📂 লোড রিপোর্ট</button>
+    </div>
+
+    <div class="right-btn-group">
+        <span id="saveStatus" class="save-indicator">✓ অটো সেভ হয়েছে</span>
+        <button class="btn btn-cloud-save" onclick="saveToCloud()">☁️ অনলাইনে সেভ করুন</button>
+        <button class="btn btn-reset" onclick="resetData()">🔄 রিসেট</button>
+        <button class="btn" onclick="window.print()">🖨️ প্রিন্ট / PDF</button>
+    </div>
 </div>
 
 <div class="page-container" id="pageContainer">
@@ -400,6 +471,7 @@
         </div>
     </div>
 
+    <!-- স্বাক্ষর অংশ -->
     <div class="footer-section">
         <div class="signature-box">
             ...................................<br>
@@ -422,6 +494,8 @@
 </div>
 
 <script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvMwBdQbrtz9y9jbbyQ05hzL2AeTVbqGyHGzpWRsQHsybhJgf2DhVZZD0Ulfa4IVrl/exec";
+
     const driversData = [
         { name: "মোঃ সিরাজুল ইসলাম", basicPay: 30230, carNo: "অজ ২৬-০২৮", mobile: "০১৭১৫-২৪৯৭১৮" },
         { name: "মোঃ আশরাফুল আলী", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০১০", mobile: "০১৭১৬-১৯২১০৪" },
@@ -472,47 +546,39 @@
     }
 
     function numToBanglaWords(num) {
-    if (num === 0) return 'শূন্য টাকা মাত্র';
-    
-    const units = [
-        '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
-        'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
-        'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
-        'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
-        'একচল্লিশ', 'বিয়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
-        'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
-        'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
-        'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
-        'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
-        'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
-    ];
+        if (num === 0) return 'শূন্য টাকা মাত্র';
+        const units = [
+            '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
+            'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
+            'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
+            'একত্রিশ', 'বত্রিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
+            'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
+            'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
+            'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
+            'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
+            'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
+        ];
 
-    function convertGroup(n) {
-        let str = '';
-        if (n >= 100) { 
-            str += units[Math.floor(n / 100)] + ' শত '; 
-            n %= 100; 
+        function convertGroup(n) {
+            let str = '';
+            if (n >= 100) { str += units[Math.floor(n / 100)] + ' শত '; n %= 100; }
+            if (n > 0) { str += units[n] + ' '; }
+            return str;
         }
-        if (n > 0) { 
-            str += units[n] + ' '; 
-        }
-        return str;
+
+        let words = '';
+        let crore = Math.floor(num / 10000000); num %= 10000000;
+        let lakh = Math.floor(num / 100000); num %= 100000;
+        let thousand = Math.floor(num / 1000); num %= 1000;
+
+        if (crore > 0) words += convertGroup(crore) + 'কোটি ';
+        if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
+        if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
+        if (num > 0) words += convertGroup(num);
+
+        return words.trim() + ' টাকা মাত্র';
     }
 
-    let words = '';
-    let crore = Math.floor(num / 10000000); num %= 10000000;
-    let lakh = Math.floor(num / 100000); num %= 100000;
-    let thousand = Math.floor(num / 1000); num %= 1000;
-
-    if (crore > 0) words += convertGroup(crore) + 'কোটি ';
-    if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
-    if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
-    if (num > 0) words += convertGroup(num);
-
-    return words.trim() + ' টাকা মাত্র';
-}
-
-    // টাইম লজিক সংশোধিত ভার্সন
     function extractTimeInHours(str) {
         if (!str) return NaN;
         
@@ -525,23 +591,17 @@
         let hours = parseFloat(matches[1]);
         let minutes = matches[2] ? parseFloat(matches[2]) : 0;
 
+        let totalHours = hours + (minutes / 60);
         let lower = str.toLowerCase();
-        let isNightOrPM = lower.includes('রাত') || lower.includes('বিকাল') || lower.includes('সন্ধ্যা') || lower.includes('দুপুর') || lower.includes('pm');
-        let isAM = lower.includes('সকাল') || lower.includes('am') || lower.includes('ভোর');
 
-        if (hours === 12) {
-            if (isNightOrPM && !lower.includes('দুপুর')) {
-                hours = 0; // রাত ১২ টা = ০ ঘণ্টা
-            } else if (isAM) {
-                hours = 0;
-            }
-        } else {
-            if (isNightOrPM && hours < 12) {
-                hours += 12;
-            }
-        }
+        let isLateNightEarlyMorning = lower.includes('রাত') && (hours === 12 || hours < 6);
+        let isPM = (lower.includes('বিকাল') || lower.includes('সন্ধ্যা') || lower.includes('দুপুর') || lower.includes('pm') || (lower.includes('রাত') && !isLateNightEarlyMorning));
+        let isAM = lower.includes('সকাল') || lower.includes('ভোর') || lower.includes('am') || isLateNightEarlyMorning;
 
-        return hours + (minutes / 60);
+        if (isPM && hours < 12) totalHours += 12;
+        if (isAM && hours === 12) totalHours = 0 + (minutes / 60);
+
+        return totalHours;
     }
 
     function handleTimeInput(elem) {
@@ -561,7 +621,6 @@
         if (!isNaN(startHour) && !isNaN(endHour)) {
             let diff = endHour - startHour;
             if (diff <= 0) diff += 24;
-            
             diff = Math.round(diff * 100) / 100;
             hoursSpan.innerText = toBanglaNum(diff);
         } else {
@@ -643,7 +702,6 @@
         rows.forEach(row => {
             let hoursSpan = row.querySelector('.hours');
             let hours = parseBanglaOrEnglishNum(hoursSpan.innerText);
-
             let amount = hours * hourlyRate;
 
             row.querySelector('.rate').innerText = toBanglaNum(hourlyRate);
@@ -724,6 +782,166 @@
         }
     }
 
+    function saveToCloud() {
+        let driverSelect = document.getElementById('driverSelect');
+        let monthSelect = document.getElementById('monthSelect');
+        let yearSelect = document.getElementById('yearSelect');
+
+        let driverIndex = driverSelect.value;
+        let driverName = driversData[driverIndex].name;
+        let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
+        let monthName = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-name');
+        let year = yearSelect.value;
+
+        let recordId = `DRIVER${driverIndex}-${monthCode}-${year}`;
+
+        let rows = [];
+        document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
+            rows.push({
+                day: row.querySelector('.day-select').value,
+                dutyPlace: row.querySelector('.duty-place').value,
+                startTime: row.querySelector('.start-time').value,
+                endTime: row.querySelector('.end-time').value,
+                remarks: row.querySelector('.remarks').value
+            });
+        });
+
+        let payload = {
+            action: "save",
+            recordId: recordId,
+            driverIndex: driverIndex,
+            driverName: driverName,
+            monthCode: monthCode,
+            monthName: monthName,
+            year: year,
+            rows: rows
+        };
+
+        let statusEl = document.getElementById('saveStatus');
+        statusEl.innerText = '☁️ সেভ হচ্ছে...';
+        statusEl.style.color = '#d97706';
+        statusEl.style.display = 'inline';
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(() => {
+            statusEl.innerText = '✓ সফলভাবে অনলাইন সেভ হয়েছে';
+            statusEl.style.color = '#16a34a';
+            setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+        }).catch(err => {
+            alert('অনলাইনে সেভ করতে সমস্যা হয়েছে!');
+            statusEl.style.display = 'none';
+        });
+    }
+
+    function loadFromCloud() {
+        let sDriver = document.getElementById('searchDriver').value;
+        let sMonth = document.getElementById('searchMonth').value;
+        let sYear = document.getElementById('searchYear').value;
+
+        if (!sDriver || !sMonth || !sYear) {
+            alert('অনুগ্ৰহ করে চালকের নাম, মাস এবং সাল সঠিকভাবে সিলেক্ট করুন!');
+            return;
+        }
+
+        let recordId = `DRIVER${sDriver}-${sMonth}-${sYear}`;
+
+        let payload = {
+            action: "load",
+            recordId: recordId
+        };
+
+        let statusEl = document.getElementById('saveStatus');
+        statusEl.innerText = '📂 লোড হচ্ছে...';
+        statusEl.style.color = '#d97706';
+        statusEl.style.display = 'inline';
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+            statusEl.style.display = 'none';
+            if (res.status === 'success') {
+                let data = res.data;
+
+                document.getElementById('driverSelect').value = data.driverIndex;
+                document.getElementById('yearSelect').value = data.year;
+
+                let mSelect = document.getElementById('monthSelect');
+                for (let i = 0; i < mSelect.options.length; i++) {
+                    if (mSelect.options[i].getAttribute('data-month') === data.monthCode) {
+                        mSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+
+                updateDriverInfo();
+                onMonthOrYearChange();
+
+                let tbody = document.querySelector('#overtimeTable tbody');
+                tbody.innerHTML = '';
+
+                data.rows.forEach(r => {
+                    let monthCode = mSelect.options[mSelect.selectedIndex].getAttribute('data-month');
+                    let year = data.year;
+                    let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
+
+                    let newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>
+                            <div class="date-cell-container">
+                                <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
+                                <option value=""></option>
+                                <option value="শুক্রবার">শুক্রবার</option>
+                                <option value="সরকারি ছুটি">সরকারি ছুটি</option>
+                                <option value="অতিরিক্ত">অতিরিক্ত</option>
+                                <option value="ঢাকা">ঢাকা</option>
+                                <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
+                                <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
+                                <option value="ঈদের ছুটি">ঈদের ছুটি</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="start-time" value="${r.startTime}" oninput="handleTimeInput(this)"></td>
+                        <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
+                        <td><span class="hours">০</span></td>
+                        <td><span class="rate">0.00</span></td>
+                        <td><span class="amount">0.00</span></td>
+                        <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
+                        <td class="no-print">
+                            <button class="action-btn btn-add" onclick="addRow(this)">+</button>
+                            <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
+                        </td>
+                    `;
+                    tbody.appendChild(newRow);
+
+                    let daySelect = newRow.querySelector('.day-select');
+                    populateDayDropdown(daySelect, r.day);
+                    newRow.querySelector('.duty-place').value = r.dutyPlace;
+                    autoCalculateHours(newRow.querySelector('.start-time'));
+                });
+
+                calculateAll();
+                alert('রিপোর্ট সফলভাবে লোড হয়েছে!');
+            } else {
+                alert(res.message || 'ডাটা পাওয়া যায়নি!');
+            }
+        })
+        .catch(err => {
+            statusEl.style.display = 'none';
+            alert('ক্লাউড থেকে ডাটা লোড করতে ব্যর্থ হয়েছে!');
+        });
+    }
+
     let saveTimeout = null;
 
     function triggerAutoSave() {
@@ -761,6 +979,8 @@
         }
 
         let statusEl = document.getElementById('saveStatus');
+        statusEl.innerText = '✓ অটো সেভ হয়েছে';
+        statusEl.style.color = '#16a34a';
         statusEl.style.display = 'inline';
         setTimeout(() => { statusEl.style.display = 'none'; }, 1500);
     }
@@ -845,36 +1065,11 @@
     }
 
     function resetData() {
-        if (confirm("আপনি কি নতুন কাজ শুরু করতে চান? বর্তমান ডাটা মুছে যাবে।")) {
+        if (confirm("আপনি কি রিসেট করতে চান? বর্তমান পেজ ফাঁকা হয়ে যাবে।")) {
             try { localStorage.removeItem('rmch_autosaver_v3'); } catch(e){}
             document.cookie = "rmch_autosaver_v3=;path=/;max-age=0";
             location.reload();
         }
-    }
-
-    function saveAsHtmlFile() {
-        document.querySelectorAll('input').forEach(input => {
-            input.setAttribute('value', input.value);
-        });
-
-        document.querySelectorAll('select').forEach(select => {
-            let options = select.querySelectorAll('option');
-            options.forEach(opt => opt.removeAttribute('selected'));
-            if (select.selectedIndex >= 0) {
-                options[select.selectedIndex].setAttribute('selected', 'selected');
-            }
-        });
-
-        let driverName = document.getElementById('driverText').innerText;
-        let monthName = document.getElementById('monthText').innerText;
-        let fileName = `Overtime_${driverName}_${monthName}.html`;
-
-        let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-        let blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-        let link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;
-        link.click();
     }
 
     document.querySelectorAll('.day-select').forEach(selectEl => {
