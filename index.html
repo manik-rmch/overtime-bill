@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Overtime Bill - RMCH</title>
     <style>
-        /* পাসওয়ার্ড প্রোটেকশন স্টাইল */
+        /* পাসওয়ার্ড প্রোটেকশন স্টাইল (লগইন) */
         #pinModal {
             position: fixed;
             top: 0;
@@ -72,6 +72,122 @@
             font-size: 12px;
             margin-top: 10px;
             display: none;
+        }
+
+        /* ওভাররাইট সিকিউরিটি পপ-আপ মোডাল */
+        #overwriteModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99998;
+            font-family: Arial, sans-serif;
+        }
+        .overwrite-card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.35);
+            width: 380px;
+            max-width: 90%;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            animation: fadeInScale 0.2s ease-out;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .overwrite-card .warning-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #d97706;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .overwrite-card .warning-text {
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            background: #fffbeb;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #fef3c7;
+        }
+        .overwrite-card .pin-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 6px;
+            display: block;
+            text-align: left;
+        }
+        .overwrite-card input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 6px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+        .overwrite-card input[type="password"]:focus {
+            border-color: #2563eb;
+        }
+        #overwritePinError {
+            color: #dc2626;
+            font-size: 12px;
+            margin-bottom: 12px;
+            display: none;
+            font-weight: bold;
+        }
+        .overwrite-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-modal-cancel {
+            flex: 1;
+            padding: 9px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-modal-cancel:hover {
+            background-color: #dc2626;
+        }
+        .btn-modal-confirm {
+            flex: 1;
+            padding: 9px;
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-modal-confirm:hover {
+            background-color: #15803d;
         }
 
         @page {
@@ -277,7 +393,7 @@
         }
         .right-btn-group {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             align-items: center;
         }
         .save-indicator {
@@ -301,6 +417,49 @@
         .btn:hover {
             opacity: 0.9;
         }
+        .btn:disabled {
+            background-color: #94a3b8 !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        /* কাস্টম সার্কুলার আন্ডু ও রিডু বাটন স্টাইল (২৬px) */
+        .btn-circle-action {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease, opacity 0.2s ease, background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+        .btn-circle-action svg {
+            width: 14px;
+            height: 14px;
+            color: #ffffff;
+        }
+        .btn-circle-action:hover:not(:disabled) {
+            transform: scale(1.08);
+        }
+        .btn-circle-action:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+
+        /* আন্ডু বাটন: ইউনিক রয়্যাল ব্লু */
+        .btn-undo-style {
+            background-color: #2563eb;
+        }
+        /* রিডু বাটন: অরিজিনাল কমলা */
+        .btn-redo-style {
+            background-color: #f59e0b;
+        }
+
         .btn-cloud-save {
             background-color: #16a34a;
         }
@@ -329,7 +488,7 @@
         }
 
         @media print {
-            #pinModal {
+            #pinModal, #overwriteModal {
                 display: none !important;
             }
             html, body {
@@ -372,14 +531,35 @@
 </head>
 <body>
 
-<!-- পিন যাচাই করার পপআপ মডেল -->
+<!-- পাসওয়ার্ড পপআপ (লগইন) -->
 <div id="pinModal">
     <div class="pin-card">
         <h3>সুরক্ষিত প্রবেশ ব্যবস্থা</h3>
         <p>সঠিক পিন কোড প্রদান করে সিস্টেমে প্রবেশ করুন</p>
-        <input type="password" id="pinInput" placeholder="••••" maxlength="6" onkeydown="checkEnterKey(event)">
+        <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" placeholder="••••" maxlength="6" onkeydown="checkEnterKey(event)">
         <button onclick="verifyPin()">প্রবেশ করুন</button>
         <div id="pinError">ভুল পিন কোড! আবার চেষ্টা করুন।</div>
+    </div>
+</div>
+
+<!-- ওভাররাইট পিন ভেরিফিকেশন পপ-আপ -->
+<div id="overwriteModal">
+    <div class="overwrite-card">
+        <div class="warning-header">
+            <span>⚠️</span>
+            <span>সতর্কবার্তা</span>
+        </div>
+        <div class="warning-text" id="overwriteMsgText">
+            এই মাসের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>
+            আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?
+        </div>
+        <label class="pin-label">নিরাপত্তা পিন কোড দিন:</label>
+        <input type="password" id="overwritePinInput" inputmode="numeric" pattern="[0-9]*" placeholder="••••" maxlength="6" onkeydown="checkOverwriteEnterKey(event)">
+        <div id="overwritePinError">ভুল পিন কোড! আবার চেষ্টা করুন।</div>
+        <div class="overwrite-btn-group">
+            <button class="btn-modal-cancel" onclick="closeOverwriteModal()">✖ না, বাতিল করুন</button>
+            <button class="btn-modal-confirm" onclick="confirmOverwriteAndSave()">✓ হ্যাঁ, সেভ করুন</button>
+        </div>
     </div>
 </div>
 
@@ -428,6 +608,22 @@
     </div>
 
     <div class="right-btn-group">
+        <!-- ২৬px আনডু বাটন (রয়্যাল ব্লু & টুলটিপ বিহীন) -->
+        <button id="undoBtn" class="btn-circle-action btn-undo-style" onclick="undo()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7v6h6"></path>
+                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+            </svg>
+        </button>
+
+        <!-- ২৬px রিডু বাটন (কমলা & টুলটিপ বিহীন) -->
+        <button id="redoBtn" class="btn-circle-action btn-redo-style" onclick="redo()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 7v6h-6"></path>
+                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
+            </svg>
+        </button>
+
         <span id="saveStatus" class="save-indicator">✓ অটো সেভ হয়েছে</span>
         <button class="btn btn-cloud-save" onclick="saveToCloud()">☁️ অনলাইনে সেভ করুন</button>
         <button class="btn btn-reset" onclick="resetData()">🔄 রিসেট</button>
@@ -574,8 +770,8 @@
 </div>
 
 <script>
-    // ================= পাসওয়ার্ড সুরক্ষা সিস্টেম (Session Persistence) =================
-    const SECRET_PIN = "1432"; // আপনার পিন কোড
+    // ================= পাসওয়ার্ড সুরক্ষা সিস্টেম =================
+    const SECRET_PIN = "1432";
 
     window.addEventListener('DOMContentLoaded', () => {
         if (sessionStorage.getItem('pinAuthenticated') === 'true') {
@@ -614,6 +810,133 @@
     ];
 
     let currentZoom = 1.0;
+
+    // Undo / Redo ব্যবস্থার জন্য Variable & Logic
+    let undoStack = [];
+    let redoStack = [];
+    let isUndoRedoAction = false;
+
+    // ট্র্যাক করার জন্য variable যে ডাটা কি কোনো লোড করা ডাটা কিনা
+    let loadedRecordId = null; 
+
+    function captureState() {
+        let rows = [];
+        document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
+            rows.push({
+                day: row.querySelector('.day-select').value,
+                dutyPlace: row.querySelector('.duty-place').value,
+                startTime: row.querySelector('.start-time').value,
+                endTime: row.querySelector('.end-time').value,
+                remarks: row.querySelector('.remarks').value
+            });
+        });
+
+        return {
+            driverIndex: document.getElementById('driverSelect').value,
+            year: document.getElementById('yearSelect').value,
+            monthIndex: document.getElementById('monthSelect').selectedIndex,
+            rows: rows
+        };
+    }
+
+    function saveStateForUndo() {
+        if (isUndoRedoAction) return;
+        let currentState = captureState();
+        let lastState = undoStack.length > 0 ? JSON.stringify(undoStack[undoStack.length - 1]) : null;
+        
+        if (JSON.stringify(currentState) !== lastState) {
+            undoStack.push(currentState);
+            if (undoStack.length > 30) undoStack.shift(); // সর্বোচ্চ ৩০টি হিস্ট্রি রাখা হবে
+            redoStack = []; 
+            updateUndoRedoButtons();
+        }
+    }
+
+    function updateUndoRedoButtons() {
+        document.getElementById('undoBtn').disabled = undoStack.length <= 1;
+        document.getElementById('redoBtn').disabled = redoStack.length === 0;
+    }
+
+    function applyState(state) {
+        isUndoRedoAction = true;
+
+        document.getElementById('driverSelect').value = state.driverIndex;
+        document.getElementById('yearSelect').value = state.year;
+        document.getElementById('monthSelect').selectedIndex = state.monthIndex;
+
+        updateDriverInfo();
+        onMonthOrYearChange();
+
+        let tbody = document.querySelector('#overtimeTable tbody');
+        tbody.innerHTML = '';
+
+        state.rows.forEach(r => {
+            let monthSelect = document.getElementById('monthSelect');
+            let yearSelect = document.getElementById('yearSelect');
+            let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
+            let year = yearSelect.value;
+            let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
+
+            let newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>
+                    <div class="date-cell-container">
+                        <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                    </div>
+                </td>
+                <td>
+                    <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
+                        <option value=""></option>
+                        <option value="শুক্রবার">শুক্রবার</option>
+                        <option value="সরকারি ছুটি">সরকারি ছুটি</option>
+                        <option value="অতিরিক্ত">অতিরিক্ত</option>
+                        <option value="ঢাকা">ঢাকা</option>
+                        <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
+                        <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
+                        <option value="ঈদের ছুটি">ঈদের ছুটি</option>
+                    </select>
+                </td>
+                <td><input type="text" class="start-time" value="${r.startTime}" oninput="handleTimeInput(this)"></td>
+                <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
+                <td><span class="hours">০</span></td>
+                <td><span class="rate">0.00</span></td>
+                <td><span class="amount">0</span></td>
+                <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
+                <td class="no-print">
+                    <button class="action-btn btn-add" onclick="addRow(this)">+</button>
+                    <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+
+            let daySelect = newRow.querySelector('.day-select');
+            populateDayDropdown(daySelect, r.day);
+            newRow.querySelector('.duty-place').value = r.dutyPlace;
+            autoCalculateHours(newRow.querySelector('.start-time'));
+        });
+
+        calculateAll();
+        saveDataToStorage();
+        isUndoRedoAction = false;
+        updateUndoRedoButtons();
+    }
+
+    function undo() {
+        if (undoStack.length > 1) {
+            let currentState = undoStack.pop();
+            redoStack.push(currentState);
+            let previousState = undoStack[undoStack.length - 1];
+            applyState(previousState);
+        }
+    }
+
+    function redo() {
+        if (redoStack.length > 0) {
+            let nextState = redoStack.pop();
+            undoStack.push(nextState);
+            applyState(nextState);
+        }
+    }
 
     function zoomPage(step) {
         currentZoom += step;
@@ -654,39 +977,39 @@
     }
 
     function numToBanglaWords(num) {
-        if (num === 0) return 'শূন্য টাকা মাত্র';
-        const units = [
-            '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
-            'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
-            'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
-            'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
-            'একচল্লিশ', 'বিয়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
-            'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
-            'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
-            'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
-            'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
-            'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
-        ];
+    if (num === 0) return 'শূন্য টাকা মাত্র';
+    const units = [
+        '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
+        'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
+        'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
+        'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
+        'একচল্লিশ', 'বায়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
+        'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
+        'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
+        'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
+        'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
+        'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
+    ];
 
-        function convertGroup(n) {
-            let str = '';
-            if (n >= 100) { str += units[Math.floor(n / 100)] + 'শত '; n %= 100; }
-            if (n > 0) { str += units[n] + ' '; }
-            return str;
-        }
-
-        let words = '';
-        let crore = Math.floor(num / 10000000); num %= 10000000;
-        let lakh = Math.floor(num / 100000); num %= 100000;
-        let thousand = Math.floor(num / 1000); num %= 1000;
-
-        if (crore > 0) words += convertGroup(crore) + 'কোটি ';
-        if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
-        if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
-        if (num > 0) words += convertGroup(num);
-
-        return words.trim() + ' টাকা মাত্র';
+    function convertGroup(n) {
+        let str = '';
+        if (n >= 100) { str += units[Math.floor(n / 100)] + 'শত '; n %= 100; }
+        if (n > 0) { str += units[n] + ' '; }
+        return str;
     }
+
+    let words = '';
+    let crore = Math.floor(num / 10000000); num %= 10000000;
+    let lakh = Math.floor(num / 100000); num %= 100000;
+    let thousand = Math.floor(num / 1000); num %= 1000;
+
+    if (crore > 0) words += convertGroup(crore) + 'কোটি ';
+    if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
+    if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
+    if (num > 0) words += convertGroup(num);
+
+    return words.trim() + ' টাকা মাত্র';
+}
 
     function extractTimeInHours(str) {
         if (!str) return NaN;
@@ -815,7 +1138,6 @@
 
             row.querySelector('.rate').innerText = toBanglaNum(hourlyRate);
 
-            // টাকার পরিমাণের সাথে .00 থাকলে তা মুছে দেওয়ার লজিক
             let formattedAmount = amount.toFixed(2);
             if (formattedAmount.endsWith('.00')) {
                 formattedAmount = Math.floor(amount).toString();
@@ -898,6 +1220,8 @@
         }
     }
 
+    // ================= স্মার্ট সেভ ও ওভাররাইট পিন লজিক =================
+    
     function saveToCloud() {
         let driverSelect = document.getElementById('driverSelect');
         let monthSelect = document.getElementById('monthSelect');
@@ -911,6 +1235,90 @@
 
         let recordId = `DRIVER${driverIndex}-${monthCode}-${year}`;
 
+        // ১. আগে চেক করে দেখা যে এটি লোড করা ডাটা কিনা, কিংবা ক্লাউডে পূর্বের ডাটা আছে কিনা
+        if (loadedRecordId === recordId) {
+            // পূর্বের লোড করা ডাটায় কাজ করা হচ্ছে, সরাসরি পিন পপ-আপ দেখাব
+            openOverwriteModal(driverName, monthName, year, recordId);
+        } else {
+            // স্মার্ট চেক: ব্যাকএন্ডে রিকোয়েস্ট পাঠিয়ে নিশ্চিত হওয়া ডাটাটি আগে থেকে সেভ আছে কিনা
+            let statusEl = document.getElementById('saveStatus');
+            statusEl.innerText = '🔍 ডাটা যাচাই হচ্ছে...';
+            statusEl.style.color = '#0284c7';
+            statusEl.style.display = 'inline';
+
+            let checkPayload = {
+                action: "checkExists",
+                recordId: recordId
+            };
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(checkPayload)
+            })
+            .then(res => res.json())
+            .then(res => {
+                statusEl.style.display = 'none';
+                if (res.exists) {
+                    // পূর্বে ক্লাউডে সেভ ছিল, সিকিউরিটি পপ-আপ দেখাও
+                    openOverwriteModal(driverName, monthName, year, recordId);
+                } else {
+                    // একদম নতুন ডাটা, পিন ছাড়াই সরাসরি সেভ করো
+                    executeSaveProcess(recordId, driverIndex, driverName, monthCode, monthName, year);
+                }
+            })
+            .catch(() => {
+                // সার্ভার চেকে সমস্যা হলে বা অফলাইনে থাকলেও নিরাপত্তার জন্য পিন মোডাল দেখানো ভালো
+                statusEl.style.display = 'none';
+                openOverwriteModal(driverName, monthName, year, recordId);
+            });
+        }
+    }
+
+    function openOverwriteModal(driverName, monthName, year, recordId) {
+        let msg = `<b>${driverName}</b> এর <b>${monthName} ${year}</b> সালের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?`;
+        document.getElementById('overwriteMsgText').innerHTML = msg;
+        document.getElementById('overwritePinInput').value = '';
+        document.getElementById('overwritePinError').style.display = 'none';
+        document.getElementById('overwriteModal').style.display = 'flex';
+        setTimeout(() => document.getElementById('overwritePinInput').focus(), 100);
+    }
+
+    function closeOverwriteModal() {
+        document.getElementById('overwriteModal').style.display = 'none';
+        document.getElementById('overwritePinInput').value = '';
+    }
+
+    function checkOverwriteEnterKey(event) {
+        if (event.key === "Enter") {
+            confirmOverwriteAndSave();
+        }
+    }
+
+    function confirmOverwriteAndSave() {
+        let inputPin = document.getElementById('overwritePinInput').value;
+        if (inputPin === SECRET_PIN) {
+            closeOverwriteModal();
+
+            let driverSelect = document.getElementById('driverSelect');
+            let monthSelect = document.getElementById('monthSelect');
+            let yearSelect = document.getElementById('yearSelect');
+
+            let driverIndex = driverSelect.value;
+            let driverName = driversData[driverIndex].name;
+            let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
+            let monthName = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-name');
+            let year = yearSelect.value;
+            let recordId = `DRIVER${driverIndex}-${monthCode}-${year}`;
+
+            executeSaveProcess(recordId, driverIndex, driverName, monthCode, monthName, year);
+        } else {
+            document.getElementById('overwritePinError').style.display = 'block';
+            document.getElementById('overwritePinInput').value = '';
+        }
+    }
+
+    function executeSaveProcess(recordId, driverIndex, driverName, monthCode, monthName, year) {
         let rows = [];
         document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
             rows.push({
@@ -944,7 +1352,8 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         }).then(() => {
-            statusEl.innerText = '✓ সফলভাবে অনলাইন সেভ হয়েছে';
+            loadedRecordId = recordId; // সেভ হওয়া রেকর্ড আইডি মনে রাখা হলো
+            statusEl.innerText = '✓ সফলভাবে অনলাইনে সেভ হয়েছে';
             statusEl.style.color = '#16a34a';
             setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
         }).catch(err => {
@@ -1048,6 +1457,13 @@
 
                 calculateAll();
                 
+                // অনলাইন থেকে ডাটা লোড হওয়ার পর Undo/Redo রিসেট ও বাটন নিষ্ক্রিয় করা
+                undoStack = [captureState()];
+                redoStack = [];
+                updateUndoRedoButtons();
+                
+                loadedRecordId = recordId; // লোড হওয়া ডাটার রেকর্ড আইডি সেট হলো
+
                 document.getElementById('searchDriver').selectedIndex = 0;
                 document.getElementById('searchMonth').selectedIndex = 0;
                 document.getElementById('searchYear').selectedIndex = 0;
@@ -1066,6 +1482,7 @@
     let saveTimeout = null;
 
     function triggerAutoSave() {
+        saveStateForUndo();
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             saveDataToStorage();
@@ -1073,24 +1490,7 @@
     }
 
     function saveDataToStorage() {
-        let rows = [];
-        document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
-            rows.push({
-                day: row.querySelector('.day-select').value,
-                dutyPlace: row.querySelector('.duty-place').value,
-                startTime: row.querySelector('.start-time').value,
-                endTime: row.querySelector('.end-time').value,
-                remarks: row.querySelector('.remarks').value
-            });
-        });
-
-        let data = {
-            driverIndex: document.getElementById('driverSelect').value,
-            year: document.getElementById('yearSelect').value,
-            monthIndex: document.getElementById('monthSelect').selectedIndex,
-            rows: rows
-        };
-
+        let data = captureState();
         let jsonStr = JSON.stringify(data);
 
         try {
@@ -1113,15 +1513,9 @@
         } catch(e) {}
 
         if (!saved) {
-            let name = "rmch_autosaver_v3=";
-            let ca = document.cookie.split(';');
-            for(let i = 0; i < ca.length; i++) {
-                let c = ca[i].trim();
-                if (c.indexOf(name) == 0) saved = decodeURIComponent(c.substring(name.length, c.length));
-            }
+            saveStateForUndo();
+            return;
         }
-
-        if (!saved) return;
 
         try {
             let data = JSON.parse(saved);
@@ -1182,6 +1576,7 @@
             });
 
             calculateAll();
+            saveStateForUndo();
         } catch(err) {}
     }
 
@@ -1192,6 +1587,17 @@
             location.reload();
         }
     }
+
+    // কিবোর্ড শর্টকাট (Ctrl+Z এবং Ctrl+Y) সাপোর্ট
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'z') {
+            e.preventDefault();
+            undo();
+        } else if (e.ctrlKey && e.key === 'y') {
+            e.preventDefault();
+            redo();
+        }
+    });
 
     document.querySelectorAll('.day-select').forEach(selectEl => {
         populateDayDropdown(selectEl, 1);
