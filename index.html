@@ -774,6 +774,7 @@
     const SECRET_PIN = "1432";
 
     window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('pinInput').focus();
         if (sessionStorage.getItem('pinAuthenticated') === 'true') {
             document.getElementById('pinModal').style.display = 'none';
         }
@@ -803,7 +804,7 @@
     const driversData = [
         { name: "মোঃ সিরাজুল ইসলাম", basicPay: 30230, carNo: "অজ ২৬-০২৮", mobile: "০১৭১৫-২৪৯৭১৮" },
         { name: "মোঃ আশরাফুল আলী", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০১০", mobile: "০১৭১৬-১৯২১০৪" },
-        { name: "মোঃ আব্দুর রহমান", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০২০", mobile: "০১৮৪৩-৮৬৫৭২২" },
+        { name: "মোঃ আব্দুর রহমান", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০২০", mobile: "০১৮৪৩-বহেস৭২২" },
         { name: "মোঃ আমির হোসেন", basicPay: 20290, carNo: "ঢাকা মেট্রো ঘ-১১-৬৬৬৮", mobile: "০১৭১২-৫৪২৩৫৯" },
         { name: "মোঃ মিজানুর রহমান", basicPay: 13040, carNo: "ঢাকা মেট্রো ছ-৭১-৩৩৪৩", mobile: "০১৭৫৩-৫২১১৮৮" },
         { name: "মোঃ মানিক", basicPay: 10190, carNo: "রাজ মেট্রো ছ-৭১-০০১৭", mobile: "০১৭২৯-৮১৫২৯১" }
@@ -977,39 +978,39 @@
     }
 
     function numToBanglaWords(num) {
-    if (num === 0) return 'শূন্য টাকা মাত্র';
-    const units = [
-        '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
-        'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
-        'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
-        'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
-        'একচল্লিশ', 'বায়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
-        'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
-        'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
-        'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
-        'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
-        'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
-    ];
+        if (num === 0) return 'শূন্য টাকা মাত্র';
+        const units = [
+            '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
+            'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
+            'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
+            'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
+            'একচল্লিশ', 'বায়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
+            'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
+            'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
+            'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
+            'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
+            'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
+        ];
 
-    function convertGroup(n) {
-        let str = '';
-        if (n >= 100) { str += units[Math.floor(n / 100)] + 'শত '; n %= 100; }
-        if (n > 0) { str += units[n] + ' '; }
-        return str;
+        function convertGroup(n) {
+            let str = '';
+            if (n >= 100) { str += units[Math.floor(n / 100)] + 'শত '; n %= 100; }
+            if (n > 0) { str += units[n] + ' '; }
+            return str;
+        }
+
+        let words = '';
+        let crore = Math.floor(num / 10000000); num %= 10000000;
+        let lakh = Math.floor(num / 100000); num %= 100000;
+        let thousand = Math.floor(num / 1000); num %= 1000;
+
+        if (crore > 0) words += convertGroup(crore) + 'কোটি ';
+        if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
+        if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
+        if (num > 0) words += convertGroup(num);
+
+        return words.trim() + ' টাকা মাত্র';
     }
-
-    let words = '';
-    let crore = Math.floor(num / 10000000); num %= 10000000;
-    let lakh = Math.floor(num / 100000); num %= 100000;
-    let thousand = Math.floor(num / 1000); num %= 1000;
-
-    if (crore > 0) words += convertGroup(crore) + 'কোটি ';
-    if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
-    if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
-    if (num > 0) words += convertGroup(num);
-
-    return words.trim() + ' টাকা মাত্র';
-}
 
     function extractTimeInHours(str) {
         if (!str) return NaN;
@@ -1235,12 +1236,9 @@
 
         let recordId = `DRIVER${driverIndex}-${monthCode}-${year}`;
 
-        // ১. আগে চেক করে দেখা যে এটি লোড করা ডাটা কিনা, কিংবা ক্লাউডে পূর্বের ডাটা আছে কিনা
         if (loadedRecordId === recordId) {
-            // পূর্বের লোড করা ডাটায় কাজ করা হচ্ছে, সরাসরি পিন পপ-আপ দেখাব
             openOverwriteModal(driverName, monthName, year, recordId);
         } else {
-            // স্মার্ট চেক: ব্যাকএন্ডে রিকোয়েস্ট পাঠিয়ে নিশ্চিত হওয়া ডাটাটি আগে থেকে সেভ আছে কিনা
             let statusEl = document.getElementById('saveStatus');
             statusEl.innerText = '🔍 ডাটা যাচাই হচ্ছে...';
             statusEl.style.color = '#0284c7';
@@ -1260,15 +1258,12 @@
             .then(res => {
                 statusEl.style.display = 'none';
                 if (res.exists) {
-                    // পূর্বে ক্লাউডে সেভ ছিল, সিকিউরিটি পপ-আপ দেখাও
                     openOverwriteModal(driverName, monthName, year, recordId);
                 } else {
-                    // একদম নতুন ডাটা, পিন ছাড়াই সরাসরি সেভ করো
                     executeSaveProcess(recordId, driverIndex, driverName, monthCode, monthName, year);
                 }
             })
             .catch(() => {
-                // সার্ভার চেকে সমস্যা হলে বা অফলাইনে থাকলেও নিরাপত্তার জন্য পিন মোডাল দেখানো ভালো
                 statusEl.style.display = 'none';
                 openOverwriteModal(driverName, monthName, year, recordId);
             });
@@ -1352,7 +1347,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         }).then(() => {
-            loadedRecordId = recordId; // সেভ হওয়া রেকর্ড আইডি মনে রাখা হলো
+            loadedRecordId = recordId;
             statusEl.innerText = '✓ সফলভাবে অনলাইনে সেভ হয়েছে';
             statusEl.style.color = '#16a34a';
             setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
@@ -1457,12 +1452,11 @@
 
                 calculateAll();
                 
-                // অনলাইন থেকে ডাটা লোড হওয়ার পর Undo/Redo রিসেট ও বাটন নিষ্ক্রিয় করা
                 undoStack = [captureState()];
                 redoStack = [];
                 updateUndoRedoButtons();
                 
-                loadedRecordId = recordId; // লোড হওয়া ডাটার রেকর্ড আইডি সেট হলো
+                loadedRecordId = recordId;
 
                 document.getElementById('searchDriver').selectedIndex = 0;
                 document.getElementById('searchMonth').selectedIndex = 0;
@@ -1588,7 +1582,6 @@
         }
     }
 
-    // কিবোর্ড শর্টকাট (Ctrl+Z এবং Ctrl+Y) সাপোর্ট
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'z') {
             e.preventDefault();
