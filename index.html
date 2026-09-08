@@ -4,6 +4,76 @@
     <meta charset="UTF-8">
     <title>Overtime Bill - RMCH</title>
     <style>
+        /* পাসওয়ার্ড প্রোটেকশন স্টাইল */
+        #pinModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            font-family: Arial, sans-serif;
+        }
+        .pin-card {
+            background: #ffffff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            width: 320px;
+        }
+        .pin-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #1e293b;
+            font-size: 18px;
+        }
+        .pin-card p {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+        .pin-card input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 20px;
+            text-align: center;
+            letter-spacing: 8px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        .pin-card input[type="password"]:focus {
+            border-color: #0284c7;
+        }
+        .pin-card button {
+            width: 100%;
+            padding: 10px;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .pin-card button:hover {
+            background-color: #0369a1;
+        }
+        #pinError {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 10px;
+            display: none;
+        }
+
         @page {
             size: A4 portrait;
             margin: 0;
@@ -149,12 +219,11 @@
             flex: 1;
         }
 
-        /* --- বাটন ও কন্ট্রোল কন্টেইনার (সেন্টার এ্যালাইনমেন্ট) --- */
         .btn-container {
             margin: 10px auto;
             width: 200mm;
             display: flex;
-            justify-content: center; /* সেন্টারে এ্যালাইন করার জন্য */
+            justify-content: center;
             gap: 10px;
             align-items: center;
             background: #ffffff;
@@ -260,6 +329,9 @@
         }
 
         @media print {
+            #pinModal {
+                display: none !important;
+            }
             html, body {
                 background: none;
                 height: 100vh;
@@ -300,7 +372,17 @@
 </head>
 <body>
 
-<!-- কন্ট্রোল বাটন ও ফিল্টার সেকশন (সেন্টার এ্যালাইনড) -->
+<!-- পিন যাচাই করার পপআপ মডেল -->
+<div id="pinModal">
+    <div class="pin-card">
+        <h3>সুরক্ষিত প্রবেশ ব্যবস্থা</h3>
+        <p>সঠিক পিন কোড প্রদান করে সিস্টেমে প্রবেশ করুন</p>
+        <input type="password" id="pinInput" placeholder="••••" maxlength="6" onkeydown="checkEnterKey(event)">
+        <button onclick="verifyPin()">প্রবেশ করুন</button>
+        <div id="pinError">ভুল পিন কোড! আবার চেষ্টা করুন।</div>
+    </div>
+</div>
+
 <div class="btn-container no-print">
     <div class="zoom-group">
         <span>জুম:</span>
@@ -310,7 +392,6 @@
         <button class="zoom-btn" style="background:#64748b;" onclick="resetZoom()">রিসেট</button>
     </div>
 
-    <!-- ৩টি ফিল্টার বিশিষ্ট ক্লাউড সার্চ অপশন (ডিফল্ট ফাঁকা/ব্ল্যাঙ্ক) -->
     <div class="search-group">
         <span style="font-weight:bold; font-size:11px;">পুরোনো বিল:</span>
         <select id="searchDriver">
@@ -447,7 +528,7 @@
                     <td><input type="text" class="end-time" value="" oninput="handleTimeInput(this)"></td>
                     <td><span class="hours">০</span></td>
                     <td><span class="rate">0.00</span></td>
-                    <td><span class="amount">0.00</span></td>
+                    <td><span class="amount">0</span></td>
                     <td><input type="text" class="remarks" value="" oninput="triggerAutoSave()"></td>
                     <td class="no-print">
                         <button class="action-btn btn-add" onclick="addRow(this)">+</button>
@@ -471,7 +552,6 @@
         </div>
     </div>
 
-    <!-- স্বাক্ষর অংশ -->
     <div class="footer-section">
         <div class="signature-box">
             ...................................<br>
@@ -494,6 +574,34 @@
 </div>
 
 <script>
+    // ================= পাসওয়ার্ড সুরক্ষা সিস্টেম (Session Persistence) =================
+    const SECRET_PIN = "1432"; // আপনার পিন কোড
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if (sessionStorage.getItem('pinAuthenticated') === 'true') {
+            document.getElementById('pinModal').style.display = 'none';
+        }
+    });
+
+    function verifyPin() {
+        let inputVal = document.getElementById('pinInput').value;
+        if (inputVal === SECRET_PIN) {
+            sessionStorage.setItem('pinAuthenticated', 'true');
+            document.getElementById('pinModal').style.display = 'none';
+        } else {
+            let err = document.getElementById('pinError');
+            err.style.display = 'block';
+            document.getElementById('pinInput').value = '';
+        }
+    }
+
+    function checkEnterKey(event) {
+        if (event.key === "Enter") {
+            verifyPin();
+        }
+    }
+
+    // ================= মূল স্ক্রিপ্ট =================
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvMwBdQbrtz9y9jbbyQ05hzL2AeTVbqGyHGzpWRsQHsybhJgf2DhVZZD0Ulfa4IVrl/exec";
 
     const driversData = [
@@ -551,7 +659,8 @@
             '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
             'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
             'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
-            'একত্রিশ', 'বত্রিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
+            'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
+            'একচল্লিশ', 'বিয়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
             'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
             'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
             'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
@@ -561,7 +670,7 @@
 
         function convertGroup(n) {
             let str = '';
-            if (n >= 100) { str += units[Math.floor(n / 100)] + ' শত '; n %= 100; }
+            if (n >= 100) { str += units[Math.floor(n / 100)] + 'শত '; n %= 100; }
             if (n > 0) { str += units[n] + ' '; }
             return str;
         }
@@ -705,7 +814,14 @@
             let amount = hours * hourlyRate;
 
             row.querySelector('.rate').innerText = toBanglaNum(hourlyRate);
-            row.querySelector('.amount').innerText = toBanglaNum(amount.toFixed(2));
+
+            // টাকার পরিমাণের সাথে .00 থাকলে তা মুছে দেওয়ার লজিক
+            let formattedAmount = amount.toFixed(2);
+            if (formattedAmount.endsWith('.00')) {
+                formattedAmount = Math.floor(amount).toString();
+            }
+
+            row.querySelector('.amount').innerText = toBanglaNum(formattedAmount);
 
             totalHours += hours;
             grandTotal += amount;
@@ -755,7 +871,7 @@
             <td><input type="text" class="end-time" value="" oninput="handleTimeInput(this)"></td>
             <td><span class="hours">০</span></td>
             <td><span class="rate">0.00</span></td>
-            <td><span class="amount">0.00</span></td>
+            <td><span class="amount">0</span></td>
             <td><input type="text" class="remarks" value="" oninput="triggerAutoSave()"></td>
             <td class="no-print">
                 <button class="action-btn btn-add" onclick="addRow(this)">+</button>
@@ -915,7 +1031,7 @@
                         <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
                         <td><span class="hours">০</span></td>
                         <td><span class="rate">0.00</span></td>
-                        <td><span class="amount">0.00</span></td>
+                        <td><span class="amount">0</span></td>
                         <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
                         <td class="no-print">
                             <button class="action-btn btn-add" onclick="addRow(this)">+</button>
@@ -931,6 +1047,11 @@
                 });
 
                 calculateAll();
+                
+                document.getElementById('searchDriver').selectedIndex = 0;
+                document.getElementById('searchMonth').selectedIndex = 0;
+                document.getElementById('searchYear').selectedIndex = 0;
+
                 alert('রিপোর্ট সফলভাবে লোড হয়েছে!');
             } else {
                 alert(res.message || 'ডাটা পাওয়া যায়নি!');
@@ -1045,7 +1166,7 @@
                     <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
                     <td><span class="hours">০</span></td>
                     <td><span class="rate">0.00</span></td>
-                    <td><span class="amount">0.00</span></td>
+                    <td><span class="amount">0</span></td>
                     <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
                     <td class="no-print">
                         <button class="action-btn btn-add" onclick="addRow(this)">+</button>
