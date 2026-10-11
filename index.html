@@ -42,7 +42,7 @@
             padding: 10px;
             font-size: 20px;
             text-align: center;
-            letter-spacing: 8px;
+            letter-spacing: 1px;
             border: 2px solid #cbd5e1;
             border-radius: 6px;
             outline: none;
@@ -137,7 +137,7 @@
             padding: 8px;
             font-size: 18px;
             text-align: center;
-            letter-spacing: 6px;
+            letter-spacing: 1px;
             border: 2px solid #cbd5e1;
             border-radius: 6px;
             outline: none;
@@ -535,10 +535,10 @@
 <div id="pinModal">
     <div class="pin-card">
         <h3>সুরক্ষিত প্রবেশ ব্যবস্থা</h3>
-        <p>সঠিক পিন কোড প্রদান করে সিস্টেমে প্রবেশ করুন</p>
-        <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" placeholder="••••" maxlength="6" onkeydown="checkEnterKey(event)">
-        <button onclick="verifyPin()">প্রবেশ করুন</button>
-        <div id="pinError">ভুল পিন কোড! আবার চেষ্টা করুন।</div>
+        <p>সঠিক পাসওয়ার্ড দিয়ে সিস্টেমে প্রবেশ করুন</p>
+        <input type="password" id="pinInput" autocomplete="current-password" placeholder="পাসওয়ার্ড" maxlength="100" onkeydown="checkEnterKey(event)">
+        <button id="pinSubmitBtn" onclick="verifyPin()">প্রবেশ করুন</button>
+        <div id="pinError">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
     </div>
 </div>
 
@@ -553,9 +553,9 @@
             এই মাসের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>
             আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?
         </div>
-        <label class="pin-label">নিরাপত্তা পিন কোড দিন:</label>
-        <input type="password" id="overwritePinInput" inputmode="numeric" pattern="[0-9]*" placeholder="••••" maxlength="6" onkeydown="checkOverwriteEnterKey(event)">
-        <div id="overwritePinError">ভুল পিন কোড! আবার চেষ্টা করুন।</div>
+        <label class="pin-label">পাসওয়ার্ড দিন:</label>
+        <input type="password" id="overwritePinInput" autocomplete="current-password" placeholder="পাসওয়ার্ড" maxlength="100" onkeydown="checkOverwriteEnterKey(event)">
+        <div id="overwritePinError">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
         <div class="overwrite-btn-group">
             <button class="btn-modal-cancel" onclick="closeOverwriteModal()">✖ না, বাতিল করুন</button>
             <button class="btn-modal-confirm" onclick="confirmOverwriteAndSave()">✓ হ্যাঁ, সেভ করুন</button>
@@ -576,12 +576,6 @@
         <span style="font-weight:bold; font-size:11px;">পুরোনো বিল:</span>
         <select id="searchDriver">
             <option value="" selected disabled hidden>চালকের নাম বেছে নিন</option>
-            <option value="0">মোঃ সিরাজুল ইসলাম</option>
-            <option value="1">মোঃ আশরাফুল আলী</option>
-            <option value="2">মোঃ আব্দুর রহমান</option>
-            <option value="3">মোঃ আমির হোসেন</option>
-            <option value="4">মোঃ মিজানুর রহমান</option>
-            <option value="5">মোঃ মানিক</option>
         </select>
         <select id="searchMonth">
             <option value="" selected disabled hidden>মাস বেছে নিন</option>
@@ -637,17 +631,12 @@
         <h2>রাজশাহী মেডিকেল কলেজ হাসপাতালের গাড়িচালকদের অধিকাল ভাতার বিল</h2>
 
         <div class="header-info-line">
-            গাড়ি নং <span id="carNoDisplay" style="font-weight: bold;">অজ ২৬-০২৮</span> 
+            গাড়ি নং <span id="carNoDisplay" style="font-weight: bold;">—</span> 
             গাড়ি চালকের নাম 
             <span class="inline-select-box">
-                <span id="driverText">মোঃ সিরাজুল ইসলাম</span>
+                <span id="driverText">—</span>
                 <select id="driverSelect" onchange="updateDriverInfo()">
-                    <option value="0">মোঃ সিরাজুল ইসলাম</option>
-                    <option value="1">মোঃ আশরাফুল আলী</option>
-                    <option value="2">মোঃ আব্দুর রহমান</option>
-                    <option value="3">মোঃ আমির হোসেন</option>
-                    <option value="4">মোঃ মিজানুর রহমান</option>
-                    <option value="5">মোঃ মানিক</option>
+                    <!-- চালকদের তালিকা লগইনের পর সার্ভার থেকে আসে -->
                 </select>
             </span>
             এর <br>
@@ -681,7 +670,7 @@
         </div>
 
         <div class="basic-pay-line">
-            মূল বেতন <span id="basicPayBn" style="font-weight: bold;">৩০,২৩০</span>/=
+            মূল বেতন <span id="basicPayBn" style="font-weight: bold;">—</span>/=
         </div>
 
         <table id="overtimeTable">
@@ -751,10 +740,10 @@
     <div class="footer-section">
         <div class="signature-box">
             ...................................<br>
-            (<span id="driverSignatureName">মোঃ সিরাজুল ইসলাম</span>)<br>
+            (<span id="driverSignatureName">...............</span>)<br>
             গাড়ি চালক<br>
             রাজশাহী মেডিকেল কলেজ হাসপাতাল।<br>
-            মোবাইলঃ <span id="driverMobile">০১৭১৫-২৪৯৭১৮</span>
+            মোবাইলঃ <span id="driverMobile">—</span>
         </div>
         <div class="signature-box">
             ...................................<br>
@@ -770,26 +759,70 @@
 </div>
 
 <script>
-    // ================= পাসওয়ার্ড সুরক্ষা সিস্টেম =================
-    const SECRET_PIN = "1432";
+    // ================= পাসওয়ার্ড সুরক্ষা সিস্টেম (সার্ভার-সাইড) =================
+    // ⚠️ পাসওয়ার্ড বা চালকদের ব্যক্তিগত তথ্য এই ফাইলে নেই।
+    //    যাচাই হয় Google Apps Script-এ; সঠিক হলে তবেই তথ্য আসে।
+    let APP_PIN = '';   // শুধু মেমরিতে থাকে — ব্রাউজারে সেভ হয় না (পেজ রিলোড করলে আবার দিতে হবে)
+
+    // বাইরের/সার্ভারের লেখা পেজে বসানোর আগে নিরাপদ করার ফাংশন
+    function escHtml(v) {
+        return String(v === undefined || v === null ? '' : v)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function escAttr(v) { return escHtml(v); }
+
+    // সার্ভারে অনুরোধ পাঠানো (প্রতিবার পাসওয়ার্ডসহ)
+    function callServer(action, extra, pinOverride) {
+        const payload = Object.assign(
+            { action: action, pin: (pinOverride !== undefined ? pinOverride : APP_PIN) },
+            extra || {}
+        );
+        return fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        }).then(res => res.json());
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('pinInput').focus();
-        if (sessionStorage.getItem('pinAuthenticated') === 'true') {
-            document.getElementById('pinModal').style.display = 'none';
-        }
     });
 
+    function showPinError(message) {
+        const err = document.getElementById('pinError');
+        err.innerText = message;
+        err.style.display = 'block';
+        document.getElementById('pinInput').value = '';
+    }
+
     function verifyPin() {
-        let inputVal = document.getElementById('pinInput').value;
-        if (inputVal === SECRET_PIN) {
-            sessionStorage.setItem('pinAuthenticated', 'true');
-            document.getElementById('pinModal').style.display = 'none';
-        } else {
-            let err = document.getElementById('pinError');
-            err.style.display = 'block';
-            document.getElementById('pinInput').value = '';
-        }
+        const input = document.getElementById('pinInput');
+        const btn = document.getElementById('pinSubmitBtn');
+        const typed = input.value;
+        if (!typed) return;
+
+        document.getElementById('pinError').style.display = 'none';
+        btn.disabled = true;
+        btn.innerText = 'যাচাই হচ্ছে...';
+
+        callServer('login', {}, typed).then(res => {
+            if (res.status === 'success' && Array.isArray(res.drivers)) {
+                APP_PIN = typed;
+                driversData = res.drivers;
+                fillDriverLists();
+                input.value = '';
+                document.getElementById('pinModal').style.display = 'none';
+                startApp();
+            } else {
+                showPinError(res.message || 'ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।');
+            }
+        }).catch(() => {
+            showPinError('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
+        }).finally(() => {
+            btn.disabled = false;
+            btn.innerText = 'প্রবেশ করুন';
+        });
     }
 
     function checkEnterKey(event) {
@@ -798,17 +831,26 @@
         }
     }
 
+    // লগইনের পর সার্ভার থেকে পাওয়া চালকদের তালিকা দিয়ে ড্রপডাউন ভরা
+    function fillDriverLists() {
+        const main = document.getElementById('driverSelect');
+        const search = document.getElementById('searchDriver');
+        main.innerHTML = '';
+        while (search.options.length > 1) search.remove(1);   // প্রথম "চালকের নাম বেছে নিন" থাকবে
+        driversData.forEach((d, i) => {
+            const o1 = document.createElement('option');
+            o1.value = i; o1.textContent = d.name;
+            main.appendChild(o1);
+            const o2 = document.createElement('option');
+            o2.value = i; o2.textContent = d.name;
+            search.appendChild(o2);
+        });
+    }
+
     // ================= মূল স্ক্রিপ্ট =================
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvMwBdQbrtz9y9jbbyQ05hzL2AeTVbqGyHGzpWRsQHsybhJgf2DhVZZD0Ulfa4IVrl/exec";
 
-    const driversData = [
-        { name: "মোঃ সিরাজুল ইসলাম", basicPay: 30230, carNo: "অজ ২৬-০২৮", mobile: "০১৭১৫-২৪৯৭১৮" },
-        { name: "মোঃ আশরাফুল আলী", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০১০", mobile: "০১৭১৬-১৯২১০৪" },
-        { name: "মোঃ আব্দুর রহমান", basicPay: 25320, carNo: "রাজ মেট্রো ছ-৭১-০০২০", mobile: "০১৮৪৩-বহেস৭২২" },
-        { name: "মোঃ আমির হোসেন", basicPay: 20290, carNo: "ঢাকা মেট্রো ঘ-১১-৬৬৬৮", mobile: "০১৭১২-৫৪২৩৫৯" },
-        { name: "মোঃ মিজানুর রহমান", basicPay: 13040, carNo: "ঢাকা মেট্রো ছ-৭১-৩৩৪৩", mobile: "০১৭৫৩-৫২১১৮৮" },
-        { name: "মোঃ মানিক", basicPay: 10190, carNo: "রাজ মেট্রো ছ-৭১-০০১৭", mobile: "০১৭২৯-৮১৫২৯১" }
-    ];
+    let driversData = [];   // লগইনের পর সার্ভার থেকে ভরে
 
     let currentZoom = 1.0;
 
@@ -882,7 +924,7 @@
             newRow.innerHTML = `
                 <td>
                     <div class="date-cell-container">
-                        <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                        <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
                     </div>
                 </td>
                 <td>
@@ -897,12 +939,12 @@
                         <option value="ঈদের ছুটি">ঈদের ছুটি</option>
                     </select>
                 </td>
-                <td><input type="text" class="start-time" value="${r.startTime}" oninput="handleTimeInput(this)"></td>
-                <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
+                <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
+                <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
                 <td><span class="hours">০</span></td>
                 <td><span class="rate">0.00</span></td>
                 <td><span class="amount">0</span></td>
-                <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
+                <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
                 <td class="no-print">
                     <button class="action-btn btn-add" onclick="addRow(this)">+</button>
                     <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
@@ -1063,7 +1105,7 @@
         triggerAutoSave();
     }
 
-    let currentBasicPay = 30230;
+    let currentBasicPay = 0;
 
     function populateDayDropdown(selectElement, selectedDay = 1) {
         let monthSelect = document.getElementById('monthSelect');
@@ -1084,6 +1126,7 @@
         let driverSelect = document.getElementById('driverSelect');
         let selectedIndex = parseInt(driverSelect.value);
         let driver = driversData[selectedIndex];
+        if (!driver) return;   // চালকের তথ্য আসার আগে কিছু করবে না
 
         currentBasicPay = driver.basicPay;
 
@@ -1175,7 +1218,7 @@
         newRow.innerHTML = `
             <td>
                 <div class="date-cell-container">
-                    <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                    <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
                 </div>
             </td>
             <td>
@@ -1223,55 +1266,62 @@
 
     // ================= স্মার্ট সেভ ও ওভাররাইট পিন লজিক =================
     
-    function saveToCloud() {
-        let driverSelect = document.getElementById('driverSelect');
+    function currentRecordInfo() {
+        let driverIndex = document.getElementById('driverSelect').value;
+        let driver = driversData[driverIndex];
+        if (!driver) return null;
         let monthSelect = document.getElementById('monthSelect');
-        let yearSelect = document.getElementById('yearSelect');
-
-        let driverIndex = driverSelect.value;
-        let driverName = driversData[driverIndex].name;
+        let year = document.getElementById('yearSelect').value;
         let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
         let monthName = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-name');
-        let year = yearSelect.value;
-
-        let recordId = `DRIVER${driverIndex}-${monthCode}-${year}`;
-
-        if (loadedRecordId === recordId) {
-            openOverwriteModal(driverName, monthName, year, recordId);
-        } else {
-            let statusEl = document.getElementById('saveStatus');
-            statusEl.innerText = '🔍 ডাটা যাচাই হচ্ছে...';
-            statusEl.style.color = '#0284c7';
-            statusEl.style.display = 'inline';
-
-            let checkPayload = {
-                action: "checkExists",
-                recordId: recordId
-            };
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(checkPayload)
-            })
-            .then(res => res.json())
-            .then(res => {
-                statusEl.style.display = 'none';
-                if (res.exists) {
-                    openOverwriteModal(driverName, monthName, year, recordId);
-                } else {
-                    executeSaveProcess(recordId, driverIndex, driverName, monthCode, monthName, year);
-                }
-            })
-            .catch(() => {
-                statusEl.style.display = 'none';
-                openOverwriteModal(driverName, monthName, year, recordId);
-            });
-        }
+        return {
+            driverIndex: driverIndex,
+            driverName: driver.name,
+            monthCode: monthCode,
+            monthName: monthName,
+            year: year,
+            recordId: `DRIVER${driverIndex}-${monthCode}-${year}`
+        };
     }
 
-    function openOverwriteModal(driverName, monthName, year, recordId) {
-        let msg = `<b>${driverName}</b> এর <b>${monthName} ${year}</b> সালের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?`;
+    let pendingSaveInfo = null;
+
+    function saveToCloud() {
+        let info = currentRecordInfo();
+        if (!info) { alert('আগে চালক নির্বাচন করুন।'); return; }
+
+        if (loadedRecordId === info.recordId) {
+            openOverwriteModal(info);
+            return;
+        }
+
+        let statusEl = document.getElementById('saveStatus');
+        statusEl.innerText = '🔍 ডাটা যাচাই হচ্ছে...';
+        statusEl.style.color = '#0284c7';
+        statusEl.style.display = 'inline';
+
+        callServer('checkExists', { recordId: info.recordId })
+        .then(res => {
+            statusEl.style.display = 'none';
+            if (res.status !== 'success') {
+                alert(res.message || 'যাচাই করা যায়নি। আবার চেষ্টা করুন।');
+                return;
+            }
+            if (res.exists) {
+                openOverwriteModal(info);
+            } else {
+                executeSaveProcess(info, APP_PIN, null);
+            }
+        })
+        .catch(() => {
+            statusEl.style.display = 'none';
+            alert('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
+        });
+    }
+
+    function openOverwriteModal(info) {
+        pendingSaveInfo = info;
+        let msg = `<b>${escHtml(info.driverName)}</b> এর <b>${escHtml(info.monthName)} ${escHtml(info.year)}</b> সালের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?`;
         document.getElementById('overwriteMsgText').innerHTML = msg;
         document.getElementById('overwritePinInput').value = '';
         document.getElementById('overwritePinError').style.display = 'none';
@@ -1291,29 +1341,18 @@
     }
 
     function confirmOverwriteAndSave() {
-        let inputPin = document.getElementById('overwritePinInput').value;
-        if (inputPin === SECRET_PIN) {
-            closeOverwriteModal();
-
-            let driverSelect = document.getElementById('driverSelect');
-            let monthSelect = document.getElementById('monthSelect');
-            let yearSelect = document.getElementById('yearSelect');
-
-            let driverIndex = driverSelect.value;
-            let driverName = driversData[driverIndex].name;
-            let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-            let monthName = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-name');
-            let year = yearSelect.value;
-            let recordId = `DRIVER${driverIndex}-${monthCode}-${year}`;
-
-            executeSaveProcess(recordId, driverIndex, driverName, monthCode, monthName, year);
-        } else {
-            document.getElementById('overwritePinError').style.display = 'block';
+        let typed = document.getElementById('overwritePinInput').value;
+        if (!typed || !pendingSaveInfo) return;
+        // পাসওয়ার্ড সঠিক কি না সার্ভার যাচাই করবে
+        executeSaveProcess(pendingSaveInfo, typed, function (message) {
+            let errEl = document.getElementById('overwritePinError');
+            errEl.innerText = message || 'ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।';
+            errEl.style.display = 'block';
             document.getElementById('overwritePinInput').value = '';
-        }
+        });
     }
 
-    function executeSaveProcess(recordId, driverIndex, driverName, monthCode, monthName, year) {
+    function executeSaveProcess(info, pin, onAuthFail) {
         let rows = [];
         document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
             rows.push({
@@ -1325,34 +1364,35 @@
             });
         });
 
-        let payload = {
-            action: "save",
-            recordId: recordId,
-            driverIndex: driverIndex,
-            driverName: driverName,
-            monthCode: monthCode,
-            monthName: monthName,
-            year: year,
-            rows: rows
-        };
-
         let statusEl = document.getElementById('saveStatus');
         statusEl.innerText = '☁️ সেভ হচ্ছে...';
         statusEl.style.color = '#d97706';
         statusEl.style.display = 'inline';
 
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }).then(() => {
-            loadedRecordId = recordId;
-            statusEl.innerText = '✓ সফলভাবে অনলাইনে সেভ হয়েছে';
-            statusEl.style.color = '#16a34a';
-            setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
-        }).catch(err => {
-            alert('অনলাইনে সেভ করতে সমস্যা হয়েছে!');
+        callServer('save', {
+            recordId: info.recordId,
+            driverIndex: info.driverIndex,
+            driverName: info.driverName,
+            monthCode: info.monthCode,
+            monthName: info.monthName,
+            year: info.year,
+            rows: rows
+        }, pin).then(res => {
+            if (res.status === 'success') {
+                closeOverwriteModal();
+                loadedRecordId = info.recordId;
+                statusEl.innerText = '✓ সফলভাবে অনলাইনে সেভ হয়েছে';
+                statusEl.style.color = '#16a34a';
+                setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+            } else if ((res.status === 'auth_error' || res.status === 'locked') && onAuthFail) {
+                statusEl.style.display = 'none';
+                onAuthFail(res.message);
+            } else {
+                statusEl.style.display = 'none';
+                alert(res.message || 'অনলাইনে সেভ করতে সমস্যা হয়েছে!');
+            }
+        }).catch(() => {
+            alert('অনলাইনে সেভ করতে সমস্যা হয়েছে! ইন্টারনেট দেখে আবার চেষ্টা করুন।');
             statusEl.style.display = 'none';
         });
     }
@@ -1371,6 +1411,7 @@
 
         let payload = {
             action: "load",
+            pin: APP_PIN,
             recordId: recordId
         };
 
@@ -1416,7 +1457,7 @@
                     newRow.innerHTML = `
                         <td>
                             <div class="date-cell-container">
-                                <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                                <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
                             </div>
                         </td>
                         <td>
@@ -1431,12 +1472,12 @@
                                 <option value="ঈদের ছুটি">ঈদের ছুটি</option>
                             </select>
                         </td>
-                        <td><input type="text" class="start-time" value="${r.startTime}" oninput="handleTimeInput(this)"></td>
-                        <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
+                        <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
+                        <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
                         <td><span class="hours">০</span></td>
                         <td><span class="rate">0.00</span></td>
                         <td><span class="amount">0</span></td>
-                        <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
+                        <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
                         <td class="no-print">
                             <button class="action-btn btn-add" onclick="addRow(this)">+</button>
                             <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
@@ -1535,7 +1576,7 @@
                 newRow.innerHTML = `
                     <td>
                         <div class="date-cell-container">
-                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${monthYearStr}</span>
+                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
                         </div>
                     </td>
                     <td>
@@ -1550,12 +1591,12 @@
                             <option value="ঈদের ছুটি">ঈদের ছুটি</option>
                         </select>
                     </td>
-                    <td><input type="text" class="start-time" value="${r.startTime}" oninput="handleTimeInput(this)"></td>
-                    <td><input type="text" class="end-time" value="${r.endTime}" oninput="handleTimeInput(this)"></td>
+                    <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
+                    <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
                     <td><span class="hours">০</span></td>
                     <td><span class="rate">0.00</span></td>
                     <td><span class="amount">0</span></td>
-                    <td><input type="text" class="remarks" value="${r.remarks}" oninput="triggerAutoSave()"></td>
+                    <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
                     <td class="no-print">
                         <button class="action-btn btn-add" onclick="addRow(this)">+</button>
                         <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
@@ -1596,9 +1637,12 @@
         populateDayDropdown(selectEl, 1);
     });
     
-    updateDriverInfo();
-    onMonthOrYearChange();
-    loadSavedDataFromStorage();
+    // পেজ চালু করার কাজ: লগইন সফল হওয়ার পরেই চলে (আগে চালকদের তথ্য থাকে না)
+    function startApp() {
+        updateDriverInfo();
+        onMonthOrYearChange();
+        loadSavedDataFromStorage();
+    }
 </script>
 
 </body>
