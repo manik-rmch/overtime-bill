@@ -787,6 +787,14 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('pinInput').focus();
+
+        // সার্ভারকে আগেভাগে জাগিয়ে রাখা, যাতে পাসওয়ার্ড দেওয়ার পর লগইন দ্রুত হয়।
+        // এই অনুরোধে কোনো তথ্য যায় না বা আসে না।
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'ping' })
+        }).catch(() => {});
     });
 
     function showPinError(message) {
@@ -1616,11 +1624,40 @@
     }
 
     function resetData() {
-        if (confirm("আপনি কি রিসেট করতে চান? বর্তমান পেজ ফাঁকা হয়ে যাবে।")) {
-            try { localStorage.removeItem('rmch_autosaver_v3'); } catch(e){}
-            document.cookie = "rmch_autosaver_v3=;path=/;max-age=0";
-            location.reload();
-        }
+        if (!confirm("আপনি কি রিসেট করতে চান? বর্তমান পেজ ফাঁকা হয়ে যাবে।")) return;
+
+        // ১) সংরক্ষিত অটোসেভ মুছে ফেলা (আগের মতোই)
+        try { localStorage.removeItem('rmch_autosaver_v3'); } catch (e) {}
+        document.cookie = "rmch_autosaver_v3=;path=/;max-age=0";
+        clearTimeout(saveTimeout);
+
+        // ২) পেজ রিলোড না করে একদম শুরুর (নতুন খোলা) অবস্থায় ফিরিয়ে আনা।
+        //    পাসওয়ার্ড মেমরিতেই থাকে, তাই আবার চাইবে না।
+        isUndoRedoAction = true;                       // মাঝের ধাপগুলো যেন আনডু-হিস্ট্রিতে না ঢোকে
+        document.querySelector('#overtimeTable tbody').innerHTML = INITIAL_UI.tbodyHTML;
+        Object.keys(INITIAL_UI.selects).forEach(id => {
+            document.getElementById(id).selectedIndex = INITIAL_UI.selects[id];
+        });
+        document.getElementById('driverSelect').selectedIndex = 0;
+        document.querySelectorAll('.day-select').forEach(selectEl => populateDayDropdown(selectEl, 1));
+
+        loadedRecordId = null;
+        pendingSaveInfo = null;
+        undoStack = [];
+        redoStack = [];
+        isUndoRedoAction = false;
+
+        closeOverwriteModal();
+        resetZoom();
+        document.getElementById('pageContainer').style.transform = '';   // নতুন খোলা পেজের মতোই কোনো জুম-স্টাইল নেই
+        let statusEl = document.getElementById('saveStatus');
+        statusEl.style.display = 'none';
+
+        // ৩) নাম, গাড়ি, বেতন ও হিসাব নতুন করে সাজানো (পেজ প্রথমবার খোলার সময় যেভাবে হয়)
+        updateDriverInfo();
+        onMonthOrYearChange();
+        saveStateForUndo();
+        window.scrollTo(0, 0);
     }
 
     document.addEventListener('keydown', function(e) {
@@ -1637,6 +1674,16 @@
         populateDayDropdown(selectEl, 1);
     });
     
+    // রিসেটের জন্য: পেজের একদম শুরুর অবস্থা মনে রাখা (লগইনেরও আগে, তখনো কেউ কিছু বদলায়নি)
+    const INITIAL_UI = (function () {
+        const selects = {};
+        ['monthSelect', 'yearSelect', 'searchDriver', 'searchMonth', 'searchYear'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) selects[id] = el.selectedIndex;
+        });
+        return { tbodyHTML: document.querySelector('#overtimeTable tbody').innerHTML, selects: selects };
+    })();
+
     // পেজ চালু করার কাজ: লগইন সফল হওয়ার পরেই চলে (আগে চালকদের তথ্য থাকে না)
     function startApp() {
         updateDriverInfo();
