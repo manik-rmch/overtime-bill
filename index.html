@@ -5,7 +5,7 @@
     <title>Overtime Bill - RMCH</title>
     <style>
         /* পাসওয়ার্ড প্রোটেকশন স্টাইল (লগইন) */
-        #pinModal {
+        #pinModal, #adminPinModal {
             position: fixed;
             top: 0;
             left: 0;
@@ -67,7 +67,7 @@
         .pin-card button:hover {
             background-color: #0369a1;
         }
-        #pinError {
+        #pinError, #adminPinError {
             color: #dc2626;
             font-size: 12px;
             margin-top: 10px;
@@ -488,7 +488,7 @@
         }
 
         @media print {
-            #pinModal, #overwriteModal {
+            #pinModal, #adminPinModal, #overwriteModal, #adminApp {
                 display: none !important;
             }
             html, body {
@@ -527,11 +527,53 @@
                 border-bottom: none !important;
             }
         }
-    </style>
+    
+        /* ===== অ্যাডমিন প্যানেল ও নতুন অংশ ===== */
+        #adminApp { display: none; font-family: 'SolaimanLipi', 'Kalpurush', Arial, sans-serif; font-size: 13px; max-width: 1000px; margin: 0 auto; padding: 14px; }
+        body.admin-mode #adminApp { display: block; }
+        body.admin-mode #pinModal, body.admin-mode #overwriteModal, body.admin-mode .btn-container,
+        body.admin-mode #driverNotice, body.admin-mode .page-container { display: none !important; }
+        body:not(.admin-mode) #adminPinModal { display: none; }
+        #driverNotice { display: none; width: 200mm; max-width: 96%; margin: 0 auto 8px; padding: 7px 12px; border-radius: 6px; font-size: 12px; line-height: 1.5; font-family: Arial, 'SolaimanLipi', 'Kalpurush', sans-serif; }
+        #driverNotice.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; }
+        #driverNotice.warn { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; font-weight: bold; }
+        .search-group select:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+        .adm-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .adm-top h2 { margin: 0; font-size: 17px; color: #0f172a; }
+        .adm-top a { color: #0284c7; font-weight: bold; text-decoration: none; }
+        .adm-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+        .adm-tabs button { padding: 8px 14px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; }
+        .adm-tabs button.active { background: #0284c7; color: #fff; border-color: #0284c7; font-weight: bold; }
+        #adminMsg { display: none; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; font-weight: bold; }
+        #adminMsg.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+        #adminMsg.bad { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .adm-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+        .adm-card h3 { margin: 0 0 8px; font-size: 14px; color: #1e293b; }
+        .adm-form { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 8px; }
+        .adm-form label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; font-weight: bold; color: #475569; }
+        .adm-form input, .adm-form select, .adm-table input { padding: 6px 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; font-family: inherit; background: #fff; min-width: 0; }
+        .adm-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .adm-hint { font-size: 12px; color: #64748b; line-height: 1.6; margin: 10px 0 0; }
+        .adm-btn { padding: 7px 12px; border: none; border-radius: 5px; color: #fff; cursor: pointer; font-size: 12px; font-weight: bold; font-family: inherit; }
+        .adm-btn.small { padding: 4px 8px; font-size: 11px; }
+        .adm-btn:hover { opacity: .9; }
+        .adm-green { background: #16a34a; } .adm-red { background: #dc2626; } .adm-blue { background: #0284c7; } .adm-gray { background: #64748b; } .adm-purple { background: #9333ea; }
+        .adm-scroll { overflow-x: auto; margin-bottom: 12px; }
+        .adm-table { width: 100%; background: #fff; border-collapse: collapse; margin: 0; }
+        .adm-table th, .adm-table td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 13px; white-space: normal; text-align: center; }
+        .adm-table th { background: #f1f5f9; }
+        .adm-table input { width: 100%; text-align: center; }
+        .adm-table tr.inactive-row td { background: #f8fafc; color: #64748b; }
+        .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        .b-green { background: #dcfce7; color: #166534; } .b-gray { background: #e2e8f0; color: #475569; }
+        @media (max-width: 800px) { .adm-form { grid-template-columns: 1fr 1fr; } }
+</style>
 </head>
 <body>
+<script>if (location.hash.toLowerCase() === '#admin') document.body.classList.add('admin-mode');</script>
 
-<!-- পাসওয়ার্ড পপআপ (লগইন) -->
+<!-- পাসওয়ার্ড পপআপ (লগইন) -->
 <div id="pinModal">
     <div class="pin-card">
         <h3>সুরক্ষিত প্রবেশ ব্যবস্থা</h3>
@@ -539,6 +581,17 @@
         <input type="password" id="pinInput" autocomplete="current-password" placeholder="পাসওয়ার্ড" maxlength="100" onkeydown="checkEnterKey(event)">
         <button id="pinSubmitBtn" onclick="verifyPin()">প্রবেশ করুন</button>
         <div id="pinError">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
+    </div>
+</div>
+
+<!-- অ্যাডমিন পাসওয়ার্ড পপআপ (শুধু #admin ঠিকানায়) -->
+<div id="adminPinModal">
+    <div class="pin-card">
+        <h3>অ্যাডমিন প্রবেশ</h3>
+        <p>অ্যাডমিন প্যানেলে প্রবেশের পাসওয়ার্ড দিন</p>
+        <input type="password" id="adminPinInput" autocomplete="current-password" placeholder="পাসওয়ার্ড" maxlength="100" onkeydown="if(event.key==='Enter')adminLogin()">
+        <button id="adminPinBtn" onclick="adminLogin()">প্রবেশ করুন</button>
+        <div id="adminPinError">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
     </div>
 </div>
 
@@ -551,7 +604,7 @@
         </div>
         <div class="warning-text" id="overwriteMsgText">
             এই মাসের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>
-            আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?
+            আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?
         </div>
         <label class="pin-label">পাসওয়ার্ড দিন:</label>
         <input type="password" id="overwritePinInput" autocomplete="current-password" placeholder="পাসওয়ার্ড" maxlength="100" onkeydown="checkOverwriteEnterKey(event)">
@@ -560,6 +613,110 @@
             <button class="btn-modal-cancel" onclick="closeOverwriteModal()">✖ না, বাতিল করুন</button>
             <button class="btn-modal-confirm" onclick="confirmOverwriteAndSave()">✓ হ্যাঁ, সেভ করুন</button>
         </div>
+    </div>
+</div>
+
+<!-- ===================== অ্যাডমিন প্যানেল (#admin) ===================== -->
+<div id="adminApp" class="no-print">
+    <div class="adm-top">
+        <h2>অ্যাডমিন প্যানেল — অধিকাল বিল (রাজশাহী মেডিকেল কলেজ হাসপাতাল)</h2>
+        <a href="#" onclick="leaveAdmin(); return false;">← বিল ফর্মে ফিরুন</a>
+    </div>
+    <div id="adminMain" style="display:none;">
+        <div class="adm-tabs">
+            <button id="tabBtnDrivers" class="active" onclick="adminTab('drivers')">👤 চালকের তালিকা</button>
+            <button id="tabBtnAssign" onclick="adminTab('assign')">🚗 মাসভিত্তিক গাড়ি ও বেতন</button>
+        </div>
+        <div id="adminMsg"></div>
+
+        <!-- ট্যাব ১: চালকের তালিকা -->
+        <section id="tabDrivers">
+            <div class="adm-card">
+                <h3 id="drvFormTitle">নতুন চালক যুক্ত করুন</h3>
+                <div class="adm-form">
+                    <label>নাম<input id="fName" maxlength="80"></label>
+                    <label>মোবাইল নম্বর<input id="fMobile" maxlength="30"></label>
+                    <label>প্রাথমিক গাড়ি নং<input id="fCar" maxlength="60"></label>
+                    <label>প্রাথমিক মূল বেতন<input id="fBasic" maxlength="12"></label>
+                    <label>অবস্থা
+                        <select id="fStatus">
+                            <option value="Active">Active (কর্মরত)</option>
+                            <option value="Inactive">Inactive (বদলি / অবসর)</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="adm-actions">
+                    <button class="adm-btn adm-green" id="fSubmit" onclick="adminSubmitDriver()">➕ যুক্ত করুন</button>
+                    <button class="adm-btn adm-gray" id="fCancel" style="display:none;" onclick="adminResetForm()">বাতিল</button>
+                </div>
+                <p class="adm-hint">
+                    "প্রাথমিক গাড়ি/বেতন" শুধু তখনই কাজে লাগে, যখন ওই চালকের আগের কোনো মাসের তথ্য নেই (যেমন নতুন চালকের প্রথম মাস)।
+                    এরপর প্রতি মাসের গাড়ি ও বেতন "মাসভিত্তিক গাড়ি ও বেতন" ট্যাব থেকে ঠিক করুন (বার্ষিক ইনক্রিমেন্টও সেখানে)।
+                    কোনো চালককে মুছে ফেলা হয় না — বদলি/অবসর হলে শুধু Inactive করুন; তাঁর পুরোনো রিপোর্ট অক্ষুণ্ণ থাকবে।
+                </p>
+            </div>
+            <div class="adm-scroll">
+                <table class="adm-table">
+                    <thead><tr><th>আইডি</th><th>নাম</th><th>মোবাইল</th><th>প্রাথমিক গাড়ি নং</th><th>প্রাথমিক বেতন</th><th>অবস্থা</th><th>অ্যাকশন</th></tr></thead>
+                    <tbody id="drvBody"><tr><td colspan="7">লোড হচ্ছে...</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ট্যাব ২: মাসভিত্তিক গাড়ি ও বেতন -->
+        <section id="tabAssign" style="display:none;">
+            <div class="adm-card">
+                <div class="adm-form" style="grid-template-columns: repeat(2, 140px) auto;">
+                    <label>সাল
+                        <select id="asYear" onchange="adminLoadAssign()">
+                            <option value="" selected disabled hidden>সাল</option>
+                            <option value="২০২৬">২০২৬</option>
+                            <option value="২০২৭">২০২৭</option>
+                            <option value="২০২৮">২০২৮</option>
+                        </select>
+                    </label>
+                    <label>মাস
+                        <select id="asMonth" onchange="adminLoadAssign()">
+                            <option value="" selected disabled hidden>মাস</option>
+                            <option value="01">জানুয়ারি</option>
+            <option value="02">ফেব্রুয়ারি</option>
+            <option value="03">মার্চ</option>
+            <option value="04">এপ্রিল</option>
+            <option value="05">মে</option>
+            <option value="06">জুন</option>
+            <option value="07">জুলাই</option>
+            <option value="08">আগস্ট</option>
+            <option value="09">সেপ্টেম্বর</option>
+            <option value="10">অক্টোবর</option>
+            <option value="11">নভেম্বর</option>
+            <option value="12">ডিসেম্বর</option>
+                        </select>
+                    </label>
+                    <div class="adm-actions" style="align-self:end; margin:0;">
+                        <button class="adm-btn adm-purple" onclick="adminFillMonth()">⚡ সব Active চালককে এই মাসে যুক্ত করুন (আগের তথ্য থেকে)</button>
+                    </div>
+                </div>
+                <p class="adm-hint">
+                    এই মাসের তালিকাই পুরোনো রিপোর্ট লোডের সময় ড্রপডাউনে আসে। কারও বেতন বদলালে (ইনক্রিমেন্ট) যে মাস থেকে কার্যকর, সেই মাসের সারিতে নতুন বেতন সেভ করুন —
+                    তার পরের মাসগুলোতে (যেগুলোর নিজস্ব সারি নেই) আপনা-আপনি নতুন বেতনই আসবে; আগের মাসগুলো অপরিবর্তিত থাকবে।
+                </p>
+            </div>
+            <div class="adm-scroll">
+                <table class="adm-table">
+                    <thead><tr><th>চালক</th><th>গাড়ি নং</th><th>মূল বেতন</th><th>অ্যাকশন</th></tr></thead>
+                    <tbody id="asBody"><tr><td colspan="4">সাল ও মাস বেছে নিন।</td></tr></tbody>
+                </table>
+            </div>
+            <div class="adm-card" id="asAddBox" style="display:none;">
+                <h3>এই মাসে অন্য চালক যুক্ত করুন</h3>
+                <div class="adm-form" style="grid-template-columns: 1.4fr 1fr 1fr;">
+                    <label>চালক <select id="asCand" onchange="adminCandChange()"></select></label>
+                    <label>গাড়ি নং <input id="asCar" maxlength="60"></label>
+                    <label>মূল বেতন <input id="asBasic" maxlength="12"></label>
+                </div>
+                <div class="adm-actions"><button class="adm-btn adm-green" onclick="adminAddAssign()">➕ যুক্ত করুন</button></div>
+            </div>
+        </section>
     </div>
 </div>
 
@@ -574,13 +731,16 @@
 
     <div class="search-group">
         <span style="font-weight:bold; font-size:11px;">পুরোনো বিল:</span>
-        <select id="searchDriver">
-            <option value="" selected disabled hidden>চালকের নাম বেছে নিন</option>
+        <select id="searchYear" onchange="refreshSearchDrivers()">
+            <option value="" selected disabled hidden>সাল বেছে নিন</option>
+            <option value="২০২৬">২০২৬</option>
+            <option value="২০২৭">২০২৭</option>
+            <option value="২০২৮">২০২৮</option>
         </select>
-        <select id="searchMonth">
+        <select id="searchMonth" onchange="refreshSearchDrivers()">
             <option value="" selected disabled hidden>মাস বেছে নিন</option>
-            <option value="01">জানুয়ারি</option>
-            <option value="02">ফেব্রুয়ারি</option>
+            <option value="01">জানুয়ারি</option>
+            <option value="02">ফেব্রুয়ারি</option>
             <option value="03">মার্চ</option>
             <option value="04">এপ্রিল</option>
             <option value="05">মে</option>
@@ -592,17 +752,13 @@
             <option value="11">নভেম্বর</option>
             <option value="12">ডিসেম্বর</option>
         </select>
-        <select id="searchYear">
-            <option value="" selected disabled hidden>সাল বেছে নিন</option>
-            <option value="২০২৬">২০২৬</option>
-            <option value="২০২৭">২০২৭</option>
-            <option value="২০২৮">২০২৮</option>
+        <select id="searchDriver" disabled>
+            <option value="" selected disabled hidden>আগে সাল ও মাস বেছে নিন</option>
         </select>
         <button class="btn btn-cloud-load" onclick="loadFromCloud()">📂 লোড রিপোর্ট</button>
     </div>
 
     <div class="right-btn-group">
-        <!-- ২৬px আনডু বাটন (রয়্যাল ব্লু & টুলটিপ বিহীন) -->
         <button id="undoBtn" class="btn-circle-action btn-undo-style" onclick="undo()" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 7v6h6"></path>
@@ -610,7 +766,6 @@
             </svg>
         </button>
 
-        <!-- ২৬px রিডু বাটন (কমলা & টুলটিপ বিহীন) -->
         <button id="redoBtn" class="btn-circle-action btn-redo-style" onclick="redo()" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 7v6h-6"></path>
@@ -618,49 +773,53 @@
             </svg>
         </button>
 
-        <span id="saveStatus" class="save-indicator">✓ অটো সেভ হয়েছে</span>
+        <span id="saveStatus" class="save-indicator">✓ অটো সেভ হয়েছে</span>
         <button class="btn btn-cloud-save" onclick="saveToCloud()">☁️ অনলাইনে সেভ করুন</button>
         <button class="btn btn-reset" onclick="resetData()">🔄 রিসেট</button>
         <button class="btn" onclick="window.print()">🖨️ প্রিন্ট / PDF</button>
     </div>
 </div>
 
+<div id="driverNotice" class="no-print"></div>
+
 <div class="page-container" id="pageContainer">
     <div class="content-area">
 
-        <h2>রাজশাহী মেডিকেল কলেজ হাসপাতালের গাড়িচালকদের অধিকাল ভাতার বিল</h2>
+        <h2>রাজশাহী মেডিকেল কলেজ হাসপাতালের গাড়িচালকদের অধিকাল ভাতার বিল</h2>
 
         <div class="header-info-line">
-            গাড়ি নং <span id="carNoDisplay" style="font-weight: bold;">—</span> 
-            গাড়ি চালকের নাম 
+            গাড়ি নং <span id="carNoDisplay" style="font-weight: bold;">—</span> 
+            গাড়ি চালকের নাম 
             <span class="inline-select-box">
                 <span id="driverText">—</span>
-                <select id="driverSelect" onchange="updateDriverInfo()">
-                    <!-- চালকদের তালিকা লগইনের পর সার্ভার থেকে আসে -->
+                <select id="driverSelect" onchange="updateDriverInfo()" disabled>
+                    <option value="" selected disabled hidden>আগে সাল ও মাস বেছে নিন</option>
                 </select>
             </span>
             এর <br>
             <span class="inline-select-box">
-                <span id="yearText">২০২৬</span>
+                <span id="yearText">—</span>
                 <select id="yearSelect" onchange="onMonthOrYearChange()">
-                    <option value="২০২৬" selected>২০২৬</option>
+                    <option value="" selected disabled hidden>সাল</option>
+                    <option value="২০২৬">২০২৬</option>
                     <option value="২০২৭">২০২৭</option>
                     <option value="২০২৮">২০২৮</option>
                 </select>
             </span>
             সালের 
             <span class="inline-select-box">
-                <span id="monthText">সেপ্টেম্বর</span>
+                <span id="monthText">—</span>
                 <select id="monthSelect" onchange="onMonthOrYearChange()">
-                    <option value="31" data-month="01" data-name="জানুয়ারি">জানুয়ারি</option>
-                    <option value="28" data-month="02" data-name="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
+                    <option value="" data-month="" data-name="—" selected disabled hidden>মাস</option>
+                    <option value="31" data-month="01" data-name="জানুয়ারি">জানুয়ারি</option>
+                    <option value="28" data-month="02" data-name="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
                     <option value="31" data-month="03" data-name="মার্চ">মার্চ</option>
                     <option value="30" data-month="04" data-name="এপ্রিল">এপ্রিল</option>
                     <option value="31" data-month="05" data-name="মে">মে</option>
                     <option value="30" data-month="06" data-name="জুন">জুন</option>
                     <option value="31" data-month="07" data-name="জুলাই">জুলাই</option>
                     <option value="31" data-month="08" data-name="আগস্ট">আগস্ট</option>
-                    <option value="30" data-month="09" data-name="সেপ্টেম্বর" selected>সেপ্টেম্বর</option>
+                    <option value="30" data-month="09" data-name="সেপ্টেম্বর">সেপ্টেম্বর</option>
                     <option value="31" data-month="10" data-name="অক্টোবর">অক্টোবর</option>
                     <option value="30" data-month="11" data-name="নভেম্বর">নভেম্বর</option>
                     <option value="31" data-month="12" data-name="ডিসেম্বর">ডিসেম্বর</option>
@@ -694,7 +853,7 @@
                 <tr>
                     <td>
                         <div class="date-cell-container">
-                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">০৯/২০২৬</span>
+                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">—/—</span>
                         </div>
                     </td>
                     <td>
@@ -758,11 +917,20 @@
     </div>
 </div>
 
+
 <script>
     // ================= পাসওয়ার্ড সুরক্ষা সিস্টেম (সার্ভার-সাইড) =================
     // ⚠️ পাসওয়ার্ড বা চালকদের ব্যক্তিগত তথ্য এই ফাইলে নেই।
     //    যাচাই হয় Google Apps Script-এ; সঠিক হলে তবেই তথ্য আসে।
-    let APP_PIN = '';   // শুধু মেমরিতে থাকে — ব্রাউজারে সেভ হয় না (পেজ রিলোড করলে আবার দিতে হবে)
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvMwBdQbrtz9y9jbbyQ05hzL2AeTVbqGyHGzpWRsQHsybhJgf2DhVZZD0Ulfa4IVrl/exec";
+    const IS_ADMIN = location.hash.toLowerCase() === '#admin';
+    const AUTOSAVE_KEY = 'rmch_autosaver_v4';
+
+    let APP_PIN = '';     // শুধু মেমরিতে থাকে — ব্রাউজারে সেভ হয় না (পেজ রিলোড করলে আবার দিতে হবে)
+    let ADMIN_PIN = '';
+
+    // হ্যাশ বদলালে (#admin ↔ বিল ফর্ম) পেজ নতুন করে খোলা
+    window.addEventListener('hashchange', () => location.reload());
 
     // বাইরের/সার্ভারের লেখা পেজে বসানোর আগে নিরাপদ করার ফাংশন
     function escHtml(v) {
@@ -785,11 +953,15 @@
         }).then(res => res.json());
     }
 
+    function errMsg(err) {
+        const m = err && err.message ? String(err.message) : '';
+        return /[\u0980-\u09FF]/.test(m) ? m : 'সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।';
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('pinInput').focus();
+        document.getElementById(IS_ADMIN ? 'adminPinInput' : 'pinInput').focus();
 
         // সার্ভারকে আগেভাগে জাগিয়ে রাখা, যাতে পাসওয়ার্ড দেওয়ার পর লগইন দ্রুত হয়।
-        // এই অনুরোধে কোনো তথ্য যায় না বা আসে না।
         fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -815,10 +987,8 @@
         btn.innerText = 'যাচাই হচ্ছে...';
 
         callServer('login', {}, typed).then(res => {
-            if (res.status === 'success' && Array.isArray(res.drivers)) {
+            if (res.status === 'success') {
                 APP_PIN = typed;
-                driversData = res.drivers;
-                fillDriverLists();
                 input.value = '';
                 document.getElementById('pinModal').style.display = 'none';
                 startApp();
@@ -839,38 +1009,149 @@
         }
     }
 
-    // লগইনের পর সার্ভার থেকে পাওয়া চালকদের তালিকা দিয়ে ড্রপডাউন ভরা
-    function fillDriverLists() {
-        const main = document.getElementById('driverSelect');
-        const search = document.getElementById('searchDriver');
-        main.innerHTML = '';
-        while (search.options.length > 1) search.remove(1);   // প্রথম "চালকের নাম বেছে নিন" থাকবে
-        driversData.forEach((d, i) => {
-            const o1 = document.createElement('option');
-            o1.value = i; o1.textContent = d.name;
-            main.appendChild(o1);
-            const o2 = document.createElement('option');
-            o2.value = i; o2.textContent = d.name;
-            search.appendChild(o2);
+    // ================= চালকদের তালিকা (সাল → মাস → চালক) =================
+    let driversData = [];          // এখন ড্রপডাউনে যেসব চালক আছে (গাড়ি/বেতন/মোবাইলসহ)
+    let activeCache = {};          // "সাল|মাস" → Active চালকের তালিকা
+    let periodCache = {};          // "সাল|মাস" → ওই মাসে ডিউটি করা চালকের তালিকা
+    let driverListToken = 0;
+    let searchListToken = 0;
+
+    function getPeriod() {
+        const y = document.getElementById('yearSelect').value;
+        const mSel = document.getElementById('monthSelect');
+        const mc = mSel.options[mSel.selectedIndex].getAttribute('data-month') || '';
+        return { year: y, monthCode: mc, ready: !!(y && mc) };
+    }
+
+    function fetchDriverList(action, cache, year, monthCode) {
+        const key = year + '|' + monthCode;
+        if (cache[key]) return Promise.resolve(cache[key]);
+        return callServer(action, { year: year, month: monthCode }).then(res => {
+            if (res.status === 'success' && Array.isArray(res.drivers)) {
+                cache[key] = res.drivers;
+                return res.drivers;
+            }
+            throw new Error(res.message || 'চালকদের তালিকা আনা যায়নি।');
         });
+    }
+    function ensureActiveList(year, monthCode) { return fetchDriverList('listActive', activeCache, year, monthCode); }
+    function ensurePeriodList(year, monthCode) { return fetchDriverList('listPeriod', periodCache, year, monthCode); }
+
+    function sameId(a, b) { return String(a) === String(b); }
+    function findBillDriver(id) {
+        if (id === '' || id === null || id === undefined) return null;
+        return driversData.find(d => sameId(d.id, id)) || null;
+    }
+
+    function setDriverSelectEmpty(text) {
+        const sel = document.getElementById('driverSelect');
+        driversData = [];
+        sel.innerHTML = '';
+        const o = document.createElement('option');
+        o.value = ''; o.textContent = text; o.selected = true; o.disabled = true; o.hidden = true;
+        sel.appendChild(o);
+        sel.disabled = true;
+    }
+
+    function populateDriverSelect(list, preferId, extra) {
+        const sel = document.getElementById('driverSelect');
+        const all = list.slice();
+        if (extra && !all.some(d => sameId(d.id, extra.id))) all.push(extra);   // বদলি/অবসর হওয়া চালকের লোড করা রিপোর্ট
+        driversData = all;
+        sel.innerHTML = '';
+        const ph = document.createElement('option');
+        ph.value = ''; ph.textContent = all.length ? 'চালক বেছে নিন' : 'কোনো Active চালক নেই';
+        ph.disabled = true; ph.hidden = true; ph.selected = true;
+        sel.appendChild(ph);
+        all.forEach(d => {
+            const o = document.createElement('option');
+            o.value = d.id; o.textContent = d.name;
+            sel.appendChild(o);
+        });
+        sel.disabled = all.length === 0;
+        if (preferId !== '' && preferId !== null && preferId !== undefined && all.some(d => sameId(d.id, preferId))) {
+            sel.value = String(preferId);
+        } else {
+            sel.selectedIndex = 0;
+        }
+    }
+
+    // সাল ও মাস বাছার পর Active চালকদের তালিকা ড্রপডাউনে আনা
+    async function syncDriverList(preferId) {
+        const p = getPeriod();
+        const token = ++driverListToken;
+        if (!p.ready) { setDriverSelectEmpty('আগে সাল ও মাস বেছে নিন'); return; }
+        setDriverSelectEmpty('চালকদের তালিকা আসছে...');
+        let list;
+        try {
+            list = await ensureActiveList(p.year, p.monthCode);
+        } catch (err) {
+            if (token === driverListToken) { setDriverSelectEmpty('তালিকা আনা যায়নি'); alert(errMsg(err)); }
+            return;
+        }
+        if (token !== driverListToken) return;   // এর মধ্যে নতুন নির্বাচন হয়ে গেছে
+        let extra = null;
+        if (preferId !== '' && preferId !== null && preferId !== undefined && !list.some(d => sameId(d.id, preferId))) {
+            try {
+                const pl = await ensurePeriodList(p.year, p.monthCode);
+                extra = pl.find(d => sameId(d.id, preferId)) || null;
+            } catch (e) {}
+            if (token !== driverListToken) return;
+        }
+        populateDriverSelect(list, preferId, extra);
+    }
+
+    // পুরোনো বিলের অংশ: সাল ও মাস বাছলে ওই মাসের ডিউটি করা সব চালক
+    async function refreshSearchDrivers() {
+        const y = document.getElementById('searchYear').value;
+        const m = document.getElementById('searchMonth').value;
+        const sel = document.getElementById('searchDriver');
+        const token = ++searchListToken;
+        const setOnly = (text) => {
+            sel.innerHTML = '';
+            const o = document.createElement('option');
+            o.value = ''; o.textContent = text; o.selected = true; o.disabled = true; o.hidden = true;
+            sel.appendChild(o);
+            sel.disabled = true;
+        };
+        if (!y || !m) { setOnly('আগে সাল ও মাস বেছে নিন'); return; }
+        setOnly('তালিকা আসছে...');
+        let list;
+        try {
+            list = await ensurePeriodList(y, m);
+        } catch (err) {
+            if (token === searchListToken) { setOnly('তালিকা আনা যায়নি'); alert(errMsg(err)); }
+            return;
+        }
+        if (token !== searchListToken) return;
+        if (!list.length) { setOnly('এই মাসে কোনো চালক নেই'); return; }
+        sel.innerHTML = '';
+        const ph = document.createElement('option');
+        ph.value = ''; ph.textContent = 'চালকের নাম বেছে নিন'; ph.selected = true; ph.disabled = true; ph.hidden = true;
+        sel.appendChild(ph);
+        list.forEach(d => {
+            const o = document.createElement('option');
+            o.value = d.id; o.textContent = d.name;
+            sel.appendChild(o);
+        });
+        sel.disabled = false;
     }
 
     // ================= মূল স্ক্রিপ্ট =================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvMwBdQbrtz9y9jbbyQ05hzL2AeTVbqGyHGzpWRsQHsybhJgf2DhVZZD0Ulfa4IVrl/exec";
-
-    let driversData = [];   // লগইনের পর সার্ভার থেকে ভরে
-
     let currentZoom = 1.0;
 
     // Undo / Redo ব্যবস্থার জন্য Variable & Logic
     let undoStack = [];
     let redoStack = [];
     let isUndoRedoAction = false;
+    let suspendAutoSave = false;
 
     // ট্র্যাক করার জন্য variable যে ডাটা কি কোনো লোড করা ডাটা কিনা
     let loadedRecordId = null; 
 
-    function captureState() {
+    let currentBasicPay = 0;
+
+    function rowsSnapshot() {
         let rows = [];
         document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
             rows.push({
@@ -881,12 +1162,15 @@
                 remarks: row.querySelector('.remarks').value
             });
         });
+        return rows;
+    }
 
+    function captureState() {
         return {
-            driverIndex: document.getElementById('driverSelect').value,
+            driverIndex: document.getElementById('driverSelect').value,   // শুধু চালকের আইডি (ব্যক্তিগত তথ্য নয়)
             year: document.getElementById('yearSelect').value,
             monthIndex: document.getElementById('monthSelect').selectedIndex,
-            rows: rows
+            rows: rowsSnapshot()
         };
     }
 
@@ -908,68 +1192,100 @@
         document.getElementById('redoBtn').disabled = redoStack.length === 0;
     }
 
-    function applyState(state) {
-        isUndoRedoAction = true;
+    // একটি রো-র কাঠামো (সব জায়গায় একই)
+    function monthYearStr() {
+        const p = getPeriod();
+        return `${p.monthCode ? toBanglaNum(p.monthCode) : '—'}/${p.year || '—'}`;
+    }
 
-        document.getElementById('driverSelect').value = state.driverIndex;
-        document.getElementById('yearSelect').value = state.year;
-        document.getElementById('monthSelect').selectedIndex = state.monthIndex;
+    function makeRow(r) {
+        r = r || {};
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>
+                <div class="date-cell-container">
+                    <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr())}</span>
+                </div>
+            </td>
+            <td>
+                <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
+                    <option value=""></option>
+                    <option value="শুক্রবার">শুক্রবার</option>
+                    <option value="সরকারি ছুটি">সরকারি ছুটি</option>
+                    <option value="অতিরিক্ত">অতিরিক্ত</option>
+                    <option value="ঢাকা">ঢাকা</option>
+                    <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
+                    <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
+                    <option value="ঈদের ছুটি">ঈদের ছুটি</option>
+                </select>
+            </td>
+            <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
+            <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
+            <td><span class="hours">০</span></td>
+            <td><span class="rate">0.00</span></td>
+            <td><span class="amount">0</span></td>
+            <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
+            <td class="no-print">
+                <button class="action-btn btn-add" onclick="addRow(this)">+</button>
+                <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
+            </td>
+        `;
+        return newRow;
+    }
 
-        updateDriverInfo();
-        onMonthOrYearChange();
-
-        let tbody = document.querySelector('#overtimeTable tbody');
+    // সংরক্ষিত সারিগুলো টেবিলে বসানো
+    function renderRows(rows) {
+        const tbody = document.querySelector('#overtimeTable tbody');
         tbody.innerHTML = '';
-
-        state.rows.forEach(r => {
-            let monthSelect = document.getElementById('monthSelect');
-            let yearSelect = document.getElementById('yearSelect');
-            let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-            let year = yearSelect.value;
-            let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-            let newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>
-                    <div class="date-cell-container">
-                        <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                    </div>
-                </td>
-                <td>
-                    <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                        <option value=""></option>
-                        <option value="শুক্রবার">শুক্রবার</option>
-                        <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                        <option value="অতিরিক্ত">অতিরিক্ত</option>
-                        <option value="ঢাকা">ঢাকা</option>
-                        <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                        <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                        <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                    </select>
-                </td>
-                <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
-                <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
-                <td><span class="hours">০</span></td>
-                <td><span class="rate">0.00</span></td>
-                <td><span class="amount">0</span></td>
-                <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
-                <td class="no-print">
-                    <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                    <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-                </td>
-            `;
+        (rows && rows.length ? rows : [{ day: 1 }]).forEach(r => {
+            const newRow = makeRow(r);
             tbody.appendChild(newRow);
-
-            let daySelect = newRow.querySelector('.day-select');
-            populateDayDropdown(daySelect, r.day);
-            newRow.querySelector('.duty-place').value = r.dutyPlace;
+            populateDayDropdown(newRow.querySelector('.day-select'), r.day || 1);
+            newRow.querySelector('.duty-place').value = r.dutyPlace || '';
             autoCalculateHours(newRow.querySelector('.start-time'));
         });
+    }
 
-        calculateAll();
-        saveDataToStorage();
-        isUndoRedoAction = false;
-        updateUndoRedoButtons();
+    // একটি অবস্থা (সাল, মাস, চালক, সারি) ফিরিয়ে আনা — আনডু/রিডু ও পেজ খোলার সময় ব্যবহৃত
+    async function restoreState(state) {
+        suspendAutoSave = true;
+        isUndoRedoAction = true;
+        try {
+            const ySel = document.getElementById('yearSelect');
+            const mSel = document.getElementById('monthSelect');
+            ySel.value = state.year || '';
+            if (ySel.value !== (state.year || '')) ySel.selectedIndex = 0;
+            const mi = Number(state.monthIndex);
+            mSel.selectedIndex = (mi >= 0 && mi < mSel.options.length) ? mi : 0;
+            onMonthOrYearChange(true);
+
+            const p = getPeriod();
+            if (p.ready) {
+                let list = [], extra = null;
+                const pref = state.driverIndex;
+                try {
+                    list = await ensureActiveList(p.year, p.monthCode);
+                    if (pref !== '' && pref !== null && pref !== undefined && !list.some(d => sameId(d.id, pref))) {
+                        const pl = await ensurePeriodList(p.year, p.monthCode);
+                        extra = pl.find(d => sameId(d.id, pref)) || null;
+                    }
+                } catch (err) { alert(errMsg(err)); }
+                populateDriverSelect(list, pref, extra);
+            } else {
+                setDriverSelectEmpty('আগে সাল ও মাস বেছে নিন');
+            }
+            updateDriverInfo(true);
+            renderRows(state.rows);
+            calculateAll();
+        } finally {
+            suspendAutoSave = false;
+            isUndoRedoAction = false;
+            updateUndoRedoButtons();
+        }
+    }
+
+    function applyState(state) {
+        restoreState(state).then(() => saveDataToStorage());
     }
 
     function undo() {
@@ -988,6 +1304,7 @@
             applyState(nextState);
         }
     }
+
 
     function zoomPage(step) {
         currentZoom += step;
@@ -1113,8 +1430,6 @@
         triggerAutoSave();
     }
 
-    let currentBasicPay = 0;
-
     function populateDayDropdown(selectElement, selectedDay = 1) {
         let monthSelect = document.getElementById('monthSelect');
         let daysInMonth = parseInt(monthSelect.value) || 31;
@@ -1130,39 +1445,60 @@
         }
     }
 
-    function updateDriverInfo() {
-        let driverSelect = document.getElementById('driverSelect');
-        let selectedIndex = parseInt(driverSelect.value);
-        let driver = driversData[selectedIndex];
-        if (!driver) return;   // চালকের তথ্য আসার আগে কিছু করবে না
 
-        currentBasicPay = driver.basicPay;
 
-        document.getElementById('driverText').innerText = driver.name;
-        document.getElementById('carNoDisplay').innerText = driver.carNo;
-        document.getElementById('basicPayBn').innerText = toBanglaNum(driver.basicPay.toLocaleString('en-IN'));
-        document.getElementById('driverSignatureName').innerText = driver.name;
-        document.getElementById('driverMobile').innerText = driver.mobile;
-
-        calculateAll();
-        triggerAutoSave();
+    function setNotice(html, kind) {
+        const el = document.getElementById('driverNotice');
+        if (!html) { el.style.display = 'none'; el.innerHTML = ''; return; }
+        el.className = 'no-print ' + (kind || 'info');
+        el.innerHTML = html;
+        el.style.display = 'block';
     }
 
-    function onMonthOrYearChange() {
+    function updateDriverInfo(silent) {
+        const d = findBillDriver(document.getElementById('driverSelect').value);
+        if (!d) {
+            currentBasicPay = 0;
+            document.getElementById('driverText').innerText = '—';
+            document.getElementById('carNoDisplay').innerText = '—';
+            document.getElementById('basicPayBn').innerText = '—';
+            document.getElementById('driverSignatureName').innerText = '...............';
+            document.getElementById('driverMobile').innerText = '—';
+            setNotice('');
+        } else {
+            currentBasicPay = Number(d.basicPay) || 0;
+            document.getElementById('driverText').innerText = d.name;
+            document.getElementById('carNoDisplay').innerText = engToBanglaText(d.carNo) || '—';
+            document.getElementById('basicPayBn').innerText = currentBasicPay > 0 ? toBanglaNum(currentBasicPay.toLocaleString('en-IN')) : '—';
+            document.getElementById('driverSignatureName').innerText = d.name;
+            document.getElementById('driverMobile').innerText = engToBanglaText(d.mobile) || '—';
+
+            if (!(currentBasicPay > 0)) {
+                setNotice('⚠️ এই চালকের জন্য মূল বেতন নির্ধারিত নেই। অ্যাডমিন প্যানেলে (#admin) গাড়ি ও বেতন সেট করুন; নইলে বিল সেভ হবে না।', 'warn');
+            } else if (d.source === 'inherited' || d.source === 'default') {
+                setNotice('ℹ️ এই মাসের জন্য আলাদা গাড়ি/বেতন নির্ধারিত নেই; সর্বশেষ নির্ধারিত তথ্য দেখানো হচ্ছে (গাড়ি: ' + escHtml(engToBanglaText(d.carNo) || '—') + ', মূল বেতন: ' + escHtml(toBanglaNum(currentBasicPay.toLocaleString('en-IN'))) + ')। ভুল হলে অ্যাডমিন প্যানেলে (#admin) ঠিক করে নিন।', 'info');
+            } else {
+                setNotice('');
+            }
+        }
+        calculateAll();
+        if (!silent) triggerAutoSave();
+    }
+
+    function onMonthOrYearChange(silent) {
         let monthSelect = document.getElementById('monthSelect');
         let yearSelect = document.getElementById('yearSelect');
 
         let selectedOption = monthSelect.options[monthSelect.selectedIndex];
-        let monthCode = selectedOption.getAttribute('data-month');
-        let monthName = selectedOption.getAttribute('data-name');
+        let monthName = selectedOption.getAttribute('data-name') || '—';
         let year = yearSelect.value;
 
         document.getElementById('monthText').innerText = monthName;
-        document.getElementById('yearText').innerText = year;
+        document.getElementById('yearText').innerText = year || '—';
 
-        let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
+        let myStr = monthYearStr();
         document.querySelectorAll('.fixed-month-year').forEach(el => {
-            el.innerText = monthYearStr;
+            el.innerText = myStr;
         });
 
         document.querySelectorAll('.day-select').forEach(selectEl => {
@@ -1171,8 +1507,12 @@
         });
 
         calculateAll();
-        triggerAutoSave();
+
+        if (silent === true) return;   // ভেতর থেকে ডাকলে (চালক তালিকা ও সংরক্ষণ ওই ফাংশনই দেখে)
+        const prev = document.getElementById('driverSelect').value;
+        syncDriverList(prev).then(() => updateDriverInfo());
     }
+
 
     function calculateAll() {
         let daysInMonth = parseInt(document.getElementById('monthSelect').value) || 30;
@@ -1208,6 +1548,8 @@
         document.getElementById('inWords').innerText = numToBanglaWords(totalTakaOnly);
     }
 
+
+
     function addRow(btn) {
         let currentTr = btn.closest('tr');
         let currentDaySelect = currentTr.querySelector('.day-select');
@@ -1216,46 +1558,9 @@
         let daysInMonth = parseInt(document.getElementById('monthSelect').value) || 31;
         let nextDay = currentDay < daysInMonth ? currentDay + 1 : currentDay;
 
-        let monthSelect = document.getElementById('monthSelect');
-        let yearSelect = document.getElementById('yearSelect');
-        let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-        let year = yearSelect.value;
-        let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-        let newRow = document.createElement('tr');
-        newRow.innerHTML = `
-            <td>
-                <div class="date-cell-container">
-                    <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                </div>
-            </td>
-            <td>
-                <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                    <option value="" selected></option>
-                    <option value="শুক্রবার">শুক্রবার</option>
-                    <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                    <option value="অতিরিক্ত">অতিরিক্ত</option>
-                    <option value="ঢাকা">ঢাকা</option>
-                    <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                    <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                    <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                </select>
-            </td>
-            <td><input type="text" class="start-time" value="" oninput="handleTimeInput(this)"></td>
-            <td><input type="text" class="end-time" value="" oninput="handleTimeInput(this)"></td>
-            <td><span class="hours">০</span></td>
-            <td><span class="rate">0.00</span></td>
-            <td><span class="amount">0</span></td>
-            <td><input type="text" class="remarks" value="" oninput="triggerAutoSave()"></td>
-            <td class="no-print">
-                <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-            </td>
-        `;
-        
+        let newRow = makeRow({});
         currentTr.parentNode.insertBefore(newRow, currentTr.nextSibling);
-        let newDaySelect = newRow.querySelector('.day-select');
-        populateDayDropdown(newDaySelect, nextDay);
+        populateDayDropdown(newRow.querySelector('.day-select'), nextDay);
         calculateAll();
         triggerAutoSave();
     }
@@ -1275,28 +1580,28 @@
     // ================= স্মার্ট সেভ ও ওভাররাইট পিন লজিক =================
     
     function currentRecordInfo() {
-        let driverIndex = document.getElementById('driverSelect').value;
-        let driver = driversData[driverIndex];
-        if (!driver) return null;
+        const p = getPeriod();
+        const d = findBillDriver(document.getElementById('driverSelect').value);
+        if (!d || !p.ready) return null;
         let monthSelect = document.getElementById('monthSelect');
-        let year = document.getElementById('yearSelect').value;
-        let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
         let monthName = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-name');
         return {
-            driverIndex: driverIndex,
-            driverName: driver.name,
-            monthCode: monthCode,
+            driverIndex: d.id,
+            driverName: d.name,
+            monthCode: p.monthCode,
             monthName: monthName,
-            year: year,
-            recordId: `DRIVER${driverIndex}-${monthCode}-${year}`
+            year: p.year,
+            recordId: `DRIVER${d.id}-${p.monthCode}-${p.year}`
         };
     }
 
     let pendingSaveInfo = null;
 
     function saveToCloud() {
+        if (!getPeriod().ready) { alert('আগে সাল ও মাস নির্বাচন করুন।'); return; }
         let info = currentRecordInfo();
         if (!info) { alert('আগে চালক নির্বাচন করুন।'); return; }
+        if (!(currentBasicPay > 0)) { alert('এই মাসের জন্য মূল বেতন নির্ধারিত নেই। অ্যাডমিন প্যানেলে (#admin) গাড়ি ও বেতন সেট করুন।'); return; }
 
         if (loadedRecordId === info.recordId) {
             openOverwriteModal(info);
@@ -1361,16 +1666,7 @@
     }
 
     function executeSaveProcess(info, pin, onAuthFail) {
-        let rows = [];
-        document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
-            rows.push({
-                day: row.querySelector('.day-select').value,
-                dutyPlace: row.querySelector('.duty-place').value,
-                startTime: row.querySelector('.start-time').value,
-                endTime: row.querySelector('.end-time').value,
-                remarks: row.querySelector('.remarks').value
-            });
-        });
+        let rows = rowsSnapshot();
 
         let statusEl = document.getElementById('saveStatus');
         statusEl.innerText = '☁️ সেভ হচ্ছে...';
@@ -1389,6 +1685,8 @@
             if (res.status === 'success') {
                 closeOverwriteModal();
                 loadedRecordId = info.recordId;
+                activeCache = {};     // সেভের সময় সার্ভারে মাসের অ্যাসাইনমেন্ট লেখা হতে পারে
+                periodCache = {};
                 statusEl.innerText = '✓ সফলভাবে অনলাইনে সেভ হয়েছে';
                 statusEl.style.color = '#16a34a';
                 setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
@@ -1411,37 +1709,29 @@
         let sYear = document.getElementById('searchYear').value;
 
         if (!sDriver || !sMonth || !sYear) {
-            alert('অনুগ্ৰহ করে চালকের নাম, মাস এবং সাল সঠিকভাবে সিলেক্ট করুন!');
+            alert('অনুগ্ৰহ করে সাল, মাস এবং চালকের নাম সঠিকভাবে সিলেক্ট করুন!');
             return;
         }
 
         let recordId = `DRIVER${sDriver}-${sMonth}-${sYear}`;
-
-        let payload = {
-            action: "load",
-            pin: APP_PIN,
-            recordId: recordId
-        };
 
         let statusEl = document.getElementById('saveStatus');
         statusEl.innerText = '📂 লোড হচ্ছে...';
         statusEl.style.color = '#d97706';
         statusEl.style.display = 'inline';
 
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(res => {
+        callServer('load', { recordId: recordId })
+        .then(async res => {
             statusEl.style.display = 'none';
-            if (res.status === 'success') {
-                let data = res.data;
-
-                document.getElementById('driverSelect').value = data.driverIndex;
-                document.getElementById('yearSelect').value = data.year;
-
+            if (res.status !== 'success') {
+                alert(res.message || 'ডাটা পাওয়া যায়নি!');
+                return;
+            }
+            let data = res.data;
+            suspendAutoSave = true;
+            isUndoRedoAction = true;
+            try {
+                document.getElementById('yearSelect').value = engToBanglaText(data.year);
                 let mSelect = document.getElementById('monthSelect');
                 for (let i = 0; i < mSelect.options.length; i++) {
                     if (mSelect.options[i].getAttribute('data-month') === data.monthCode) {
@@ -1449,82 +1739,46 @@
                         break;
                     }
                 }
+                onMonthOrYearChange(true);
 
-                updateDriverInfo();
-                onMonthOrYearChange();
+                // Active চালকের তালিকা + এই রিপোর্টের চালক (বদলি/অবসর হলেও) — দুটোই ড্রপডাউনে
+                const p = getPeriod();
+                let list = [];
+                try { list = await ensureActiveList(p.year, p.monthCode); } catch (e) {}
+                ++driverListToken;
+                populateDriverSelect(list, data.driverIndex, data.driver || null);
+                updateDriverInfo(true);
 
-                let tbody = document.querySelector('#overtimeTable tbody');
-                tbody.innerHTML = '';
-
-                data.rows.forEach(r => {
-                    let monthCode = mSelect.options[mSelect.selectedIndex].getAttribute('data-month');
-                    let year = data.year;
-                    let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-                    let newRow = document.createElement('tr');
-                    newRow.innerHTML = `
-                        <td>
-                            <div class="date-cell-container">
-                                <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                                <option value=""></option>
-                                <option value="শুক্রবার">শুক্রবার</option>
-                                <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                                <option value="অতিরিক্ত">অতিরিক্ত</option>
-                                <option value="ঢাকা">ঢাকা</option>
-                                <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                                <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                                <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                            </select>
-                        </td>
-                        <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
-                        <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
-                        <td><span class="hours">০</span></td>
-                        <td><span class="rate">0.00</span></td>
-                        <td><span class="amount">0</span></td>
-                        <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
-                        <td class="no-print">
-                            <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                            <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-                        </td>
-                    `;
-                    tbody.appendChild(newRow);
-
-                    let daySelect = newRow.querySelector('.day-select');
-                    populateDayDropdown(daySelect, r.day);
-                    newRow.querySelector('.duty-place').value = r.dutyPlace;
-                    autoCalculateHours(newRow.querySelector('.start-time'));
-                });
-
+                renderRows(data.rows);
                 calculateAll();
-                
-                undoStack = [captureState()];
-                redoStack = [];
-                updateUndoRedoButtons();
-                
-                loadedRecordId = recordId;
-
-                document.getElementById('searchDriver').selectedIndex = 0;
-                document.getElementById('searchMonth').selectedIndex = 0;
-                document.getElementById('searchYear').selectedIndex = 0;
-
-                alert('রিপোর্ট সফলভাবে লোড হয়েছে!');
-            } else {
-                alert(res.message || 'ডাটা পাওয়া যায়নি!');
+            } finally {
+                suspendAutoSave = false;
+                isUndoRedoAction = false;
             }
+
+            undoStack = [captureState()];
+            redoStack = [];
+            updateUndoRedoButtons();
+            saveDataToStorage();
+
+            loadedRecordId = recordId;
+
+            document.getElementById('searchYear').selectedIndex = 0;
+            document.getElementById('searchMonth').selectedIndex = 0;
+            refreshSearchDrivers();
+
+            alert('রিপোর্ট সফলভাবে লোড হয়েছে!');
         })
         .catch(err => {
             statusEl.style.display = 'none';
-            alert('ক্লাউড থেকে ডাটা লোড করতে ব্যর্থ হয়েছে!');
+            alert('ক্লাউড থেকে ডাটা লোড করতে ব্যর্থ হয়েছে!');
         });
     }
 
     let saveTimeout = null;
 
     function triggerAutoSave() {
+        if (suspendAutoSave) return;
         saveStateForUndo();
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
@@ -1537,108 +1791,56 @@
         let jsonStr = JSON.stringify(data);
 
         try {
-            localStorage.setItem('rmch_autosaver_v3', jsonStr);
+            localStorage.setItem(AUTOSAVE_KEY, jsonStr);
         } catch(e) {
-            document.cookie = "rmch_autosaver_v3=" + encodeURIComponent(jsonStr) + ";path=/;max-age=31536000";
+            document.cookie = AUTOSAVE_KEY + "=" + encodeURIComponent(jsonStr) + ";path=/;max-age=31536000";
         }
 
         let statusEl = document.getElementById('saveStatus');
-        statusEl.innerText = '✓ অটো সেভ হয়েছে';
+        statusEl.innerText = '✓ অটো সেভ হয়েছে';
         statusEl.style.color = '#16a34a';
         statusEl.style.display = 'inline';
         setTimeout(() => { statusEl.style.display = 'none'; }, 1500);
     }
 
-    function loadSavedDataFromStorage() {
+    async function loadSavedDataFromStorage() {
         let saved = null;
         try {
-            saved = localStorage.getItem('rmch_autosaver_v3');
+            saved = localStorage.getItem(AUTOSAVE_KEY);
         } catch(e) {}
 
-        if (!saved) {
+        let data = null;
+        if (saved) { try { data = JSON.parse(saved); } catch (err) { data = null; } }
+
+        if (!data) {
             saveStateForUndo();
             return;
         }
-
-        try {
-            let data = JSON.parse(saved);
-
-            document.getElementById('driverSelect').value = data.driverIndex;
-            document.getElementById('yearSelect').value = data.year;
-            document.getElementById('monthSelect').selectedIndex = data.monthIndex;
-
-            updateDriverInfo();
-            onMonthOrYearChange();
-
-            let tbody = document.querySelector('#overtimeTable tbody');
-            tbody.innerHTML = '';
-
-            data.rows.forEach(r => {
-                let monthSelect = document.getElementById('monthSelect');
-                let yearSelect = document.getElementById('yearSelect');
-                let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-                let year = yearSelect.value;
-                let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-                let newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>
-                        <div class="date-cell-container">
-                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                            <option value=""></option>
-                            <option value="শুক্রবার">শুক্রবার</option>
-                            <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                            <option value="অতিরিক্ত">অতিরিক্ত</option>
-                            <option value="ঢাকা">ঢাকা</option>
-                            <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                            <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                            <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                        </select>
-                    </td>
-                    <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
-                    <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
-                    <td><span class="hours">০</span></td>
-                    <td><span class="rate">0.00</span></td>
-                    <td><span class="amount">0</span></td>
-                    <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
-                    <td class="no-print">
-                        <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                        <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-                    </td>
-                `;
-                tbody.appendChild(newRow);
-
-                let daySelect = newRow.querySelector('.day-select');
-                populateDayDropdown(daySelect, r.day);
-                newRow.querySelector('.duty-place').value = r.dutyPlace;
-                autoCalculateHours(newRow.querySelector('.start-time'));
-            });
-
-            calculateAll();
-            saveStateForUndo();
-        } catch(err) {}
+        await restoreState(data);
+        undoStack = [captureState()];
+        redoStack = [];
+        updateUndoRedoButtons();
     }
 
     function resetData() {
         if (!confirm("আপনি কি রিসেট করতে চান? বর্তমান পেজ ফাঁকা হয়ে যাবে।")) return;
 
-        // ১) সংরক্ষিত অটোসেভ মুছে ফেলা (আগের মতোই)
-        try { localStorage.removeItem('rmch_autosaver_v3'); } catch (e) {}
+        // ১) সংরক্ষিত অটোসেভ মুছে ফেলা
+        try { localStorage.removeItem(AUTOSAVE_KEY); localStorage.removeItem('rmch_autosaver_v3'); } catch (e) {}
+        document.cookie = AUTOSAVE_KEY + "=;path=/;max-age=0";
         document.cookie = "rmch_autosaver_v3=;path=/;max-age=0";
         clearTimeout(saveTimeout);
 
         // ২) পেজ রিলোড না করে একদম শুরুর (নতুন খোলা) অবস্থায় ফিরিয়ে আনা।
         //    পাসওয়ার্ড মেমরিতেই থাকে, তাই আবার চাইবে না।
-        isUndoRedoAction = true;                       // মাঝের ধাপগুলো যেন আনডু-হিস্ট্রিতে না ঢোকে
+        isUndoRedoAction = true;
+        ++driverListToken;
         document.querySelector('#overtimeTable tbody').innerHTML = INITIAL_UI.tbodyHTML;
         Object.keys(INITIAL_UI.selects).forEach(id => {
             document.getElementById(id).selectedIndex = INITIAL_UI.selects[id];
         });
-        document.getElementById('driverSelect').selectedIndex = 0;
+        setDriverSelectEmpty('আগে সাল ও মাস বেছে নিন');
+        refreshSearchDrivers();
         document.querySelectorAll('.day-select').forEach(selectEl => populateDayDropdown(selectEl, 1));
 
         loadedRecordId = null;
@@ -1649,13 +1851,13 @@
 
         closeOverwriteModal();
         resetZoom();
-        document.getElementById('pageContainer').style.transform = '';   // নতুন খোলা পেজের মতোই কোনো জুম-স্টাইল নেই
+        document.getElementById('pageContainer').style.transform = '';
         let statusEl = document.getElementById('saveStatus');
         statusEl.style.display = 'none';
 
-        // ৩) নাম, গাড়ি, বেতন ও হিসাব নতুন করে সাজানো (পেজ প্রথমবার খোলার সময় যেভাবে হয়)
-        updateDriverInfo();
-        onMonthOrYearChange();
+        // ৩) নাম, গাড়ি, বেতন ও হিসাব নতুন করে সাজানো
+        updateDriverInfo(true);
+        onMonthOrYearChange(true);
         saveStateForUndo();
         window.scrollTo(0, 0);
     }
@@ -1674,22 +1876,259 @@
         populateDayDropdown(selectEl, 1);
     });
     
-    // রিসেটের জন্য: পেজের একদম শুরুর অবস্থা মনে রাখা (লগইনেরও আগে, তখনো কেউ কিছু বদলায়নি)
+    // রিসেটের জন্য: পেজের একদম শুরুর অবস্থা মনে রাখা (লগইনেরও আগে)
     const INITIAL_UI = (function () {
         const selects = {};
-        ['monthSelect', 'yearSelect', 'searchDriver', 'searchMonth', 'searchYear'].forEach(id => {
+        ['monthSelect', 'yearSelect', 'searchYear', 'searchMonth'].forEach(id => {
             const el = document.getElementById(id);
             if (el) selects[id] = el.selectedIndex;
         });
         return { tbodyHTML: document.querySelector('#overtimeTable tbody').innerHTML, selects: selects };
     })();
 
-    // পেজ চালু করার কাজ: লগইন সফল হওয়ার পরেই চলে (আগে চালকদের তথ্য থাকে না)
-    function startApp() {
-        updateDriverInfo();
-        onMonthOrYearChange();
-        loadSavedDataFromStorage();
+    // পেজ চালু করার কাজ: লগইন সফল হওয়ার পরেই চলে
+    async function startApp() {
+        updateDriverInfo(true);
+        onMonthOrYearChange(true);
+        await loadSavedDataFromStorage();
     }
+
+
+    // ================= অ্যাডমিন প্যানেল (#admin) =================
+    let adminDrivers = [];
+    let adminEditingId = null;
+    let adminAssignData = { assignments: [], candidates: [] };
+
+    function callAdmin(action, extra) { return callServer(action, extra, ADMIN_PIN); }
+
+    function adminNote(text, ok) {
+        const el = document.getElementById('adminMsg');
+        if (!text) { el.style.display = 'none'; return; }
+        el.className = ok ? 'ok' : 'bad';
+        el.innerText = text;
+        el.style.display = 'block';
+        if (ok) setTimeout(() => { if (el.innerText === text) el.style.display = 'none'; }, 3500);
+    }
+    function adminFail(res, err) {
+        adminNote(res && res.message ? res.message : errMsg(err), false);
+    }
+
+    function adminLogin() {
+        const input = document.getElementById('adminPinInput');
+        const btn = document.getElementById('adminPinBtn');
+        const errEl = document.getElementById('adminPinError');
+        const typed = input.value;
+        if (!typed) return;
+        errEl.style.display = 'none';
+        btn.disabled = true; btn.innerText = 'যাচাই হচ্ছে...';
+        callServer('adminLogin', {}, typed).then(res => {
+            if (res.status === 'success') {
+                ADMIN_PIN = typed;
+                input.value = '';
+                document.getElementById('adminPinModal').style.display = 'none';
+                document.getElementById('adminMain').style.display = 'block';
+                adminLoadDrivers();
+            } else {
+                errEl.innerText = res.message || 'ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।';
+                errEl.style.display = 'block';
+                input.value = '';
+            }
+        }).catch(() => {
+            errEl.innerText = 'সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।';
+            errEl.style.display = 'block';
+        }).finally(() => { btn.disabled = false; btn.innerText = 'প্রবেশ করুন'; });
+    }
+
+    function leaveAdmin() { location.hash = ''; }
+
+    function adminTab(name) {
+        document.getElementById('tabDrivers').style.display = name === 'drivers' ? 'block' : 'none';
+        document.getElementById('tabAssign').style.display = name === 'assign' ? 'block' : 'none';
+        document.getElementById('tabBtnDrivers').className = name === 'drivers' ? 'active' : '';
+        document.getElementById('tabBtnAssign').className = name === 'assign' ? 'active' : '';
+        adminNote('');
+        if (name === 'assign') adminLoadAssign();
+    }
+
+    // ---------- চালকের তালিকা ----------
+    function adminLoadDrivers() {
+        callAdmin('adminListDrivers').then(res => {
+            if (res.status === 'success') { adminDrivers = res.drivers; adminRenderDrivers(); }
+            else adminFail(res);
+        }).catch(err => adminFail(null, err));
+    }
+
+    function adminRenderDrivers() {
+        const body = document.getElementById('drvBody');
+        if (!adminDrivers.length) { body.innerHTML = '<tr><td colspan="7">এখনো কোনো চালক নেই। ওপরের ফর্ম থেকে যুক্ত করুন।</td></tr>'; return; }
+        body.innerHTML = adminDrivers.map(d => {
+            const active = d.status === 'Active';
+            return `<tr class="${active ? '' : 'inactive-row'}">
+                <td>${Number(d.id)}</td>
+                <td style="text-align:left;">${escHtml(d.name)}</td>
+                <td>${escHtml(d.mobile)}</td>
+                <td>${escHtml(d.carNo)}</td>
+                <td>${escHtml(Number(d.basicPay) ? Number(d.basicPay).toLocaleString('en-IN') : '—')}</td>
+                <td><span class="badge ${active ? 'b-green' : 'b-gray'}">${active ? 'Active' : 'Inactive'}</span></td>
+                <td>
+                    <button class="adm-btn adm-blue small" onclick="adminEditDriver(${Number(d.id)})">✏️ সম্পাদনা</button>
+                    <button class="adm-btn ${active ? 'adm-red' : 'adm-green'} small" onclick="adminToggleStatus(${Number(d.id)})">${active ? '⏸ Inactive করুন' : '▶ Active করুন'}</button>
+                </td></tr>`;
+        }).join('');
+    }
+
+    function adminResetForm() {
+        adminEditingId = null;
+        ['fName', 'fMobile', 'fCar', 'fBasic'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('fStatus').value = 'Active';
+        document.getElementById('drvFormTitle').innerText = 'নতুন চালক যুক্ত করুন';
+        document.getElementById('fSubmit').innerText = '➕ যুক্ত করুন';
+        document.getElementById('fCancel').style.display = 'none';
+    }
+
+    function adminEditDriver(id) {
+        const d = adminDrivers.find(x => Number(x.id) === Number(id));
+        if (!d) return;
+        adminEditingId = d.id;
+        document.getElementById('fName').value = d.name;
+        document.getElementById('fMobile').value = d.mobile;
+        document.getElementById('fCar').value = d.carNo;
+        document.getElementById('fBasic').value = d.basicPay || '';
+        document.getElementById('fStatus').value = d.status;
+        document.getElementById('drvFormTitle').innerText = 'চালকের তথ্য সম্পাদনা (আইডি ' + d.id + ')';
+        document.getElementById('fSubmit').innerText = '💾 আপডেট করুন';
+        document.getElementById('fCancel').style.display = 'inline-block';
+        window.scrollTo(0, 0);
+    }
+
+    function adminSendDriver(driver) {
+        return callAdmin('adminSaveDriver', { driver: driver }).then(res => {
+            if (res.status === 'success') { adminNote(res.message || 'সেভ হয়েছে।', true); adminLoadDrivers(); return true; }
+            adminFail(res); return false;
+        }).catch(err => { adminFail(null, err); return false; });
+    }
+
+    function adminSubmitDriver() {
+        const name = document.getElementById('fName').value.trim();
+        if (!name) { adminNote('চালকের নাম লিখুন।', false); return; }
+        const driver = {
+            id: adminEditingId,
+            name: name,
+            mobile: document.getElementById('fMobile').value.trim(),
+            carNo: document.getElementById('fCar').value.trim(),
+            basicPay: parseBanglaOrEnglishNum(document.getElementById('fBasic').value),
+            status: document.getElementById('fStatus').value
+        };
+        adminSendDriver(driver).then(ok => { if (ok) adminResetForm(); });
+    }
+
+    function adminToggleStatus(id) {
+        const d = adminDrivers.find(x => Number(x.id) === Number(id));
+        if (!d) return;
+        const toInactive = d.status === 'Active';
+        const msg = toInactive
+            ? d.name + ' কে Inactive করবেন?\nতিনি আর নতুন বিলের তালিকায় আসবেন না; তবে পুরোনো রিপোর্ট অক্ষুণ্ণ থাকবে।'
+            : d.name + ' কে আবার Active করবেন?';
+        if (!confirm(msg)) return;
+        adminSendDriver({ id: d.id, name: d.name, mobile: d.mobile, carNo: d.carNo, basicPay: d.basicPay, status: toInactive ? 'Inactive' : 'Active' });
+    }
+
+    // ---------- মাসভিত্তিক গাড়ি ও বেতন ----------
+    function adminPeriod() {
+        const y = document.getElementById('asYear').value;
+        const m = document.getElementById('asMonth').value;
+        return (y && m) ? { year: y, month: m } : null;
+    }
+
+    function adminLoadAssign() {
+        const p = adminPeriod();
+        const body = document.getElementById('asBody');
+        if (!p) { body.innerHTML = '<tr><td colspan="4">সাল ও মাস বেছে নিন।</td></tr>'; document.getElementById('asAddBox').style.display = 'none'; return; }
+        body.innerHTML = '<tr><td colspan="4">লোড হচ্ছে...</td></tr>';
+        callAdmin('adminGetAssignments', p).then(res => {
+            if (res.status !== 'success') { adminFail(res); body.innerHTML = '<tr><td colspan="4">লোড করা যায়নি।</td></tr>'; return; }
+            adminAssignData = res;
+            adminRenderAssign();
+        }).catch(err => { adminFail(null, err); body.innerHTML = '<tr><td colspan="4">লোড করা যায়নি।</td></tr>'; });
+    }
+
+    function adminRenderAssign() {
+        const body = document.getElementById('asBody');
+        const list = adminAssignData.assignments || [];
+        if (!list.length) {
+            body.innerHTML = '<tr><td colspan="4">এই মাসে এখনো কোনো চালক যুক্ত নেই। ওপরের "সব Active চালককে এই মাসে যুক্ত করুন" বা নিচের ফর্ম ব্যবহার করুন।</td></tr>';
+        } else {
+            body.innerHTML = list.map(a => {
+                const active = a.status === 'Active';
+                const id = Number(a.driverId);
+                return `<tr class="${active ? '' : 'inactive-row'}" data-id="${id}">
+                    <td style="text-align:left;">${escHtml(a.name)} <span class="badge ${active ? 'b-green' : 'b-gray'}">${active ? 'Active' : 'Inactive'}</span></td>
+                    <td><input class="as-car" value="${escAttr(a.carNo)}" maxlength="60"></td>
+                    <td><input class="as-basic" value="${escAttr(a.basicPay)}" maxlength="12"></td>
+                    <td>
+                        <button class="adm-btn adm-green small" onclick="adminSaveAssignRow(${id})">💾 সেভ</button>
+                        <button class="adm-btn adm-red small" onclick="adminDeleteAssign(${id})">🗑 মুছুন</button>
+                    </td></tr>`;
+            }).join('');
+        }
+        const cands = adminAssignData.candidates || [];
+        const box = document.getElementById('asAddBox');
+        box.style.display = cands.length ? 'block' : 'none';
+        const sel = document.getElementById('asCand');
+        sel.innerHTML = cands.map(c => `<option value="${Number(c.id)}">${escHtml(c.name)}${c.status === 'Active' ? '' : ' (Inactive)'}</option>`).join('');
+        adminCandChange();
+    }
+
+    function adminCandChange() {
+        const id = document.getElementById('asCand').value;
+        const c = (adminAssignData.candidates || []).find(x => String(x.id) === String(id));
+        document.getElementById('asCar').value = c ? c.carNo : '';
+        document.getElementById('asBasic').value = c && c.basicPay ? c.basicPay : '';
+    }
+
+    function adminSendAssign(driverId, car, basic) {
+        const p = adminPeriod();
+        if (!p) return;
+        const b = parseBanglaOrEnglishNum(basic);
+        if (!(b > 0)) { adminNote('মূল বেতন সঠিকভাবে লিখুন।', false); return; }
+        callAdmin('adminSaveAssignment', { year: p.year, month: p.month, driverId: driverId, carNo: car, basicPay: b }).then(res => {
+            if (res.status === 'success') { adminNote('সেভ হয়েছে।', true); adminLoadAssign(); }
+            else adminFail(res);
+        }).catch(err => adminFail(null, err));
+    }
+
+    function adminSaveAssignRow(id) {
+        const tr = document.querySelector('#asBody tr[data-id="' + Number(id) + '"]');
+        if (!tr) return;
+        adminSendAssign(id, tr.querySelector('.as-car').value.trim(), tr.querySelector('.as-basic').value);
+    }
+
+    function adminAddAssign() {
+        const id = document.getElementById('asCand').value;
+        if (id === '') return;
+        adminSendAssign(Number(id), document.getElementById('asCar').value.trim(), document.getElementById('asBasic').value);
+    }
+
+    function adminDeleteAssign(id) {
+        const p = adminPeriod();
+        if (!p) return;
+        const a = (adminAssignData.assignments || []).find(x => Number(x.driverId) === Number(id));
+        if (!confirm((a ? a.name : 'এই চালক') + 'কে এই মাসের তালিকা থেকে সরাবেন?\n(এই মাসে তাঁর সেভ করা বিল থাকলে তা মুছবে না।)')) return;
+        callAdmin('adminDeleteAssignment', { year: p.year, month: p.month, driverId: id }).then(res => {
+            if (res.status === 'success') { adminNote('মুছে ফেলা হয়েছে।', true); adminLoadAssign(); }
+            else adminFail(res);
+        }).catch(err => adminFail(null, err));
+    }
+
+    function adminFillMonth() {
+        const p = adminPeriod();
+        if (!p) { adminNote('আগে সাল ও মাস বেছে নিন।', false); return; }
+        callAdmin('adminFillMonth', p).then(res => {
+            if (res.status === 'success') { adminNote(res.message || 'হয়েছে।', true); adminLoadAssign(); }
+            else adminFail(res);
+        }).catch(err => adminFail(null, err));
+    }
+
 </script>
 
 </body>
