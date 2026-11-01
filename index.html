@@ -1,1696 +1,1587 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <title>Overtime Bill - RMCH</title>
-    <style>
-        /* পাসওয়ার্ড প্রোটেকশন স্টাইল (লগইন) */
-        #pinModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #0f172a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            font-family: Arial, sans-serif;
-        }
-        .pin-card {
-            background: #ffffff;
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            text-align: center;
-            width: 320px;
-        }
-        .pin-card h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #1e293b;
-            font-size: 18px;
-        }
-        .pin-card p {
-            font-size: 12px;
-            color: #64748b;
-            margin-bottom: 15px;
-        }
-        .pin-card input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 20px;
-            text-align: center;
-            letter-spacing: 1px;
-            border: 2px solid #cbd5e1;
-            border-radius: 6px;
-            outline: none;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-        }
-        .pin-card input[type="password"]:focus {
-            border-color: #0284c7;
-        }
-        .pin-card button {
-            width: 100%;
-            padding: 10px;
-            background-color: #0284c7;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .pin-card button:hover {
-            background-color: #0369a1;
-        }
-        #pinError {
-            color: #dc2626;
-            font-size: 12px;
-            margin-top: 10px;
-            display: none;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>অধিকাল বিল — RMCH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f5f9; --card:#fff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --line2:#cbd5e1;
+  --pri:#0369a1; --pri-d:#075985; --pri-l:#e0f2fe; --ok:#16a34a; --ok-l:#dcfce7; --warn:#d97706; --warn-l:#fef3c7;
+  --bad:#dc2626; --bad-l:#fee2e2; --side:#0f172a; --side2:#1e293b; --rad:12px;
+  --font:'Hind Siliguri','Noto Sans Bengali','SolaimanLipi','Kalpurush',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+h1{font-size:22px;margin:0 0 2px}
+h2{font-size:17px;margin:0 0 10px}
+h3{font-size:15px;margin:0 0 8px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.spacer{flex:1}
 
-        /* ওভাররাইট সিকিউরিটি পপ-আপ মোডাল */
-        #overwriteModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 99998;
-            font-family: Arial, sans-serif;
-        }
-        .overwrite-card {
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 14px;
-            box-shadow: 0 20px 30px rgba(0,0,0,0.35);
-            width: 380px;
-            max-width: 90%;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-            animation: fadeInScale 0.2s ease-out;
-        }
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .overwrite-card .warning-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #d97706;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-        }
-        .overwrite-card .warning-text {
-            font-size: 13px;
-            color: #334155;
-            line-height: 1.5;
-            margin-bottom: 15px;
-            background: #fffbeb;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #fef3c7;
-        }
-        .overwrite-card .pin-label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #475569;
-            margin-bottom: 6px;
-            display: block;
-            text-align: left;
-        }
-        .overwrite-card input[type="password"] {
-            width: 100%;
-            padding: 8px;
-            font-size: 18px;
-            text-align: center;
-            letter-spacing: 1px;
-            border: 2px solid #cbd5e1;
-            border-radius: 6px;
-            outline: none;
-            margin-bottom: 8px;
-            box-sizing: border-box;
-        }
-        .overwrite-card input[type="password"]:focus {
-            border-color: #2563eb;
-        }
-        #overwritePinError {
-            color: #dc2626;
-            font-size: 12px;
-            margin-bottom: 12px;
-            display: none;
-            font-weight: bold;
-        }
-        .overwrite-btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .btn-modal-cancel {
-            flex: 1;
-            padding: 9px;
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-modal-cancel:hover {
-            background-color: #dc2626;
-        }
-        .btn-modal-confirm {
-            flex: 1;
-            padding: 9px;
-            background-color: #16a34a;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-modal-confirm:hover {
-            background-color: #15803d;
-        }
+/* ---------- লগইন ---------- */
+#splash{position:fixed;inset:0;background:var(--side);display:flex;align-items:center;justify-content:center;color:#cbd5e1;z-index:9999;font-size:16px}
+#loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a 0%,#0c4a6e 100%)}
+.login-card{background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.35);width:100%;max-width:400px;padding:30px 28px}
+.login-logo{width:54px;height:54px;border-radius:14px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+.login-card h1{text-align:center;font-size:20px}
+.login-card p.sub{text-align:center;color:var(--muted);margin:0 0 20px;font-size:13.5px}
+.err{background:var(--bad-l);color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;font-size:13.5px;margin-bottom:12px}
+.pw-wrap{position:relative}
+.pw-wrap button{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:6px}
 
-        @page {
-            size: A4 portrait;
-            margin: 0;
-        }
-        * {
-            box-sizing: border-box;
-        }
-        html, body {
-            margin: 0;
-            padding: 0;
-            font-family: 'SolaimanLipi', 'Kalpurush', Arial, sans-serif;
-            color: #000;
-            background-color: #f0f0f0;
-            font-size: 10.5px;
-        }
-        .page-container {
-            width: 200mm;
-            height: 287mm;
-            margin: 10px auto;
-            padding: 5mm 8mm;
-            background: #fff;
-            border: 1px solid #ccc;
-            position: relative;
-            box-sizing: border-box;
-            transform-origin: top center;
-            transition: transform 0.2s ease;
-        }
-        .content-area {
-            width: 100%;
-        }
-        h2 {
-            text-align: center;
-            margin: 0 0 5px 0;
-            font-size: 15px;
-        }
-        .header-info-line {
-            text-align: center;
-            font-size: 11.5px;
-            font-weight: normal;
-            margin-bottom: 4px;
-            line-height: 1.5;
-        }
-        .basic-pay-line {
-            text-align: center;
-            font-size: 11.5px;
-            font-weight: normal;
-            margin-bottom: 6px;
-        }
+/* ---------- ফর্ম উপাদান ---------- */
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:600;color:#334155}
+input[type=text],input[type=password],input:not([type]),select,textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;background:#fff;color:var(--ink);outline:none;min-width:0}
+input:focus,select:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(3,105,161,.15)}
+input:disabled,select:disabled{background:#f1f5f9;color:#94a3b8;cursor:not-allowed}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid-5{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:10px}
 
-        .inline-select-box {
-            display: inline-block;
-            position: relative;
-            border-bottom: 1px solid #000;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .inline-select-box select {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-            -webkit-appearance: none;
-        }
-        .inline-select-box span {
-            display: inline-block;
-            padding: 0 2px;
-            white-space: nowrap;
-        }
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border:1px solid transparent;border-radius:9px;
+  background:var(--pri);color:#fff;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn:disabled{background:#cbd5e1!important;color:#fff;cursor:not-allowed;border-color:transparent}
+.btn.ok{background:var(--ok)} .btn.bad{background:var(--bad)} .btn.warn{background:var(--warn)} .btn.purple{background:#7c3aed}
+.btn.ghost{background:#fff;color:#334155;border-color:var(--line2)}
+.btn.ghost:hover:not(:disabled){background:#f8fafc}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:7px}
+.btn.block{width:100%}
+.btn.icon{padding:7px 10px}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 2px;
-        }
-        th, td {
-            border: 1px solid #000;
-            padding: 1.5px 2px;
-            text-align: center;
-            font-size: 10.5px;
-            white-space: nowrap;
-        }
-        th {
-            font-weight: bold;
-            background-color: #fff;
-        }
-        td select {
-            font-size: 10.5px;
-            font-family: inherit;
-            border: none;
-            background: transparent;
-            text-align: center;
-            outline: none;
-        }
-        td input {
-            width: 95%;
-            text-align: center;
-            border: none;
-            font-size: 10.5px;
-            font-family: inherit;
-            background: transparent;
-        }
-        td input:focus, td select:focus {
-            outline: 1px solid #999;
-        }
-        .date-cell-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1px;
-            font-weight: normal;
-        }
-        .day-select {
-            border: none;
-            background: transparent;
-            font-size: 10.5px;
-            font-family: inherit;
-            outline: none;
-            cursor: pointer;
-            text-align: center;
-            padding: 0;
-            font-weight: normal !important;
-        }
-        .fixed-month-year {
-            font-weight: normal;
-        }
-        
-        .footer-section {
-            position: absolute;
-            bottom: 10mm;
-            left: 8mm;
-            right: 8mm;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        .signature-box {
-            text-align: center;
-            font-size: 10.5px;
-            line-height: 1.3;
-            flex: 1;
-        }
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.b-ok{background:var(--ok-l);color:#166534}.b-warn{background:var(--warn-l);color:#92400e}.b-bad{background:var(--bad-l);color:#991b1b}
+.b-gray{background:#e2e8f0;color:#475569}.b-blue{background:var(--pri-l);color:#075985}
 
-        .btn-container {
-            margin: 10px auto;
-            width: 200mm;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            align-items: center;
-            background: #ffffff;
-            padding: 8px 12px;
-            border-radius: 8px;
-            flex-wrap: wrap;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-            border: 1px solid #cbd5e1;
-        }
-        .zoom-group {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: #f8fafc;
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-        }
-        .search-group {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: #f8fafc;
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-        }
-        .search-group select {
-            padding: 3px 6px;
-            font-size: 11px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            background: #fff;
-            outline: none;
-        }
-        .zoom-btn {
-            background: #475569;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 3px 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .zoom-text {
-            font-size: 11px;
-            font-weight: bold;
-            min-width: 40px;
-            text-align: center;
-        }
-        .right-btn-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .save-indicator {
-            font-size: 11px;
-            color: #16a34a;
-            font-weight: bold;
-            display: none;
-            margin-right: 4px;
-        }
-        .btn {
-            background-color: #0284c7;
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 500;
-            border-radius: 5px;
-            transition: opacity 0.2s;
-        }
-        .btn:hover {
-            opacity: 0.9;
-        }
-        .btn:disabled {
-            background-color: #94a3b8 !important;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        /* কাস্টম সার্কুলার আন্ডু ও রিডু বাটন স্টাইল (২৬px) */
-        .btn-circle-action {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.1s ease, opacity 0.2s ease, background-color 0.2s ease;
-            flex-shrink: 0;
-        }
-        .btn-circle-action svg {
-            width: 14px;
-            height: 14px;
-            color: #ffffff;
-        }
-        .btn-circle-action:hover:not(:disabled) {
-            transform: scale(1.08);
-        }
-        .btn-circle-action:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-            filter: grayscale(100%);
-        }
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.card.tight{padding:0;overflow:hidden}
+.page-head{margin-bottom:16px}
+.page-head p{margin:0;color:var(--muted);font-size:13.5px}
 
-        /* আন্ডু বাটন: ইউনিক রয়্যাল ব্লু */
-        .btn-undo-style {
-            background-color: #2563eb;
-        }
-        /* রিডু বাটন: অরিজিনাল কমলা */
-        .btn-redo-style {
-            background-color: #f59e0b;
-        }
+/* ---------- কাঠামো ---------- */
+.topbar{position:fixed;top:0;left:0;right:0;height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 16px;z-index:50}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand .logo{width:34px;height:34px;border-radius:9px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.brand small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;line-height:1.1}
+.menu-btn{display:none;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink)}
+.user-chip{display:flex;align-items:center;gap:9px;padding:4px 6px 4px 12px;border:1px solid var(--line);border-radius:99px;background:#f8fafc}
+.user-chip .avatar{width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.user-chip .nm{font-weight:600;font-size:13.5px;line-height:1.2}
+.user-chip .rl{font-size:11px;color:var(--muted);line-height:1.1}
+#sidebar{position:fixed;top:58px;left:0;bottom:0;width:232px;background:var(--side);padding:14px 10px;overflow-y:auto;z-index:40;transition:transform .2s}
+#sidebar a{display:flex;align-items:center;gap:11px;color:#cbd5e1;text-decoration:none;padding:11px 14px;border-radius:9px;margin-bottom:3px;font-weight:500}
+#sidebar a:hover{background:var(--side2);color:#fff}
+#sidebar a.active{background:var(--pri);color:#fff}
+#sidebar .sep{height:1px;background:var(--side2);margin:12px 6px}
+#sidebar .ver{color:#64748b;font-size:11.5px;padding:10px 14px}
+#main{margin-left:232px;padding:80px 26px 90px;max-width:1240px}
+#backdrop{display:none;position:fixed;inset:58px 0 0 0;background:rgba(15,23,42,.45);z-index:35}
 
-        .btn-cloud-save {
-            background-color: #16a34a;
-        }
-        .btn-cloud-load {
-            background-color: #9333ea;
-        }
-        .btn-reset {
-            background-color: #dc2626;
-        }
-        .action-btn {
-            padding: 2px 6px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 0 1px;
-            font-size: 11px;
-            border-radius: 3px;
-            border: none;
-        }
-        .btn-add {
-            background-color: #16a34a;
-            color: white;
-        }
-        .btn-remove {
-            background-color: #dc2626;
-            color: white;
-        }
+/* ---------- ড্যাশবোর্ড ও তালিকা ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--rad);padding:14px 16px}
+.stat .n{font-size:26px;font-weight:700;line-height:1.1}
+.stat .l{color:var(--muted);font-size:13px}
+.stat.ok .n{color:var(--ok)}.stat.warn .n{color:var(--warn)}.stat.bad .n{color:var(--bad)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filters .field{margin:0;min-width:140px;flex:1}
+.table-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse}
+table.tbl th{background:#f8fafc;text-align:left;font-size:13px;color:#475569;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl tr:last-child td{border-bottom:none}
+table.tbl tr:hover td{background:#fafcff}
+table.tbl .num{text-align:right;white-space:nowrap}
+table.tbl .act{white-space:nowrap;text-align:right}
+table.tbl tr.inactive td{color:#94a3b8}
+.empty{padding:34px;text-align:center;color:var(--muted)}
 
-        @media print {
-            #pinModal, #overwriteModal {
-                display: none !important;
-            }
-            html, body {
-                background: none;
-                height: 100vh;
-                overflow: hidden;
-            }
-            .btn-container, .no-print {
-                display: none !important;
-            }
-            .page-container {
-                border: none;
-                padding: 5mm 8mm;
-                margin: 0 auto;
-                width: 100%;
-                height: 100vh;
-                position: relative;
-                box-sizing: border-box;
-                page-break-after: avoid;
-                page-break-inside: avoid;
-                transform: scale(1) !important;
-            }
-            .footer-section {
-                position: absolute;
-                bottom: 8mm;
-                left: 8mm;
-                right: 8mm;
-            }
-            select, input {
-                border: none !important;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-            }
-            .inline-select-box {
-                border-bottom: none !important;
-            }
-        }
-    </style>
+/* ---------- এডিটর ---------- */
+.info-chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.chip{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 14px;min-width:150px}
+.chip .k{font-size:12px;color:var(--muted)}
+.chip .v{font-weight:700;font-size:16px}
+.notice{border-radius:9px;padding:9px 13px;margin-top:12px;font-size:13.5px}
+.notice.info{background:var(--pri-l);color:#075985;border:1px solid #bae6fd}
+.notice.warn{background:var(--warn-l);color:#92400e;border:1px solid #fde68a}
+.notice.bad{background:var(--bad-l);color:#991b1b;border:1px solid #fecaca}
+.notice.ok{background:var(--ok-l);color:#166534;border:1px solid #bbf7d0}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.autosave{font-size:12.5px;color:var(--ok);font-weight:600;opacity:0;transition:opacity .3s}
+.autosave.on{opacity:1}
+table.bill{width:100%;border-collapse:collapse;min-width:760px}
+table.bill th{background:#f1f5f9;border:1px solid var(--line2);padding:8px 6px;font-size:13px;text-align:center}
+table.bill td{border:1px solid var(--line2);padding:4px;text-align:center;font-size:14px}
+table.bill td input,table.bill td select{border:1px solid transparent;border-radius:6px;padding:6px;text-align:center;background:transparent;width:100%}
+table.bill td input:hover:not(:disabled),table.bill td select:hover:not(:disabled){border-color:var(--line2);background:#fff}
+table.bill td input:disabled,table.bill td select:disabled{background:transparent;color:var(--ink);opacity:1;-webkit-text-fill-color:var(--ink)}
+table.bill td.dt{white-space:nowrap}
+table.bill td.dt select{width:auto;padding:6px 2px}
+table.bill td.calc{background:#f8fafc;font-weight:600;white-space:nowrap}
+table.bill td.calc.stale{opacity:.45}
+table.bill tfoot td{background:#f1f5f9;font-weight:700;padding:9px}
+table.bill .rowbtn{border:none;border-radius:6px;width:26px;height:26px;color:#fff;font-weight:700;cursor:pointer}
+.words{text-align:center;font-weight:700;margin-top:12px}
+.actionbar{position:fixed;left:232px;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:10px 26px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;z-index:30;backdrop-filter:blur(4px)}
+.status-line{font-size:13px;color:var(--muted)}
+
+/* ---------- অ্যাডমিন ---------- */
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pills button{padding:8px 16px;border:1px solid var(--line2);background:#fff;border-radius:99px;cursor:pointer;font-weight:600;color:#475569}
+.pills button.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+.matrix th,.matrix td{text-align:center!important}
+.matrix td:first-child,.matrix th:first-child{text-align:left!important;position:sticky;left:0;background:#fff;z-index:1}
+.matrix input[type=checkbox]{width:18px;height:18px;cursor:pointer}
+.mono{font-family:ui-monospace,Consolas,monospace}
+.log-act{font-weight:600}
+
+/* ---------- মোডাল, টোস্ট ---------- */
+.modal-back{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:460px;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.modal.wide{max-width:640px}
+.modal .mh{padding:16px 20px;border-bottom:1px solid var(--line);font-weight:700;font-size:17px}
+.modal .mb{padding:18px 20px}
+.modal .mf{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.cred{display:grid;grid-template-columns:1fr auto auto;gap:8px 14px;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:12px;margin-bottom:8px}
+.cred b{font-size:15px}
+#toasts{position:fixed;top:68px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:300;max-width:calc(100vw - 32px)}
+.toast{background:#0f172a;color:#fff;padding:11px 16px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.25);font-size:14px;animation:tin .2s}
+.toast.ok{background:#15803d}.toast.bad{background:#b91c1c}.toast.warn{background:#b45309}
+@keyframes tin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+.spin.dark{border-color:#cbd5e1;border-top-color:var(--pri)}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading-row{color:var(--muted);padding:24px;text-align:center}
+
+/* ---------- মোবাইল ---------- */
+@media(max-width:960px){
+  .menu-btn{display:block}
+  #sidebar{transform:translateX(-100%)}
+  body.nav-open #sidebar{transform:none}
+  body.nav-open #backdrop{display:block}
+  #main{margin-left:0;padding:76px 14px 110px}
+  .actionbar{left:0;padding:10px 14px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid-3,.grid-4,.grid-5{grid-template-columns:1fr 1fr}
+  .user-chip .tx{display:none}
+  .user-chip{padding:4px}
+}
+@media(max-width:560px){
+  .grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr}
+  .brand small{display:none}
+}
+
+/* ---------- প্রিন্ট (শুধু লক করা বিল; শিরোনাম শুধু এখানেই) ---------- */
+#printSheet{display:none}
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{background:#fff!important;margin:0;height:100vh;overflow:hidden}
+  body>*:not(#printSheet){display:none!important}
+  #printSheet{display:block!important}
+}
+.print-page{font-family:'SolaimanLipi','Kalpurush','Hind Siliguri','Noto Sans Bengali',Arial,sans-serif;color:#000;font-size:10.5px;
+  width:100%;height:100vh;padding:5mm 8mm;position:relative;box-sizing:border-box;background:#fff}
+.print-page h2{text-align:center;margin:0 0 5px;font-size:15px}
+.print-page .hl{text-align:center;font-size:11.5px;margin-bottom:4px;line-height:1.5}
+.print-page .bp{text-align:center;font-size:11.5px;margin-bottom:6px}
+.print-page .u{display:inline-block;border-bottom:1px solid #000;font-weight:bold;padding:0 3px}
+.print-page table{width:100%;border-collapse:collapse;margin-top:2px}
+.print-page th,.print-page td{border:1px solid #000;padding:1.5px 2px;text-align:center;font-size:10.5px;white-space:nowrap}
+.print-page th{font-weight:bold;background:#fff}
+.print-page .words{margin-top:8px;font-weight:bold;text-align:center;font-size:10.5px}
+.print-page .footer-section{position:absolute;bottom:8mm;left:8mm;right:8mm;display:flex;justify-content:space-between;align-items:flex-start}
+.print-page .signature-box{text-align:center;font-size:10.5px;line-height:1.3;flex:1}
+a.btn{text-decoration:none}
+</style>
 </head>
 <body>
+<div id="splash">⏳ লোড হচ্ছে…</div>
 
-<!-- পাসওয়ার্ড পপআপ (লগইন) -->
-<div id="pinModal">
-    <div class="pin-card">
-        <h3>সুরক্ষিত প্রবেশ ব্যবস্থা</h3>
-        <p>সঠিক পাসওয়ার্ড দিয়ে সিস্টেমে প্রবেশ করুন</p>
-        <input type="password" id="pinInput" autocomplete="current-password" placeholder="পাসওয়ার্ড" maxlength="100" onkeydown="checkEnterKey(event)">
-        <button id="pinSubmitBtn" onclick="verifyPin()">প্রবেশ করুন</button>
-        <div id="pinError">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
-    </div>
+<!-- ============ লগইন ============ -->
+<div id="loginView" hidden>
+  <form class="login-card" id="loginForm" autocomplete="on">
+    <div class="login-logo">🚗</div>
+    <h1>অধিকাল বিল ব্যবস্থাপনা</h1>
+    <p class="sub">রাজশাহী মেডিকেল কলেজ হাসপাতাল — গাড়িচালক শাখা</p>
+    <div id="loginErr" class="err" hidden></div>
+    <div class="field"><label for="loginUser">ইউজার আইডি</label>
+      <input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="40"></div>
+    <div class="field"><label for="loginPass">পাসওয়ার্ড</label>
+      <div class="pw-wrap"><input id="loginPass" name="password" type="password" autocomplete="current-password" maxlength="100">
+        <button type="button" id="pwToggle" tabindex="-1">দেখুন</button></div></div>
+    <button class="btn block" id="loginBtn" type="submit">প্রবেশ করুন</button>
+    <p class="muted small" style="text-align:center;margin:14px 0 0">আইডি বা পাসওয়ার্ড ভুলে গেলে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+  </form>
 </div>
 
-<!-- ওভাররাইট পিন ভেরিফিকেশন পপ-আপ -->
-<div id="overwriteModal">
-    <div class="overwrite-card">
-        <div class="warning-header">
-            <span>⚠️</span>
-            <span>সতর্কবার্তা</span>
-        </div>
-        <div class="warning-text" id="overwriteMsgText">
-            এই মাসের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>
-            আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?
-        </div>
-        <label class="pin-label">পাসওয়ার্ড দিন:</label>
-        <input type="password" id="overwritePinInput" autocomplete="current-password" placeholder="পাসওয়ার্ড" maxlength="100" onkeydown="checkOverwriteEnterKey(event)">
-        <div id="overwritePinError">ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
-        <div class="overwrite-btn-group">
-            <button class="btn-modal-cancel" onclick="closeOverwriteModal()">✖ না, বাতিল করুন</button>
-            <button class="btn-modal-confirm" onclick="confirmOverwriteAndSave()">✓ হ্যাঁ, সেভ করুন</button>
-        </div>
+<!-- ============ অ্যাপ ============ -->
+<div id="appView" hidden>
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="মেনু">☰</button>
+    <div class="brand"><div class="logo">🚗</div><div>অধিকাল বিল<small>রাজশাহী মেডিকেল কলেজ হাসপাতাল</small></div></div>
+    <div class="spacer"></div>
+    <div class="user-chip">
+      <div class="tx"><div class="nm" id="uName">—</div><div class="rl" id="uRole">—</div></div>
+      <div class="avatar" id="uAvatar">?</div>
     </div>
-</div>
+    <button class="btn ghost sm" id="logoutBtn">বের হোন</button>
+  </header>
+  <nav id="sidebar">
+    <a href="#/dashboard" data-r="dashboard">📊 ড্যাশবোর্ড</a>
+    <a href="#/editor" data-r="editor">📝 নতুন বিল তৈরি</a>
+    <a href="#/bills" data-r="bills">🗂️ সংরক্ষিত বিল</a>
+    <a href="#/admin/drivers" data-r="admin" id="navAdmin" hidden>⚙️ অ্যাডমিন প্যানেল</a>
+    <div class="sep"></div>
+    <a href="#" id="navPw">🔑 পাসওয়ার্ড পরিবর্তন</a>
+    <div class="ver">সংস্করণ ৩</div>
+  </nav>
+  <div id="backdrop"></div>
 
-<div class="btn-container no-print">
-    <div class="zoom-group">
-        <span>জুম:</span>
-        <button class="zoom-btn" onclick="zoomPage(-0.1)">-</button>
-        <span id="zoomVal" class="zoom-text">১০০%</span>
-        <button class="zoom-btn" onclick="zoomPage(0.1)">+</button>
-        <button class="zoom-btn" style="background:#64748b;" onclick="resetZoom()">রিসেট</button>
-    </div>
+  <main id="main">
 
-    <div class="search-group">
-        <span style="font-weight:bold; font-size:11px;">পুরোনো বিল:</span>
-        <select id="searchDriver">
-            <option value="" selected disabled hidden>চালকের নাম বেছে নিন</option>
-        </select>
-        <select id="searchMonth">
-            <option value="" selected disabled hidden>মাস বেছে নিন</option>
-            <option value="01">জানুয়ারি</option>
-            <option value="02">ফেব্রুয়ারি</option>
-            <option value="03">মার্চ</option>
-            <option value="04">এপ্রিল</option>
-            <option value="05">মে</option>
-            <option value="06">জুন</option>
-            <option value="07">জুলাই</option>
-            <option value="08">আগস্ট</option>
-            <option value="09">সেপ্টেম্বর</option>
-            <option value="10">অক্টোবর</option>
-            <option value="11">নভেম্বর</option>
-            <option value="12">ডিসেম্বর</option>
-        </select>
-        <select id="searchYear">
-            <option value="" selected disabled hidden>সাল বেছে নিন</option>
-            <option value="২০২৬">২০২৬</option>
-            <option value="২০২৭">২০২৭</option>
-            <option value="২০২৮">২০২৮</option>
-        </select>
-        <button class="btn btn-cloud-load" onclick="loadFromCloud()">📂 লোড রিপোর্ট</button>
-    </div>
-
-    <div class="right-btn-group">
-        <!-- ২৬px আনডু বাটন (রয়্যাল ব্লু & টুলটিপ বিহীন) -->
-        <button id="undoBtn" class="btn-circle-action btn-undo-style" onclick="undo()" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 7v6h6"></path>
-                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
-            </svg>
-        </button>
-
-        <!-- ২৬px রিডু বাটন (কমলা & টুলটিপ বিহীন) -->
-        <button id="redoBtn" class="btn-circle-action btn-redo-style" onclick="redo()" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 7v6h-6"></path>
-                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
-            </svg>
-        </button>
-
-        <span id="saveStatus" class="save-indicator">✓ অটো সেভ হয়েছে</span>
-        <button class="btn btn-cloud-save" onclick="saveToCloud()">☁️ অনলাইনে সেভ করুন</button>
-        <button class="btn btn-reset" onclick="resetData()">🔄 রিসেট</button>
-        <button class="btn" onclick="window.print()">🖨️ প্রিন্ট / PDF</button>
-    </div>
-</div>
-
-<div class="page-container" id="pageContainer">
-    <div class="content-area">
-
-        <h2>রাজশাহী মেডিকেল কলেজ হাসপাতালের গাড়িচালকদের অধিকাল ভাতার বিল</h2>
-
-        <div class="header-info-line">
-            গাড়ি নং <span id="carNoDisplay" style="font-weight: bold;">—</span> 
-            গাড়ি চালকের নাম 
-            <span class="inline-select-box">
-                <span id="driverText">—</span>
-                <select id="driverSelect" onchange="updateDriverInfo()">
-                    <!-- চালকদের তালিকা লগইনের পর সার্ভার থেকে আসে -->
-                </select>
-            </span>
-            এর <br>
-            <span class="inline-select-box">
-                <span id="yearText">২০২৬</span>
-                <select id="yearSelect" onchange="onMonthOrYearChange()">
-                    <option value="২০২৬" selected>২০২৬</option>
-                    <option value="২০২৭">২০২৭</option>
-                    <option value="২০২৮">২০২৮</option>
-                </select>
-            </span>
-            সালের 
-            <span class="inline-select-box">
-                <span id="monthText">সেপ্টেম্বর</span>
-                <select id="monthSelect" onchange="onMonthOrYearChange()">
-                    <option value="31" data-month="01" data-name="জানুয়ারি">জানুয়ারি</option>
-                    <option value="28" data-month="02" data-name="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
-                    <option value="31" data-month="03" data-name="মার্চ">মার্চ</option>
-                    <option value="30" data-month="04" data-name="এপ্রিল">এপ্রিল</option>
-                    <option value="31" data-month="05" data-name="মে">মে</option>
-                    <option value="30" data-month="06" data-name="জুন">জুন</option>
-                    <option value="31" data-month="07" data-name="জুলাই">জুলাই</option>
-                    <option value="31" data-month="08" data-name="আগস্ট">আগস্ট</option>
-                    <option value="30" data-month="09" data-name="সেপ্টেম্বর" selected>সেপ্টেম্বর</option>
-                    <option value="31" data-month="10" data-name="অক্টোবর">অক্টোবর</option>
-                    <option value="30" data-month="11" data-name="নভেম্বর">নভেম্বর</option>
-                    <option value="31" data-month="12" data-name="ডিসেম্বর">ডিসেম্বর</option>
-                </select>
-            </span>
-            মাসের অধিকাল ভাতার বিল।
+    <!-- ড্যাশবোর্ড -->
+    <section id="page-dashboard" class="page" hidden>
+      <div class="page-head"><h1 id="dHello">স্বাগতম</h1><p>মাস ধরে কার বিল হয়েছে, কার বাকি — এখান থেকে এক নজরে দেখুন।</p></div>
+      <div id="dAlerts"></div>
+      <div class="card">
+        <div class="filters">
+          <div class="field"><label>সাল</label><select id="dYear"></select></div>
+          <div class="field"><label>মাস</label><select id="dMonth"></select></div>
         </div>
+      </div>
+      <div class="stats" id="dStats"></div>
+      <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr>
+        <th>চালক</th><th>গাড়ি নং</th><th>বিলের অবস্থা</th><th class="num">টাকা</th><th class="act">কাজ</th></tr></thead>
+        <tbody id="dBody"><tr><td colspan="5" class="loading-row">লোড হচ্ছে…</td></tr></tbody></table></div></div>
+    </section>
 
-        <div class="basic-pay-line">
-            মূল বেতন <span id="basicPayBn" style="font-weight: bold;">—</span>/=
+    <!-- বিল তৈরি / সম্পাদনা -->
+    <section id="page-editor" class="page" hidden>
+      <div class="page-head"><h1>বিল তৈরি / সম্পাদনা</h1><p>আগে সাল, তারপর মাস, তারপর চালক বাছুন। গাড়ি নং, মূল বেতন ও মোবাইল নিজে নিজে আসবে।</p></div>
+      <div class="card">
+        <div class="grid-3">
+          <div class="field"><label>১. সাল</label><select id="eYear"></select></div>
+          <div class="field"><label>২. মাস</label><select id="eMonth"></select></div>
+          <div class="field"><label>৩. চালকের নাম</label><select id="eDriver" disabled></select></div>
         </div>
-
-        <table id="overtimeTable">
+        <div class="info-chips" id="eInfo"></div>
+        <div id="eNotice"></div>
+      </div>
+      <div class="card" id="eTableCard" hidden>
+        <div class="toolbar">
+          <span id="eBadge"></span>
+          <span class="status-line" id="eStatusLine"></span>
+          <span class="spacer"></span>
+          <span class="autosave" id="eAuto">✓ খসড়া সংরক্ষিত</span>
+          <button class="btn ghost icon sm" id="eUndo" title="আনডু">↶</button>
+          <button class="btn ghost icon sm" id="eRedo" title="রিডু">↷</button>
+        </div>
+        <div class="table-wrap">
+          <table class="bill">
             <thead>
-                <tr>
-                    <th rowspan="2" style="width: 11%;">তারিখ</th>
-                    <th rowspan="2" style="width: 18%;">বারের নাম / ডিউটির স্থান</th>
-                    <th colspan="2" style="width: 26%;">নিয়মিত সময়ের বাহিরে অতিরিক্ত সময়</th>
-                    <th rowspan="2" style="width: 12%;">অতিরিক্ত<br>কর্ম ঘণ্টা</th>
-                    <th rowspan="2" style="width: 11%;">প্রতি ঘণ্টার রেট</th>
-                    <th rowspan="2" style="width: 11%;">টাকার পরিমাণ</th>
-                    <th rowspan="2" style="width: 11%;">মন্তব্য</th>
-                    <th rowspan="2" class="no-print">অ্যাকশন</th>
-                </tr>
-                <tr>
-                    <th style="width: 13%;">হইতে</th>
-                    <th style="width: 13%;">পর্যন্ত</th>
-                </tr>
+              <tr><th rowspan="2" style="width:13%">তারিখ</th><th rowspan="2" style="width:17%">বারের নাম / ডিউটির স্থান</th>
+                <th colspan="2">নিয়মিত সময়ের বাহিরে অতিরিক্ত সময়</th>
+                <th rowspan="2" style="width:9%">ঘণ্টা</th><th rowspan="2" style="width:9%">রেট</th><th rowspan="2" style="width:10%">টাকা</th>
+                <th rowspan="2" style="width:13%">মন্তব্য</th><th rowspan="2" style="width:70px"></th></tr>
+              <tr><th style="width:12%">হইতে</th><th style="width:12%">পর্যন্ত</th></tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <div class="date-cell-container">
-                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">০৯/২০২৬</span>
-                        </div>
-                    </td>
-                    <td>
-                        <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                            <option value="" selected></option>
-                            <option value="শুক্রবার">শুক্রবার</option>
-                            <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                            <option value="অতিরিক্ত">অতিরিক্ত</option>
-                            <option value="ঢাকা">ঢাকা</option>
-                            <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                            <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                            <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                        </select>
-                    </td>
-                    <td><input type="text" class="start-time" value="" oninput="handleTimeInput(this)"></td>
-                    <td><input type="text" class="end-time" value="" oninput="handleTimeInput(this)"></td>
-                    <td><span class="hours">০</span></td>
-                    <td><span class="rate">0.00</span></td>
-                    <td><span class="amount">0</span></td>
-                    <td><input type="text" class="remarks" value="" oninput="triggerAutoSave()"></td>
-                    <td class="no-print">
-                        <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                        <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-                    </td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr style="font-weight: bold;">
-                    <td colspan="4" style="text-align: right;">মোট:</td>
-                    <td><span id="totalHours">০</span> ঘণ্টা</td>
-                    <td>-</td>
-                    <td><span id="grandTotal">০</span>/=</td>
-                    <td colspan="2">টাকা</td>
-                </tr>
-            </tfoot>
-        </table>
+            <tbody id="eBody"></tbody>
+            <tfoot><tr><td colspan="4" style="text-align:right">মোট</td><td id="eTotHours">০</td><td>—</td><td id="eTotal">০/=</td><td colspan="2">টাকা</td></tr></tfoot>
+          </table>
+        </div>
+        <div class="words" id="eWords"></div>
+        <div class="muted small" id="eCalcState" style="text-align:center;margin-top:6px"></div>
+      </div>
+      <div class="actionbar" id="eActions" hidden>
+        <button class="btn ok" id="eSave">💾 সেভ করুন</button>
+        <button class="btn warn" id="eLock">🔒 লক করুন</button>
+        <button class="btn" id="ePrint">🖨️ প্রিন্ট / PDF</button>
+        <button class="btn purple" id="eUnlock" hidden>🔓 আনলক (অ্যাডমিন)</button>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="eReload" hidden>↻ সার্ভার থেকে নতুন করে লোড</button>
+        <button class="btn ghost" id="eNew">নতুন বিল</button>
+      </div>
+    </section>
 
-        <div style="margin-top: 8px; font-weight: bold; text-align: center;">
-            (<span id="inWords"></span>)
+    <!-- সংরক্ষিত বিল -->
+    <section id="page-bills" class="page" hidden>
+      <div class="page-head"><h1>সংরক্ষিত বিল</h1><p>পুরোনো বিল খুঁজুন, দেখুন ও (লক করা হলে) প্রিন্ট করুন।</p></div>
+      <div class="card">
+        <div class="filters">
+          <div class="field"><label>সাল</label><select id="bYear"></select></div>
+          <div class="field"><label>মাস</label><select id="bMonth"></select></div>
+          <div class="field"><label>চালক</label><select id="bDriver"></select></div>
+          <div class="field"><label>অবস্থা</label><select id="bStatus"><option value="">সব</option><option value="Draft">খসড়া</option><option value="Locked">লক করা</option></select></div>
         </div>
-    </div>
+      </div>
+      <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr>
+        <th>সাল-মাস</th><th>চালক</th><th>অবস্থা</th><th class="num">ঘণ্টা</th><th class="num">টাকা</th><th>সর্বশেষ পরিবর্তন</th><th class="act">কাজ</th></tr></thead>
+        <tbody id="bBody"><tr><td colspan="7" class="loading-row">লোড হচ্ছে…</td></tr></tbody></table></div></div>
+      <div class="muted small" id="bSummary" style="margin-top:8px"></div>
+    </section>
 
-    <div class="footer-section">
-        <div class="signature-box">
-            ...................................<br>
-            (<span id="driverSignatureName">...............</span>)<br>
-            গাড়ি চালক<br>
-            রাজশাহী মেডিকেল কলেজ হাসপাতাল।<br>
-            মোবাইলঃ <span id="driverMobile">—</span>
+    <!-- অ্যাডমিন -->
+    <section id="page-admin" class="page" hidden>
+      <div class="page-head"><h1>অ্যাডমিন প্যানেল</h1><p>চালক, গাড়ি ও বেতন, ইউজার ও অনুমতি এবং কার্যকলাপ লগ।</p></div>
+      <div class="pills" id="aPills">
+        <button data-t="drivers">👤 চালক</button>
+        <button data-t="assign">🚗 মাসভিত্তিক গাড়ি ও বেতন</button>
+        <button data-t="users">🔐 ইউজার ও অনুমতি</button>
+        <button data-t="summary">📑 মাসিক সারসংক্ষেপ</button>
+        <button data-t="log">📜 কার্যকলাপ লগ</button>
+        <button data-t="system">🛠️ ব্যাকআপ, ছুটি ও সেটিংস</button>
+      </div>
+
+      <div id="a-drivers" class="atab" hidden>
+        <div class="card">
+          <h2 id="drvFormTitle">নতুন চালক যুক্ত করুন</h2>
+          <div class="grid-5">
+            <div class="field"><label>নাম</label><input id="fName" maxlength="80"></div>
+            <div class="field"><label>মোবাইল নম্বর</label><input id="fMobile" maxlength="30"></div>
+            <div class="field"><label>প্রাথমিক গাড়ি নং</label><input id="fCar" maxlength="60"></div>
+            <div class="field"><label>প্রাথমিক মূল বেতন</label><input id="fBasic" maxlength="12" inputmode="numeric"></div>
+            <div class="field"><label>অবস্থা</label><select id="fStatus"><option value="Active">Active (কর্মরত)</option><option value="Inactive">Inactive (বদলি / অবসর)</option></select></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn ok" id="fSubmit">➕ যুক্ত করুন</button>
+            <button class="btn ghost" id="fCancel" hidden>বাতিল</button>
+          </div>
+          <p class="muted small" style="margin:12px 0 0">নতুন Active চালক যুক্ত করলে তাঁর ইউজার আইডিও নিজে তৈরি হয়। "প্রাথমিক গাড়ি/বেতন" শুধু ওই চালকের প্রথম মাসের জন্য; এরপর মাসভিত্তিক ট্যাব থেকে বদলান (বার্ষিক ইনক্রিমেন্টও সেখানে)। কাউকে মুছে ফেলা হয় না — বদলি/অবসরে Inactive করুন; তাঁর পুরোনো বিল অক্ষুণ্ণ থাকবে।</p>
         </div>
-        <div class="signature-box">
-            ...................................<br>
-            ড্রাইভার ইনচার্জ<br>
-            রাজশাহী মেডিকেল কলেজ হাসপাতাল।
+        <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>আইডি</th><th>নাম</th><th>মোবাইল</th><th>প্রাথমিক গাড়ি নং</th><th class="num">প্রাথমিক বেতন</th><th>অবস্থা</th><th class="act">কাজ</th></tr></thead>
+          <tbody id="drvBody"></tbody></table></div></div>
+      </div>
+
+      <div id="a-assign" class="atab" hidden>
+        <div class="card">
+          <div class="filters">
+            <div class="field"><label>সাল</label><select id="asYear"></select></div>
+            <div class="field"><label>মাস</label><select id="asMonth"></select></div>
+            <div class="field" style="flex:2"><label>&nbsp;</label><button class="btn purple" id="asFill">⚡ সব Active চালককে এই মাসে যুক্ত করুন (আগের তথ্য থেকে)</button></div>
+          </div>
+          <p class="muted small" style="margin:12px 0 0">এই মাসের তালিকাই পুরোনো রিপোর্টের চালক-তালিকা। বেতন বদলালে (ইনক্রিমেন্ট) যে মাস থেকে কার্যকর সেই মাসের সারিতে নতুন বেতন সেভ করুন — পরের মাসগুলোতে (যেগুলোর নিজস্ব সারি নেই) নতুন বেতনই আসবে; আগের মাস অপরিবর্তিত থাকবে।</p>
         </div>
-        <div class="signature-box">
-            ...................................<br>
-            প্রশাসনিক কর্মকর্তা<br>
-            রাজশাহী মেডিকেল কলেজ হাসপাতাল।
+        <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>চালক</th><th>গাড়ি নং</th><th>মূল বেতন</th><th class="act">কাজ</th></tr></thead>
+          <tbody id="asBody"><tr><td colspan="4" class="loading-row">সাল ও মাস বেছে নিন।</td></tr></tbody></table></div></div>
+        <div class="card" id="asAddBox" hidden>
+          <h2>এই মাসে অন্য চালক যুক্ত করুন</h2>
+          <div class="grid-3"><div class="field"><label>চালক</label><select id="asCand"></select></div>
+            <div class="field"><label>গাড়ি নং</label><input id="asCar" maxlength="60"></div>
+            <div class="field"><label>মূল বেতন</label><input id="asBasic" maxlength="12" inputmode="numeric"></div></div>
+          <button class="btn ok" id="asAdd">➕ যুক্ত করুন</button>
         </div>
-    </div>
+      </div>
+
+      <div id="a-users" class="atab" hidden>
+        <div class="card">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <h2 style="margin:0">ইউজার তালিকা</h2><span class="spacer"></span>
+            <button class="btn" id="uMakeAll">👥 সব Active চালকের ইউজার তৈরি করুন</button>
+          </div>
+          <p class="muted small" style="margin:8px 0 0">প্রত্যেক Active চালকই একজন ইউজার। চালক Inactive হলে তাঁর আইডিতে আর প্রবেশ করা যায় না। পাসওয়ার্ড রিসেট করলে নতুন পাসওয়ার্ড একবারই দেখানো হয়; ইউজারকে প্রথম প্রবেশে তা বদলাতে হয়।</p>
+        </div>
+        <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>ইউজার আইডি</th><th>নাম</th><th>ধরন</th><th>অবস্থা</th><th>সর্বশেষ প্রবেশ</th><th class="act">কাজ</th></tr></thead>
+          <tbody id="uBody"></tbody></table></div></div>
+        <div class="card">
+          <h2>অনুমতি — কে কার বিল তৈরি/সম্পাদনা করতে পারবে</h2>
+          <p class="muted small" style="margin:0 0 10px">সবাই সবার বিল দেখতে ও (লক করা হলে) প্রিন্ট করতে পারে। টিক দেওয়া চালকের বিলই কেবল ওই ইউজার বানাতে, সম্পাদনা ও লক করতে পারবেন।</p>
+          <div class="table-wrap"><table class="tbl matrix" id="uMatrix"></table></div>
+          <div style="margin-top:12px"><button class="btn ok" id="uSavePerm">💾 অনুমতি সেভ করুন</button></div>
+        </div>
+        <div class="card">
+          <h2>নতুন ইউজার যুক্ত করুন (অ্যাডমিন বা আলাদা আইডি)</h2>
+          <div class="grid-4">
+            <div class="field"><label>ইউজার আইডি (ইংরেজি)</label><input id="nuId" maxlength="30" autocapitalize="none"></div>
+            <div class="field"><label>নাম</label><input id="nuName" maxlength="80"></div>
+            <div class="field"><label>ধরন</label><select id="nuRole"><option value="user">চালক-ইউজার</option><option value="admin">অ্যাডমিন</option></select></div>
+            <div class="field"><label>সংশ্লিষ্ট চালক</label><select id="nuDriver"></select></div>
+          </div>
+          <button class="btn ok" id="nuAdd">➕ ইউজার তৈরি করুন</button>
+        </div>
+      </div>
+
+      <div id="a-summary" class="atab" hidden>
+        <div class="card">
+          <div class="filters">
+            <div class="field"><label>সাল</label><select id="smYear"></select></div>
+            <div class="field"><label>মাস</label><select id="smMonth"></select></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn ghost" id="smCsv">📥 Excel (CSV) নামান</button>
+            <button class="btn ghost" id="smPdf">🖨️ PDF / প্রিন্ট</button>
+            <span class="spacer"></span>
+            <button class="btn warn" id="smLock">🔒 এই মাসের সব খসড়া লক করুন</button>
+          </div>
+        </div>
+        <div class="stats" id="smStats"></div>
+        <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>চালক</th><th>গাড়ি নং</th><th class="num">মূল বেতন</th><th class="num">রেট</th><th class="num">মোট ঘণ্টা</th><th class="num">মোট টাকা</th><th>অবস্থা</th></tr></thead>
+          <tbody id="smBody"><tr><td colspan="7" class="empty">সাল ও মাস বাছুন।</td></tr></tbody><tfoot id="smFoot"></tfoot></table></div></div>
+      </div>
+
+      <div id="a-log" class="atab" hidden>
+        <div class="card">
+          <div class="grid-4">
+            <div class="field"><label>ইউজার</label><select id="lgUser"></select></div>
+            <div class="field"><label>কাজের ধরন</label><select id="lgAction"></select></div>
+            <div class="field"><label>তারিখ থেকে</label><input type="date" id="lgFrom"></div>
+            <div class="field"><label>তারিখ পর্যন্ত</label><input type="date" id="lgTo"></div>
+          </div>
+          <div class="filters"><div class="field" style="flex:3"><label>লেখা খুঁজুন (বিবরণে)</label><input id="lgFilter"></div>
+            <div class="field"><label>&nbsp;</label><button class="btn" id="lgReload">🔍 খুঁজুন</button></div></div>
+        </div>
+        <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead>
+          <tbody id="lgBody"></tbody></table></div></div>
+        <div class="muted small" style="margin-top:8px">সর্বোচ্চ ৩০০টি দেখানো হয়। ১৮০ দিনের বেশি পুরোনো লগ নিজে "ActivityLogArchive" ট্যাবে সরে যায় (সাপ্তাহিক ব্যাকআপের সময়)।</div>
+      </div>
+
+      <div id="a-system" class="atab" hidden>
+        <div class="card">
+          <h2>💾 ব্যাকআপ</h2>
+          <p class="muted small" style="margin:0 0 10px" id="bkInfo">লোড হচ্ছে…</p>
+          <button class="btn ok" id="bkNow">💾 এখনই ব্যাকআপ নিন</button>
+          <div id="bkList" style="margin-top:12px"></div>
+        </div>
+        <div class="card">
+          <h2>⚠️ সতর্কতার সীমা</h2>
+          <div class="filters"><div class="field"><label>এক মাসে এর বেশি ঘণ্টা হলে সতর্ক করুন</label><input id="stMax" inputmode="numeric" maxlength="3"></div>
+            <div class="field"><label>&nbsp;</label><button class="btn ok" id="stSave">সেভ করুন</button></div></div>
+        </div>
+        <div class="card">
+          <h2>📅 ছুটির তালিকা</h2>
+          <p class="muted small" style="margin:0 0 10px">এখানে সরকারি/ঈদের ছুটির তারিখ দিলে বিলে ওই তারিখ বাছলে "ডিউটির স্থান" নিজে বসবে। শুক্রবার নিজে থেকেই ধরা হয়। (বিলে হাতে বদলানো যায়।)</p>
+          <div class="grid-4">
+            <div class="field"><label>তারিখ</label><input type="date" id="hlDate"></div>
+            <div class="field"><label>ধরন</label><select id="hlType"><option>সরকারি ছুটি</option><option>ঈদের ছুটি</option></select></div>
+            <div class="field"><label>নোট (ঐচ্ছিক)</label><input id="hlNote" maxlength="80" placeholder="যেমন: বিজয় দিবস"></div>
+            <div class="field"><label>&nbsp;</label><button class="btn ok" id="hlAdd">➕ যুক্ত করুন</button></div>
+          </div>
+          <div class="filters" style="margin-top:6px"><div class="field" style="max-width:200px"><label>দেখুন: সাল</label><select id="hlYear"></select></div></div>
+        </div>
+        <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>তারিখ</th><th>ধরন</th><th>নোট</th><th class="act">কাজ</th></tr></thead><tbody id="hlBody"></tbody></table></div></div>
+      </div>
+    </section>
+  </main>
 </div>
+
+<div id="printSheet"></div>
+<div id="toasts"></div>
+<div id="modalRoot"></div>
 
 <script>
-    // ================= পাসওয়ার্ড সুরক্ষা সিস্টেম (সার্ভার-সাইড) =================
-    // ⚠️ পাসওয়ার্ড বা চালকদের ব্যক্তিগত তথ্য এই ফাইলে নেই।
-    //    যাচাই হয় Google Apps Script-এ; সঠিক হলে তবেই তথ্য আসে।
-    let APP_PIN = '';   // শুধু মেমরিতে থাকে — ব্রাউজারে সেভ হয় না (পেজ রিলোড করলে আবার দিতে হবে)
+/* =====================================================================
+   অধিকাল বিল — ওয়েবপেজ (সংস্করণ ৩)
+   এই ফাইলে কোনো হিসাবের সূত্র বা গোপন তথ্য নেই। সব হিসাব, পাসওয়ার্ড যাচাই ও অনুমতি
+   Google Apps Script-এ। প্রয়োজনীয় তথ্য প্রবেশের পর ব্রাউজারের ক্যাশে জমা থাকে;
+   ব্রাউজারের ডাটা মুছলে তা ফাঁকা হয়।
+   ===================================================================== */
+const API_URL = "https://script.google.com/macros/s/AKfycbwvMwBdQbrtz9y9jbbyQ05hzL2AeTVbqGyHGzpWRsQHsybhJgf2DhVZZD0Ulfa4IVrl/exec";
 
-    // বাইরের/সার্ভারের লেখা পেজে বসানোর আগে নিরাপদ করার ফাংশন
-    function escHtml(v) {
-        return String(v === undefined || v === null ? '' : v)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-    function escAttr(v) { return escHtml(v); }
+const $ = id => document.getElementById(id);
+const BN = '০১২৩৪৫৬৭৮৯';
+const toBn = v => String(v == null ? '' : v).replace(/[0-9]/g, d => BN[d]);
+const toEn = s => String(s == null ? '' : s).replace(/[০-৯]/g, d => BN.indexOf(d));
+const pad2 = n => String(n).padStart(2, '0');
+const esc = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const money = n => toBn(Number(n || 0).toLocaleString('en-IN'));
+const daysIn = (y, m) => new Date(+y, +m, 0).getDate();   // শুধু তারিখের ড্রপডাউনের জন্য
+const numIn = s => { const v = parseFloat(toEn(s).replace(/[^0-9.]/g, '')); return isNaN(v) ? 0 : v; };
 
-    // সার্ভারে অনুরোধ পাঠানো (প্রতিবার পাসওয়ার্ডসহ)
-    function callServer(action, extra, pinOverride) {
-        const payload = Object.assign(
-            { action: action, pin: (pinOverride !== undefined ? pinOverride : APP_PIN) },
-            extra || {}
-        );
-        return fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-        }).then(res => res.json());
-    }
+let SESSION = null, USER = null, CONFIG = null;
 
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('pinInput').focus();
+/* ---------- ব্রাউজার ক্যাশ ---------- */
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem('rmch_' + k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem('rmch_' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('rmch_' + k); } catch (e) {} },
+  dropPrefix(p) { try { Object.keys(localStorage).filter(k => k.indexOf('rmch_' + p) === 0).forEach(k => localStorage.removeItem(k)); } catch (e) {} },
+  clearSession() { ['session', 'user', 'config'].forEach(k => LS.del(k)); LS.dropPrefix('c_'); }
+};
 
-        // সার্ভারকে আগেভাগে জাগিয়ে রাখা, যাতে পাসওয়ার্ড দেওয়ার পর লগইন দ্রুত হয়।
-        // এই অনুরোধে কোনো তথ্য যায় না বা আসে না।
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'ping' })
-        }).catch(() => {});
+/* ---------- ছোট UI সহায়ক ---------- */
+function toast(msg, type, ms) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || '');
+  el.textContent = msg;
+  $('toasts').appendChild(el);
+  setTimeout(() => el.remove(), ms || 3500);
+}
+
+function modal(o) {
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  const btns = (o.buttons || []).map((b, i) => `<button class="btn ${b.cls || ''}" data-i="${i}">${esc(b.label)}</button>`).join('');
+  back.innerHTML = `<div class="modal ${o.wide ? 'wide' : ''}"><div class="mh">${esc(o.title || '')}</div><div class="mb">${o.html || ''}</div><div class="mf">${btns}</div></div>`;
+  const close = () => back.remove();
+  back.addEventListener('click', e => {
+    if (e.target === back && o.dismissible !== false) close();
+    const bt = e.target.closest('button[data-i]');
+    if (bt) { const b = o.buttons[+bt.dataset.i]; if (b.onClick) { const r = b.onClick(back, close); if (r === false) return; } if (!b.keepOpen) close(); }
+  });
+  $('modalRoot').appendChild(back);
+  return { el: back, close };
+}
+
+function confirmBox(msg, okLabel, danger) {
+  return new Promise(res => {
+    modal({ title: 'নিশ্চিত করুন', html: `<div style="white-space:pre-line">${esc(msg)}</div>`, buttons: [
+      { label: 'বাতিল', cls: 'ghost', onClick: () => res(false) },
+      { label: okLabel || 'হ্যাঁ', cls: danger ? 'bad' : '', onClick: () => res(true) }] , dismissible: false });
+  });
+}
+
+function askReason(title, msg, okLabel) {
+  return new Promise(res => {
+    modal({ title, html: `<div style="white-space:pre-line;margin-bottom:10px">${esc(msg)}</div><div class="field"><label>কারণ (বাধ্যতামূলক)</label><textarea id="rsText" rows="3" maxlength="200" style="resize:vertical"></textarea></div><div id="rsErr" class="err" hidden>কারণ লিখুন।</div>`,
+      dismissible: false, buttons: [
+        { label: 'বাতিল', cls: 'ghost', onClick: () => res(null) },
+        { label: okLabel || 'নিশ্চিত', cls: 'bad', keepOpen: true, onClick: (back, close) => {
+          const v = back.querySelector('#rsText').value.trim();
+          if (!v) { back.querySelector('#rsErr').hidden = false; return false; }
+          res(v); close();
+        } }] });
+    setTimeout(() => { const t = document.getElementById('rsText'); if (t) t.focus(); }, 50);
+  });
+}
+
+function credModal(creds, title) {
+  if (!creds || !creds.length) return;
+  const rows = creds.map(c => `<div class="cred"><div><div class="muted small">${esc(c.name)}</div></div>
+    <div>আইডি: <b class="mono">${esc(c.userId)}</b></div><div>পাসওয়ার্ড: <b class="mono">${esc(c.password)}</b></div></div>`).join('');
+  modal({ title: title || 'ইউজারের প্রবেশ-তথ্য', wide: true, html: `<div class="notice warn" style="margin:0 0 12px">⚠️ পাসওয়ার্ড এই একবারই দেখানো হচ্ছে। এখনই ইউজারকে দিন বা লিখে রাখুন। ইউজার প্রথম প্রবেশে নিজের পছন্দের পাসওয়ার্ড দিতে বাধ্য হবেন।</div>${rows}`,
+    buttons: [{ label: '📋 কপি করুন', cls: 'ghost', keepOpen: true, onClick: () => {
+      const t = creds.map(c => `${c.name}\nইউজার আইডি: ${c.userId}\nপাসওয়ার্ড: ${c.password}`).join('\n\n');
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('কপি হয়েছে', 'ok'), () => toast('কপি করা যায়নি; হাতে লিখে নিন', 'warn'));
+    } }, { label: 'বন্ধ করুন' }], dismissible: false });
+}
+
+function setBusy(btn, on, label) {
+  if (!btn) return;
+  if (on) { btn.dataset.h = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin"></span> ' + esc(label || 'অপেক্ষা করুন…'); }
+  else { if (btn.dataset.h !== undefined) btn.innerHTML = btn.dataset.h; btn.disabled = false; delete btn.dataset.h; }
+}
+
+/* ---------- সার্ভার যোগাযোগ ---------- */
+async function api(action, payload) {
+  let res;
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action, token: SESSION && SESSION.token }, payload || {}))
     });
+    res = await r.json();
+  } catch (e) { throw new Error('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।'); }
+  if (res.status === 'auth_error' && res.code === 'session') { forceLogout(res.message); throw new Error(res.message); }
+  return res;
+}
+function must(res) { if (res.status !== 'success') throw new Error(res.message || 'কাজটি করা যায়নি।'); return res; }
 
-    function showPinError(message) {
-        const err = document.getElementById('pinError');
-        err.innerText = message;
-        err.style.display = 'block';
-        document.getElementById('pinInput').value = '';
+// ক্যাশে থাকলে সাথে সাথে দেখায়, তারপর সার্ভার থেকে নতুন তথ্য এনে আবার দেখায়
+async function cachedApi(key, action, payload, cb) {
+  const k = 'c_' + (USER ? USER.id : '') + '_' + key;
+  const c = LS.get(k);
+  if (c) cb(c, true);
+  try {
+    const res = must(await api(action, payload));
+    LS.set(k, res);
+    if (!c || JSON.stringify(c) !== JSON.stringify(res)) cb(res, false);
+  } catch (e) { if (!c) throw e; }
+}
+const dropCaches = () => { LS.dropPrefix('c_'); };
+
+
+/* ---------- প্রবেশ / সেশন ---------- */
+function showLogin(msg) {
+  $('splash').hidden = true; $('appView').hidden = true; $('loginView').hidden = false;
+  const er = $('loginErr');
+  if (msg) { er.textContent = msg; er.hidden = false; } else er.hidden = true;
+  const last = LS.get('lastuid');
+  if (last && !$('loginUser').value) $('loginUser').value = last;
+  ($('loginUser').value ? $('loginPass') : $('loginUser')).focus();
+}
+
+function forceLogout(msg) {
+  SESSION = null; USER = null; CONFIG = null;
+  LS.clearSession();
+  document.body.classList.remove('nav-open');
+  showLogin(msg || '');
+}
+
+$('pwToggle').onclick = () => {
+  const p = $('loginPass'); const show = p.type === 'password';
+  p.type = show ? 'text' : 'password'; $('pwToggle').textContent = show ? 'লুকান' : 'দেখুন';
+};
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const uid = $('loginUser').value.trim().toLowerCase(), pw = $('loginPass').value;
+  if (!uid || !pw) { $('loginErr').textContent = 'ইউজার আইডি ও পাসওয়ার্ড দিন।'; $('loginErr').hidden = false; return; }
+  $('loginErr').hidden = true;
+  setBusy($('loginBtn'), true, 'যাচাই হচ্ছে…');
+  try {
+    const res = await api('login', { userId: uid, password: pw });
+    if (res.status === 'success') {
+      SESSION = { token: res.token }; USER = res.user; CONFIG = res.config;
+      LS.set('session', SESSION); LS.set('user', USER); LS.set('config', CONFIG); LS.set('lastuid', uid);
+      $('loginPass').value = '';
+      enterApp();
+    } else { $('loginErr').textContent = res.message || 'প্রবেশ করা যায়নি।'; $('loginErr').hidden = false; $('loginPass').value = ''; $('loginPass').focus(); }
+  } catch (err) { $('loginErr').textContent = err.message; $('loginErr').hidden = false; }
+  finally { setBusy($('loginBtn'), false); }
+});
+
+function paintChrome() {
+  $('uName').textContent = USER.name;
+  $('uRole').textContent = USER.role === 'admin' ? 'অ্যাডমিন' : 'চালক';
+  $('uAvatar').textContent = (USER.name || '?').trim().charAt(0);
+  $('navAdmin').hidden = USER.role !== 'admin';
+}
+
+let appShown = false;
+function enterApp() {
+  $('splash').hidden = true; $('loginView').hidden = true; $('appView').hidden = false;
+  appShown = true;
+  paintChrome();
+  route();
+  if (USER.mustChange) openChangePassword(true);
+}
+
+async function boot() {
+  SESSION = LS.get('session');
+  if (!SESSION || !SESSION.token) { showLogin(); return; }
+  const u = LS.get('user'), c = LS.get('config');
+  if (u && c) { USER = u; CONFIG = c; enterApp(); }     // পেজ রিলোডে পাসওয়ার্ড চায় না; ক্যাশ থেকে সাথে সাথে খোলে
+  try {
+    const res = must(await api('me'));
+    SESSION = { token: res.token }; USER = res.user; CONFIG = res.config;
+    LS.set('session', SESSION); LS.set('user', USER); LS.set('config', CONFIG);
+    if (!appShown) enterApp(); else { paintChrome(); if (USER.mustChange) openChangePassword(true); }
+  } catch (e) {
+    if (!appShown) showLogin(SESSION ? e.message : '');
+  }
+}
+
+$('logoutBtn').onclick = async () => {
+  try { await api('logout'); } catch (e) {}
+  forceLogout('');
+};
+
+function openChangePassword(forced) {
+  const m = modal({ title: forced ? 'নতুন পাসওয়ার্ড দিন' : 'পাসওয়ার্ড পরিবর্তন', dismissible: !forced,
+    html: `${forced ? '<div class="notice info" style="margin:0 0 12px">নিরাপত্তার জন্য প্রথমবার নিজের পছন্দের পাসওয়ার্ড দিতে হবে।</div>' : ''}
+      <div id="cpErr" class="err" hidden></div>
+      <div class="field"><label>বর্তমান পাসওয়ার্ড</label><input type="password" id="cpOld" autocomplete="current-password"></div>
+      <div class="field"><label>নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input type="password" id="cpNew" autocomplete="new-password"></div>
+      <div class="field"><label>নতুন পাসওয়ার্ড আবার</label><input type="password" id="cpNew2" autocomplete="new-password"></div>`,
+    buttons: (forced ? [] : [{ label: 'বাতিল', cls: 'ghost' }]).concat([{ label: 'পাসওয়ার্ড বদলান', keepOpen: true, onClick: async (back, close) => {
+      const q = id => back.querySelector(id), er = q('#cpErr');
+      const o = q('#cpOld').value, n = q('#cpNew').value, n2 = q('#cpNew2').value;
+      const fail = t => { er.textContent = t; er.hidden = false; };
+      if (!o || !n) return fail('সব ঘর পূরণ করুন।');
+      if (n !== n2) return fail('নতুন পাসওয়ার্ড দুইবার একই হয়নি।');
+      try {
+        const res = await api('changePassword', { oldPassword: o, newPassword: n });
+        if (res.status === 'success') { SESSION = { token: res.token }; LS.set('session', SESSION); USER.mustChange = false; LS.set('user', USER); close(); toast('পাসওয়ার্ড বদলানো হয়েছে', 'ok'); }
+        else fail(res.message || 'বদলানো যায়নি।');
+      } catch (e) { fail(e.message); }
+    } }]) });
+  setTimeout(() => m.el.querySelector('#cpOld').focus(), 50);
+}
+$('navPw').onclick = e => { e.preventDefault(); document.body.classList.remove('nav-open'); openChangePassword(false); };
+
+/* ---------- মেনু ও রাউটার ---------- */
+$('menuBtn').onclick = () => document.body.classList.toggle('nav-open');
+$('backdrop').onclick = () => document.body.classList.remove('nav-open');
+
+function parseHash() {
+  let h = location.hash || '';
+  if (h.toLowerCase() === '#admin') h = '#/admin/drivers';
+  const m = h.match(/^#\/([a-z]+)(?:\/([a-z]+))?(?:\?(.*))?$/);
+  if (!m) return { page: 'dashboard', sub: '', q: {} };
+  const q = {};
+  (m[3] || '').split('&').forEach(p => { if (!p) return; const i = p.indexOf('='); q[p.slice(0, i)] = decodeURIComponent(p.slice(i + 1)); });
+  return { page: m[1], sub: m[2] || '', q };
+}
+
+function route() {
+  if (!USER) return;
+  const r = parseHash();
+  if (['dashboard', 'editor', 'bills', 'admin'].indexOf(r.page) < 0 || (r.page === 'admin' && USER.role !== 'admin')) { location.hash = '#/dashboard'; return; }
+  document.querySelectorAll('.page').forEach(p => p.hidden = p.id !== 'page-' + r.page);
+  document.querySelectorAll('#sidebar a[data-r]').forEach(a => a.classList.toggle('active', a.dataset.r === r.page));
+  document.body.classList.remove('nav-open');
+  window.scrollTo(0, 0);
+  if (r.page === 'dashboard') initDashboard();
+  else if (r.page === 'editor') initEditor(r.q);
+  else if (r.page === 'bills') initBills();
+  else initAdmin(r.sub || 'drivers');
+}
+window.addEventListener('hashchange', route);
+
+/* ---------- নির্বাচন-বাক্স সহায়ক ---------- */
+function fillYears(sel, ph) {
+  sel.innerHTML = `<option value="">${esc(ph)}</option>` + CONFIG.years.map(y => `<option value="${y}">${toBn(y)}</option>`).join('');
+}
+function fillMonths(sel, ph) {
+  sel.innerHTML = `<option value="">${esc(ph)}</option>` + CONFIG.months.map(m => `<option value="${m.code}">${esc(m.name)}</option>`).join('');
+}
+const monthNameOf = code => (CONFIG.months.find(m => m.code === pad2(code)) || {}).name || '';
+function badgeFor(status) {
+  if (status === 'Locked') return '<span class="badge b-ok">🔒 লক করা</span>';
+  if (status === 'Draft') return '<span class="badge b-warn">খসড়া</span>';
+  return '<span class="badge b-gray">বিল হয়নি</span>';
+}
+
+
+/* =====================================================================
+   ড্যাশবোর্ড
+   ===================================================================== */
+let dashInit = false;
+function initDashboard() {
+  $('dHello').textContent = 'স্বাগতম, ' + USER.name;
+  if (!dashInit) {
+    fillYears($('dYear'), 'সাল'); fillMonths($('dMonth'), 'মাস');
+    const [ty, tm] = CONFIG.today.split('-').map(Number);      // ডিফল্ট: আগের মাস (বিল সাধারণত আগের মাসের হয়)
+    let y = ty, m = tm - 1; if (m < 1) { m = 12; y--; }
+    if (CONFIG.years.indexOf(y) < 0) y = CONFIG.years[0];
+    $('dYear').value = y; $('dMonth').value = pad2(m);
+    $('dYear').onchange = $('dMonth').onchange = loadDashboard;
+    dashInit = true;
+  }
+  loadDashboard();
+  loadAlerts();
+}
+
+async function loadAlerts() {
+  const box = $('dAlerts');
+  if (USER.role !== 'admin') { box.innerHTML = ''; return; }
+  try {
+    const res = must(await api('adminAlerts'));
+    box.innerHTML = res.alerts.length ? `<div class="card"><h2>⚠️ সতর্কবার্তা (${toBn(res.alerts.length)})</h2>` + res.alerts.map(a => `<div class="notice ${a.level === 'bad' ? 'bad' : a.level === 'warn' ? 'warn' : 'info'}" style="margin:6px 0 0">${esc(a.text)}</div>`).join('') + '</div>' : '<div class="notice ok" style="margin:0 0 16px">✅ কোনো সতর্কবার্তা নেই — সব ঠিক আছে।</div>';
+  } catch (e) { box.innerHTML = ''; }
+}
+
+async function loadDashboard() {
+  const y = $('dYear').value, m = $('dMonth').value;
+  if (!y || !m) { $('dBody').innerHTML = '<tr><td colspan="5" class="empty">সাল ও মাস বাছুন।</td></tr>'; $('dStats').innerHTML = ''; return; }
+  try { await cachedApi(`dash_${y}_${m}`, 'dashboard', { year: y, month: m }, res => renderDashboard(res.drivers, y, m)); }
+  catch (e) { $('dBody').innerHTML = `<tr><td colspan="5" class="empty">${esc(e.message)}</td></tr>`; }
+}
+
+function renderDashboard(list, y, m) {
+  if ($('dYear').value !== y || $('dMonth').value !== m) return;
+  const cnt = s => list.filter(d => d.active && d.status === s).length;
+  const act = list.filter(d => d.active).length;
+  $('dStats').innerHTML = `
+    <div class="stat"><div class="n">${toBn(act)}</div><div class="l">কর্মরত চালক</div></div>
+    <div class="stat ok"><div class="n">${toBn(cnt('Locked'))}</div><div class="l">লক করা বিল</div></div>
+    <div class="stat warn"><div class="n">${toBn(cnt('Draft'))}</div><div class="l">খসড়া (লক বাকি)</div></div>
+    <div class="stat bad"><div class="n">${toBn(cnt('None'))}</div><div class="l">বিল হয়নি</div></div>`;
+  if (!list.length) { $('dBody').innerHTML = '<tr><td colspan="5" class="empty">এই মাসের জন্য কোনো চালক নেই।</td></tr>'; return; }
+  $('dBody').innerHTML = list.map(d => {
+    const q = `d=${d.id}&y=${y}&m=${m}`;
+    let acts = '';
+    if (d.canEdit && d.status !== 'Locked' && (d.active || d.status !== 'None')) acts += `<a class="btn sm" href="#/editor?${q}">${d.status === 'None' ? '➕ তৈরি করুন' : '✏️ সম্পাদনা'}</a> `;
+    else if (d.status !== 'None') acts += `<a class="btn sm ghost" href="#/editor?${q}">👁 দেখুন</a> `;
+    if (d.status === 'Locked') acts += `<button class="btn sm ghost" data-print="${q}">🖨️ প্রিন্ট</button>`;
+    return `<tr class="${d.active ? '' : 'inactive'}"><td><b>${esc(d.name)}</b>${d.active ? '' : ' <span class="badge b-gray">Inactive</span>'}</td>
+      <td>${esc(toBn(d.carNo) || '—')}</td><td>${badgeFor(d.status)}</td><td class="num">${d.status === 'None' ? '—' : money(d.total) + '/='}</td><td class="act">${acts}</td></tr>`;
+  }).join('');
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-print]');
+  if (!b) return;
+  const p = new URLSearchParams(b.dataset.print);
+  printFromServer(p.get('d'), p.get('y'), p.get('m'), b);
+});
+
+/* =====================================================================
+   সংরক্ষিত বিল (পুরোনো বিল দেখা)
+   ===================================================================== */
+let billsInit = false;
+function initBills() {
+  if (!billsInit) {
+    fillYears($('bYear'), 'সব সাল'); fillMonths($('bMonth'), 'সব মাস');
+    $('bYear').onchange = $('bMonth').onchange = () => { refreshBillDrivers().then(loadBills); };
+    $('bDriver').onchange = $('bStatus').onchange = loadBills;
+    billsInit = true;
+    $('bDriver').innerHTML = '<option value="">সব চালক</option>';
+  }
+  refreshBillDrivers().then(loadBills);
+}
+
+async function refreshBillDrivers() {
+  const y = $('bYear').value, m = $('bMonth').value, cur = $('bDriver').value;
+  const fill = list => {
+    $('bDriver').innerHTML = '<option value="">সব চালক</option>' + list.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+    if (list.some(d => String(d.id) === cur)) $('bDriver').value = cur;
+  };
+  try {
+    if (y && m) await cachedApi(`period_${y}_${m}`, 'listPeriod', { year: y, month: m }, r => fill(r.drivers));   // ওই মাসে ডিউটি করা সবাই
+    else await cachedApi('drivers', 'listDrivers', {}, r => fill(r.drivers));
+  } catch (e) {}
+}
+
+async function loadBills() {
+  const f = { year: $('bYear').value, month: $('bMonth').value, driverId: $('bDriver').value, status: $('bStatus').value };
+  try { await cachedApi(`bills_${f.year}_${f.month}_${f.driverId}_${f.status}`, 'listBills', f, res => renderBills(res, f)); }
+  catch (e) { $('bBody').innerHTML = `<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`; }
+}
+
+function renderBills(res, f) {
+  if (f.year !== $('bYear').value || f.month !== $('bMonth').value || f.driverId !== $('bDriver').value || f.status !== $('bStatus').value) return;
+  const list = res.bills;
+  if (!list.length) { $('bBody').innerHTML = '<tr><td colspan="7" class="empty">কোনো বিল পাওয়া যায়নি।</td></tr>'; $('bSummary').textContent = ''; return; }
+  let sum = 0;
+  $('bBody').innerHTML = list.map(b => {
+    sum += b.total;
+    const q = `d=${b.driverId}&y=${b.year}&m=${pad2(b.month)}`;
+    let acts = `<a class="btn sm ghost" href="#/editor?${q}">${b.canEdit && b.status !== 'Locked' ? '✏️ সম্পাদনা' : '👁 দেখুন'}</a> `;
+    if (b.status === 'Locked') {
+      acts += `<button class="btn sm" data-print="${q}">🖨️ প্রিন্ট</button> `;
+      if (USER.role === 'admin') acts += `<button class="btn sm purple" data-unlock="${q}">🔓 আনলক</button>`;
     }
+    return `<tr class="${b.driverActive ? '' : 'inactive'}"><td>${toBn(b.year)} — ${esc(b.monthName)}</td><td><b>${esc(b.driverName)}</b>${b.driverActive ? '' : ' <span class="badge b-gray">Inactive</span>'}</td>
+      <td>${badgeFor(b.status)}</td><td class="num">${toBn(b.totalHours)}</td><td class="num">${money(b.total)}/=</td>
+      <td class="small muted">${esc(b.updatedAt)}${b.updatedBy ? ' • ' + esc(b.updatedBy) : ''}</td><td class="act">${acts}</td></tr>`;
+  }).join('');
+  $('bSummary').textContent = `মোট ${toBn(list.length)}টি বিল • সর্বমোট ${money(sum)} টাকা` + (res.truncated ? ' (প্রথম ৫০০টি দেখানো হচ্ছে; ছাঁকনি দিয়ে সীমিত করুন)' : '');
+}
 
-    function verifyPin() {
-        const input = document.getElementById('pinInput');
-        const btn = document.getElementById('pinSubmitBtn');
-        const typed = input.value;
-        if (!typed) return;
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-unlock]');
+  if (!b) return;
+  const p = new URLSearchParams(b.dataset.unlock);
+  const reason = await askReason('বিল আনলক', 'বিলটি আনলক করবেন? এরপর অনুমতিপ্রাপ্ত ইউজার এটি সম্পাদনা করতে পারবেন এবং আবার লক না করা পর্যন্ত প্রিন্ট বন্ধ থাকবে।', 'আনলক করুন');
+  if (!reason) return;
+  setBusy(b, true, '…');
+  try { must(await api('unlockBill', { driverId: p.get('d'), year: p.get('y'), month: p.get('m'), reason })); dropCaches(); toast('বিলটি আনলক হয়েছে', 'ok'); loadBills(); }
+  catch (err) { toast(err.message, 'bad'); setBusy(b, false); }
+});
 
-        document.getElementById('pinError').style.display = 'none';
-        btn.disabled = true;
-        btn.innerText = 'যাচাই হচ্ছে...';
+/* =====================================================================
+   প্রিন্ট শিট (শুধু লক করা বিল; শিরোনাম শুধু প্রিন্টেই আসে)
+   ===================================================================== */
+function buildPrintSheet(info, y, m, rows, calc) {
+  const mn = monthNameOf(m);
+  const tr = rows.map((r, i) => {
+    const c = (calc && calc.rows[i]) || { hours: 0, rate: '0.00', amount: '0' };
+    return `<tr><td>${toBn(pad2(r.day))}/${toBn(pad2(m))}/${toBn(y)}</td><td>${esc(r.dutyPlace)}</td><td>${esc(r.startTime)}</td><td>${esc(r.endTime)}</td>
+      <td>${toBn(c.hours)}</td><td>${toBn(c.rate)}</td><td>${toBn(c.amount)}</td><td>${esc(r.remarks)}</td></tr>`;
+  }).join('');
+  const sigs = CONFIG.signatures.map(s => s.driver
+    ? `<div class="signature-box">...................................<br>(${esc(info.name)})<br>${esc(s.role)}<br>${esc(CONFIG.orgLine)}<br>মোবাইলঃ ${esc(toBn(info.mobile) || '—')}</div>`
+    : `<div class="signature-box">...................................<br>${esc(s.role)}<br>${esc(CONFIG.orgLine)}</div>`).join('');
+  $('printSheet').innerHTML = `<div class="print-page">
+    <h2>${esc(CONFIG.billTitle)}</h2>
+    <div class="hl">গাড়ি নং <b>${esc(toBn(info.carNo) || '—')}</b> গাড়ি চালকের নাম <span class="u">${esc(info.name)}</span> এর <br>
+      <span class="u">${toBn(y)}</span> সালের <span class="u">${esc(mn)}</span> মাসের অধিকাল ভাতার বিল।</div>
+    <div class="bp">মূল বেতন <b>${money(info.basicPay)}</b>/=</div>
+    <table><thead><tr><th rowspan="2" style="width:11%">তারিখ</th><th rowspan="2" style="width:18%">বারের নাম / ডিউটির স্থান</th>
+      <th colspan="2" style="width:26%">নিয়মিত সময়ের বাহিরে অতিরিক্ত সময়</th><th rowspan="2" style="width:12%">অতিরিক্ত<br>কর্ম ঘণ্টা</th>
+      <th rowspan="2" style="width:11%">প্রতি ঘণ্টার রেট</th><th rowspan="2" style="width:11%">টাকার পরিমাণ</th><th rowspan="2" style="width:11%">মন্তব্য</th></tr>
+      <tr><th style="width:13%">হইতে</th><th style="width:13%">পর্যন্ত</th></tr></thead>
+      <tbody>${tr}</tbody>
+      <tfoot><tr style="font-weight:bold"><td colspan="4" style="text-align:right">মোট:</td><td>${toBn(calc.totalHours)} ঘণ্টা</td><td>-</td><td>${toBn(calc.total)}/=</td><td>টাকা</td></tr></tfoot></table>
+    <div class="words">(${esc(calc.words)})</div>
+    <div class="footer-section">${sigs}</div></div>`;
+}
 
-        callServer('login', {}, typed).then(res => {
-            if (res.status === 'success' && Array.isArray(res.drivers)) {
-                APP_PIN = typed;
-                driversData = res.drivers;
-                fillDriverLists();
-                input.value = '';
-                document.getElementById('pinModal').style.display = 'none';
-                startApp();
-            } else {
-                showPinError(res.message || 'ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।');
-            }
-        }).catch(() => {
-            showPinError('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
-        }).finally(() => {
-            btn.disabled = false;
-            btn.innerText = 'প্রবেশ করুন';
-        });
+function doPrint() { window.print(); }
+
+async function printFromServer(d, y, m, btn) {
+  setBusy(btn, true, '…');
+  try {
+    const res = must(await api('getBill', { driverId: d, year: y, month: m }));
+    if (res.bill.status !== 'Locked') { toast('বিল লক না করা পর্যন্ত প্রিন্ট করা যায় না।', 'warn'); return; }
+    buildPrintSheet(res.driver, y, m, res.bill.rows, res.calc);
+    setTimeout(doPrint, 60);
+  } catch (e) { toast(e.message, 'bad'); }
+  finally { setBusy(btn, false); }
+}
+
+
+/* =====================================================================
+   বিল তৈরি / সম্পাদনা
+   ===================================================================== */
+const blankRow = d => ({ day: String(d || 1), dutyPlace: '', startTime: '', endTime: '', remarks: '' });
+const E = {
+  ready: false, year: '', month: '', driverId: '', driver: null, list: [], rows: [blankRow(1)],
+  status: 'None', exists: false, version: '', updatedAt: '', updatedBy: '', lockedBy: '', lockedAt: '',
+  perms: {}, reason: '', dirty: false, calc: null, calcSeq: 0, loading: false, staleDraft: false,
+  undo: [], redo: [], baseSnap: '', suggest: {}, unlockNote: ''
+};
+const snap = () => JSON.stringify(E.rows);
+const editorKey = () => `${E.driverId}|${E.year}|${E.month}`;
+const draftKey = () => 'draft_' + USER.id;
+let editorOptsDone = false;
+let timers = { calc: null, undo: null, draft: null };
+
+function ensureEditorOptions() {
+  if (editorOptsDone) return;
+  fillYears($('eYear'), 'সাল বাছুন'); fillMonths($('eMonth'), 'মাস বাছুন');
+  editorOptsDone = true;
+}
+
+function initEditor(q) {
+  ensureEditorOptions();
+  if (q.d !== undefined && q.y && q.m) { openBill(q.d, q.y, pad2(q.m)); return; }
+  if (E.ready) { renderEditor(); return; }
+  E.ready = true;
+  const dr = LS.get(draftKey());
+  if (dr && dr.driverId !== '' && dr.year && dr.month) { restoreDraft(dr); return; }
+  renderEditor(); fillDriverSelect();
+}
+
+async function openBill(d, y, m, draft) {
+  const same = `${d}|${y}|${m}` === editorKey();
+  if (E.dirty && same) { renderEditor(); return; }
+  if (E.dirty && !same && !await confirmBox('এই বিলে অসংরক্ষিত পরিবর্তন আছে। সেগুলো বাদ দিয়ে অন্য বিল খুলবেন?', 'বাদ দিন ও খুলুন', true)) return;
+  E.ready = true;
+  E.year = String(y); E.month = pad2(m); E.driverId = String(d);
+  await Promise.all([loadBill(draft), loadDriverList()]);
+  fillDriverSelect();
+}
+
+async function restoreDraft(dr) {
+  E.year = String(dr.year); E.month = pad2(dr.month); E.driverId = String(dr.driverId);
+  await Promise.all([loadBill(dr), loadDriverList()]);
+  fillDriverSelect();
+}
+
+async function loadDriverList() {
+  if (!E.year || !E.month) { E.list = []; return; }
+  try { await cachedApi(`active_${E.year}_${E.month}`, 'listActive', { year: E.year, month: E.month }, r => { E.list = r.drivers; fillDriverSelect(); }); }
+  catch (e) { E.list = []; toast(e.message, 'bad'); }
+}
+
+function fillDriverSelect() {
+  const sel = $('eDriver');
+  $('eYear').value = E.year; $('eMonth').value = E.month;
+  const ready = !!(E.year && E.month);
+  const list = E.list.slice();
+  if (E.driver && String(E.driver.id) === E.driverId && !list.some(d => String(d.id) === E.driverId)) list.push(E.driver);   // বদলি/অবসর চালকের পুরোনো বিল দেখার জন্য
+  let ph = !ready ? 'আগে সাল ও মাস বাছুন' : (list.length ? 'চালক বাছুন' : 'আপনার জন্য কোনো চালক নেই — অ্যাডমিনকে বলুন');
+  sel.innerHTML = `<option value="">${esc(ph)}</option>` + list.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  sel.disabled = !ready || !list.length;
+  sel.value = list.some(d => String(d.id) === E.driverId) ? E.driverId : '';
+}
+
+async function onPeriodChange() {
+  const y = $('eYear').value, m = $('eMonth').value;
+  if (E.dirty && !await confirmBox('অসংরক্ষিত পরিবর্তন বাদ যাবে। চালিয়ে যাবেন?', 'চালিয়ে যান', true)) { $('eYear').value = E.year; $('eMonth').value = E.month; return; }
+  const prev = E.driverId;
+  E.year = y; E.month = m;
+  clearBillState(); E.driverId = '';
+  renderEditor(); fillDriverSelect();
+  if (!(y && m)) return;
+  await loadDriverList();
+  if (prev && E.list.some(d => String(d.id) === prev)) { E.driverId = prev; fillDriverSelect(); await loadBill(); }   // একই চালক থাকলে নতুন মাসের বিল নিজে আসে
+}
+
+async function onDriverChange() {
+  const d = $('eDriver').value;
+  if (E.dirty && !await confirmBox('অসংরক্ষিত পরিবর্তন বাদ যাবে। চালিয়ে যাবেন?', 'চালিয়ে যান', true)) { fillDriverSelect(); return; }
+  clearBillState(); E.driverId = d;
+  if (!d) { renderEditor(); return; }
+  await loadBill();
+}
+
+function clearBillState() {
+  Object.assign(E, { driver: null, rows: [blankRow(1)], status: 'None', exists: false, version: '', updatedAt: '', updatedBy: '', lockedBy: '', lockedAt: '',
+    perms: {}, reason: '', dirty: false, calc: null, staleDraft: false, undo: [], redo: [], baseSnap: '', suggest: {}, unlockNote: '' });
+  E.calcSeq++; LS.del(draftKey());
+}
+
+async function loadBill(draft) {
+  if (!(E.year && E.month && E.driverId)) return;
+  E.loading = true; renderEditor();
+  try {
+    const res = must(await api('getBill', { year: E.year, month: E.month, driverId: E.driverId }));
+    E.driver = res.driver; E.status = res.bill.status; E.exists = res.bill.exists; E.version = res.bill.version;
+    E.updatedAt = res.bill.updatedAt; E.updatedBy = res.bill.updatedBy; E.lockedBy = res.bill.lockedBy; E.lockedAt = res.bill.lockedAt;
+    E.perms = res.perms; E.reason = res.reason; E.calc = res.calc; E.calcSeq++;
+    E.suggest = res.suggest || {}; E.unlockNote = res.bill.unlockNote || '';
+    E.rows = res.bill.rows.length ? res.bill.rows.map(r => ({ day: String(r.day || 1), dutyPlace: r.dutyPlace || '', startTime: r.startTime || '', endTime: r.endTime || '', remarks: r.remarks || '' })) : [blankRow(1)];
+    if (!E.exists && E.perms.canEdit) applySuggestion(0, true);
+    E.baseSnap = snap(); E.dirty = false; E.undo = [snap()]; E.redo = []; E.staleDraft = false;
+    LS.del(draftKey());
+    if (draft) {
+      if (E.perms.canEdit && Array.isArray(draft.rows) && draft.rows.length) {
+        E.staleDraft = String(draft.version || '') !== E.version;
+        E.rows = draft.rows; E.version = String(draft.version || ''); E.calc = null;
+        E.dirty = true; E.undo = [snap()]; scheduleDraft(); scheduleCalc(50);
+        toast('অসংরক্ষিত খসড়া ফিরিয়ে আনা হয়েছে', 'warn');
+      } else toast('আগের অসংরক্ষিত খসড়াটি আর প্রযোজ্য নয় (বিল লক বা অনুমতি নেই), তাই বাদ গেছে।', 'warn', 5000);
     }
+  } catch (e) { toast(e.message, 'bad'); E.driverId = ''; E.driver = null; }
+  E.loading = false; renderEditor(); fillDriverSelect();
+}
+
+/* ---------- আঁকা ---------- */
+function renderEditor() {
+  const has = !!(E.driver && E.driverId);
+  $('eTableCard').hidden = !has; $('eActions').hidden = !has;
+  $('eTableCard').style.opacity = E.loading ? .55 : 1;
+
+  let chips = '';
+  if (has) chips = `<div class="chip"><div class="k">গাড়ি নং</div><div class="v">${esc(toBn(E.driver.carNo) || '—')}</div></div>
+    <div class="chip"><div class="k">মূল বেতন</div><div class="v">${E.driver.basicPay > 0 ? money(E.driver.basicPay) + '/=' : '—'}</div></div>
+    <div class="chip"><div class="k">মোবাইল</div><div class="v">${esc(toBn(E.driver.mobile) || '—')}</div></div>`;
+  $('eInfo').innerHTML = chips;
+
+  let n = '';
+  if (has) {
+    if (E.reason) n += `<div class="notice ${E.status === 'Locked' ? 'ok' : 'warn'}">${esc(E.reason)}</div>`;
+    if (!(E.driver.basicPay > 0)) n += `<div class="notice bad">⚠️ এই চালকের জন্য মূল বেতন নির্ধারিত নেই। অ্যাডমিন প্যানেলে গাড়ি ও বেতন সেট না হলে বিল সেভ হবে না।</div>`;
+    else if (E.driver.source === 'inherited' || E.driver.source === 'default') n += `<div class="notice info">ℹ️ এই মাসের জন্য আলাদা গাড়ি/বেতন নির্ধারিত নেই; সর্বশেষ নির্ধারিত তথ্য দেখানো হচ্ছে। ভুল হলে অ্যাডমিনকে দিয়ে ঠিক করিয়ে নিন।</div>`;
+    if (E.unlockNote && E.status === 'Draft') n += `<div class="notice warn">🔓 আনলক করা হয়েছিল — ${esc(E.unlockNote)}</div>`;
+    if (E.staleDraft) n += `<div class="notice warn">⚠️ সার্ভারে এই বিলটি আপনার খসড়ার পরে বদলেছে। সেভ করতে গেলে সংঘাত আসবে; চাইলে "সার্ভার থেকে নতুন করে লোড" চাপুন।</div>`;
+  }
+  $('eNotice').innerHTML = n;
+
+  if (!has) return;
+  $('eBadge').innerHTML = E.status === 'Locked' ? '<span class="badge b-ok">🔒 লক করা</span>' : E.status === 'Draft' ? '<span class="badge b-warn">খসড়া (লক হয়নি)</span>' : '<span class="badge b-blue">নতুন বিল (সেভ হয়নি)</span>';
+  let sl = '';
+  if (E.exists) sl = `সর্বশেষ সেভ: ${E.updatedAt}${E.updatedBy ? ' (' + E.updatedBy + ')' : ''}`;
+  if (E.status === 'Locked') sl += ` • লক: ${E.lockedBy} ${E.lockedAt}`;
+  if (E.status !== 'Locked') sl += (sl ? ' • ' : '') + 'লক করার পর প্রিন্ট করা যাবে';
+  $('eStatusLine').textContent = sl;
+  renderRows();
+  paintCalc();
+  updateButtons();
+}
+
+function renderRows() {
+  const days = daysIn(E.year, E.month), ro = !E.perms.canEdit;
+  const places = [''].concat(CONFIG.dutyPlaces);
+  $('eBody').innerHTML = E.rows.map((r, i) => {
+    let dopts = '';
+    for (let d = 1; d <= days; d++) dopts += `<option value="${d}"${+r.day === d ? ' selected' : ''}>${toBn(pad2(d))}</option>`;
+    const popts = places.map(p => `<option value="${esc(p)}"${p === r.dutyPlace ? ' selected' : ''}>${esc(p)}</option>`).join('');
+    return `<tr data-i="${i}">
+      <td class="dt"><select data-f="day"${ro ? ' disabled' : ''}>${dopts}</select><span class="muted">/${toBn(E.month)}/${toBn(E.year)}</span></td>
+      <td><select data-f="dutyPlace"${ro ? ' disabled' : ''}>${popts}</select></td>
+      <td><input data-f="startTime" value="${esc(r.startTime)}" placeholder="রাত ১০:০০"${ro ? ' disabled' : ''}></td>
+      <td><input data-f="endTime" value="${esc(r.endTime)}" placeholder="ভোর ৪:০০"${ro ? ' disabled' : ''}></td>
+      <td class="calc c-h">…</td><td class="calc c-r">…</td><td class="calc c-a">…</td>
+      <td><input data-f="remarks" value="${esc(r.remarks)}"${ro ? ' disabled' : ''}></td>
+      <td>${ro ? '' : `<button class="rowbtn" style="background:#16a34a" data-add="${i}" title="নিচে সারি যোগ">+</button> <button class="rowbtn" style="background:#dc2626" data-del="${i}" title="সারি মুছুন">−</button>`}</td></tr>`;
+  }).join('');
+}
+
+function paintCalc() {
+  const c = E.calc, ok = c && c.rows.length === E.rows.length;
+  document.querySelectorAll('#eBody tr').forEach((tr, i) => {
+    const cells = [tr.querySelector('.c-h'), tr.querySelector('.c-r'), tr.querySelector('.c-a')];
+    const v = ok ? [toBn(c.rows[i].hours), toBn(c.rows[i].rate), toBn(c.rows[i].amount)] : ['…', '…', '…'];
+    cells.forEach((el, k) => { el.textContent = v[k]; el.classList.remove('stale'); });
+  });
+  $('eTotHours').textContent = ok ? toBn(c.totalHours) : '…';
+  $('eTotal').textContent = ok ? toBn(c.total) + '/=' : '…';
+  $('eWords').textContent = ok ? '(' + c.words + ')' : '';
+}
+
+function updateButtons() {
+  const p = E.perms || {};
+  $('eSave').disabled = !(p.canEdit && (E.dirty || !E.exists));
+  $('eSave').hidden = !p.canEdit;
+  $('eLock').hidden = !p.canLock;
+  $('eLock').disabled = E.dirty;
+  $('eLock').title = E.dirty ? 'আগে সেভ করুন' : '';
+  $('ePrint').disabled = !(E.status === 'Locked' && !E.dirty);
+  $('ePrint').title = E.status === 'Locked' ? '' : 'বিল লক না করা পর্যন্ত প্রিন্ট করা যায় না';
+  $('eUnlock').hidden = !p.canUnlock;
+  $('eReload').hidden = !(E.dirty || E.staleDraft || E.exists);
+  $('eUndo').disabled = !(p.canEdit && E.undo.length > 1);
+  $('eRedo').disabled = !(p.canEdit && E.redo.length > 0);
+}
+
+// ছুটির তালিকা অনুযায়ী (শুক্রবার/সরকারি/ঈদের ছুটি) ডিউটির স্থান নিজে বসানো — শুধু ফাঁকা থাকলে
+function applySuggestion(i, silent) {
+  const r = E.rows[i], s = E.suggest && E.suggest[r.day];
+  if (r && !r.dutyPlace && s) { r.dutyPlace = s; return true; }
+  return false;
+}
+
+/* ---------- সম্পাদনা ও হিসাব ---------- */
+function touched() {
+  if (!E.perms.canEdit) return;
+  E.dirty = snap() !== E.baseSnap;
+  document.querySelectorAll('#eBody .calc').forEach(el => el.classList.add('stale'));
+  scheduleCalc(450); scheduleUndo(); scheduleDraft(); updateButtons();
+}
+
+function scheduleUndo() {
+  clearTimeout(timers.undo);
+  timers.undo = setTimeout(() => {
+    const s = snap();
+    if (s !== E.undo[E.undo.length - 1]) { E.undo.push(s); if (E.undo.length > 30) E.undo.shift(); E.redo = []; updateButtons(); }
+  }, 400);
+}
+
+function scheduleDraft() {
+  clearTimeout(timers.draft);
+  timers.draft = setTimeout(() => {
+    if (!E.dirty) { LS.del(draftKey()); return; }
+    LS.set(draftKey(), { year: E.year, month: E.month, driverId: E.driverId, rows: E.rows, version: E.version, savedAt: Date.now() });
+    const a = $('eAuto'); a.classList.add('on'); setTimeout(() => a.classList.remove('on'), 1400);
+  }, 300);
+}
+
+function scheduleCalc(ms) { clearTimeout(timers.calc); timers.calc = setTimeout(runCalc, ms); }
+
+async function runCalc() {
+  if (!(E.driverId && E.year && E.month)) return;
+  const seq = ++E.calcSeq, st = $('eCalcState');
+  st.textContent = '⏳ হিসাব হচ্ছে…';
+  try {
+    const res = await api('calc', { year: E.year, month: E.month, driverId: E.driverId, rows: E.rows });
+    if (seq !== E.calcSeq) return;
+    if (res.status === 'success') { E.calc = res.calc; paintCalc(); st.textContent = ''; }
+    else st.textContent = '⚠️ ' + (res.message || 'হিসাব করা যায়নি');
+  } catch (e) { if (seq === E.calcSeq) st.textContent = '⚠️ হিসাব আনা যায়নি — ইন্টারনেট দেখুন'; }
+}
+
+function rowEvent(e) {
+  const f = e.target.dataset && e.target.dataset.f;
+  if (!f) return;
+  const i = +e.target.closest('tr').dataset.i;
+  let v = e.target.value;
+  if (f === 'startTime' || f === 'endTime') { const b = toBn(v); if (b !== v) { e.target.value = b; v = b; } }
+  if (E.rows[i][f] === v) return;
+  E.rows[i][f] = v;
+  if (f === 'day' && applySuggestion(i)) { const sel = e.target.closest('tr').querySelector('[data-f=dutyPlace]'); if (sel) sel.value = E.rows[i].dutyPlace; }
+  touched();
+}
+$('eBody').addEventListener('input', rowEvent);
+$('eBody').addEventListener('change', rowEvent);
+$('eBody').addEventListener('click', e => {
+  const a = e.target.closest('[data-add]'), d = e.target.closest('[data-del]');
+  if (!a && !d) return;
+  if (a) {
+    const i = +a.dataset.add, days = daysIn(E.year, E.month), cur = +E.rows[i].day || 1;
+    E.rows.splice(i + 1, 0, blankRow(cur < days ? cur + 1 : cur));
+    applySuggestion(i + 1);
+  } else {
+    if (E.rows.length <= 1) { toast('সর্বনিম্ন একটি সারি থাকতে হবে।', 'warn'); return; }
+    E.rows.splice(+d.dataset.del, 1);
+  }
+  E.calc = null; renderRows(); paintCalc(); touched(); scheduleUndo();
+});
+
+function applyRows(json) {
+  E.rows = JSON.parse(json); E.calc = null; renderRows(); paintCalc();
+  E.dirty = snap() !== E.baseSnap; scheduleCalc(100); scheduleDraft(); updateButtons();
+}
+$('eUndo').onclick = () => { if (E.undo.length > 1) { E.redo.push(E.undo.pop()); applyRows(E.undo[E.undo.length - 1]); } };
+$('eRedo').onclick = () => { if (E.redo.length) { const s = E.redo.pop(); E.undo.push(s); applyRows(s); } };
+
+/* ---------- সেভ, লক, আনলক, প্রিন্ট ---------- */
+async function saveBill() {
+  if (!E.perms.canEdit || $('eSave').disabled) return;
+  clearTimeout(timers.calc);
+  setBusy($('eSave'), true, 'সেভ হচ্ছে…');
+  let again = false;
+  try {
+    const res = await api('saveBill', { year: E.year, month: E.month, driverId: E.driverId, rows: E.rows, expectedVersion: E.version });
+    if (res.status === 'success') {
+      E.version = res.version; E.exists = true; E.status = 'Draft'; E.updatedAt = res.updatedAt; E.updatedBy = USER.id; E.calc = res.calc; E.calcSeq++;
+      E.baseSnap = snap(); E.dirty = false; E.staleDraft = false; E.perms.canLock = true; E.reason = '';
+      E.undo = [snap()]; E.redo = []; LS.del(draftKey()); dropCaches();
+      toast('বিলটি সেভ হয়েছে। প্রিন্টের জন্য এবার "লক করুন" চাপুন।', 'ok', 4500);
+      renderEditor();
+    } else if (res.status === 'conflict') {
+      toast(res.message, 'bad', 6000); E.staleDraft = true; again = true;
+    } else if (res.status === 'locked' || res.status === 'forbidden') {
+      toast(res.message, 'bad', 5000); await loadBill();
+    } else toast(res.message || 'সেভ করা যায়নি।', 'bad', 5000);
+  } catch (e) { toast(e.message, 'bad'); }
+  setBusy($('eSave'), false);
+  if (again) renderEditor(); else updateButtons();
+}
+
+async function lockBill() {
+  if (E.dirty) { toast('আগে সেভ করুন।', 'warn'); return; }
+  if (!await confirmBox('বিলটি লক করবেন?\n\nলক করার পর আর সম্পাদনা করা যাবে না — শুধু অ্যাডমিন আনলক করতে পারবেন। লক করলে তবেই প্রিন্ট করা যাবে।', '🔒 লক করুন')) return;
+  setBusy($('eLock'), true, 'লক হচ্ছে…');
+  try {
+    const res = await api('lockBill', { year: E.year, month: E.month, driverId: E.driverId, expectedVersion: E.version });
+    if (res.status === 'success') { dropCaches(); toast(res.message, 'ok'); await loadBill(); }
+    else toast(res.message || 'লক করা যায়নি।', 'bad', 5000);
+  } catch (e) { toast(e.message, 'bad'); }
+  setBusy($('eLock'), false); updateButtons();
+}
+
+async function unlockBill() {
+  const reason = await askReason('বিল আনলক', 'বিলটি আনলক করবেন? এরপর এটি সম্পাদনা করা যাবে, আর আবার লক না করা পর্যন্ত প্রিন্ট বন্ধ থাকবে।', '🔓 আনলক করুন');
+  if (!reason) return;
+  setBusy($('eUnlock'), true, '…');
+  try {
+    must(await api('unlockBill', { year: E.year, month: E.month, driverId: E.driverId, reason }));
+    dropCaches(); toast('বিলটি আনলক হয়েছে', 'ok'); await loadBill();
+  } catch (e) { toast(e.message, 'bad'); }
+  setBusy($('eUnlock'), false); updateButtons();
+}
+
+function printBill() {
+  if (E.status !== 'Locked' || E.dirty) { toast('বিল লক না করা পর্যন্ত প্রিন্ট করা যায় না।', 'warn'); return; }
+  if (!E.calc) { toast('হিসাব আসছে, একটু অপেক্ষা করুন…', 'warn'); runCalc().then(printBill); return; }
+  buildPrintSheet(E.driver, E.year, E.month, E.rows, E.calc);
+  setTimeout(doPrint, 60);
+}
+
+async function reloadFromServer() {
+  if (E.dirty && !await confirmBox('অসংরক্ষিত পরিবর্তন বাদ দিয়ে সার্ভার থেকে নতুন করে লোড করবেন?', 'বাদ দিন ও লোড করুন', true)) return;
+  await loadBill();
+}
+
+async function newBill() {
+  if (E.dirty && !await confirmBox('অসংরক্ষিত পরিবর্তন বাদ যাবে। নতুন বিল শুরু করবেন?', 'বাদ দিন', true)) return;
+  clearBillState(); E.year = ''; E.month = ''; E.driverId = ''; E.list = [];
+  if (location.hash.indexOf('?') >= 0) history.replaceState(null, '', '#/editor');
+  renderEditor(); fillDriverSelect();
+}
+
+$('eYear').onchange = $('eMonth').onchange = onPeriodChange;
+$('eDriver').onchange = onDriverChange;
+$('eSave').onclick = saveBill; $('eLock').onclick = lockBill; $('eUnlock').onclick = unlockBill;
+$('ePrint').onclick = printBill; $('eReload').onclick = reloadFromServer; $('eNew').onclick = newBill;
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && !$('page-editor').hidden) { e.preventDefault(); saveBill(); }
+});
+window.addEventListener('beforeunload', e => { if (E.dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+
+/* =====================================================================
+   অ্যাডমিন প্যানেল
+   ===================================================================== */
+let adminTabNow = '', adminDrivers = [], adminEditingId = null, adminAssign = { assignments: [], candidates: [] }, adminUsers = [], logData = [];
+
+function initAdmin(tab) {
+  if (!['drivers', 'assign', 'users', 'summary', 'log', 'system'].includes(tab)) tab = 'drivers';
+  adminTabNow = tab;
+  document.querySelectorAll('#aPills button').forEach(b => b.classList.toggle('active', b.dataset.t === tab));
+  document.querySelectorAll('.atab').forEach(t => t.hidden = t.id !== 'a-' + tab);
+  if (!$('asYear').options.length) { fillYears($('asYear'), 'সাল'); fillMonths($('asMonth'), 'মাস'); }
+  if (tab === 'drivers') adminLoadDrivers();
+  else if (tab === 'assign') adminLoadAssign();
+  else if (tab === 'users') adminLoadUsers();
+  else if (tab === 'summary') initSummary();
+  else if (tab === 'system') initSystem();
+  else initLog();
+}
+$('aPills').onclick = e => { const b = e.target.closest('button'); if (b) location.hash = '#/admin/' + b.dataset.t; };
+const aErr = e => toast(e.message || String(e), 'bad', 5000);
+
+/* ---------- চালক ---------- */
+async function adminLoadDrivers() {
+  try { adminDrivers = must(await api('adminListDrivers')).drivers; renderAdminDrivers(); } catch (e) { aErr(e); }
+}
+function renderAdminDrivers() {
+  $('drvBody').innerHTML = adminDrivers.length ? adminDrivers.map(d => {
+    const on = d.status === 'Active';
+    return `<tr class="${on ? '' : 'inactive'}"><td>${d.id}</td><td><b>${esc(d.name)}</b></td><td>${esc(d.mobile)}</td><td>${esc(d.carNo)}</td>
+      <td class="num">${d.basicPay ? money(d.basicPay) : '—'}</td><td><span class="badge ${on ? 'b-ok' : 'b-gray'}">${on ? 'Active' : 'Inactive'}</span></td>
+      <td class="act"><button class="btn sm ghost" data-edit="${d.id}">✏️ সম্পাদনা</button> <button class="btn sm ${on ? 'bad' : 'ok'}" data-tog="${d.id}">${on ? '⏸ Inactive করুন' : '▶ Active করুন'}</button></td></tr>`;
+  }).join('') : '<tr><td colspan="7" class="empty">এখনো কোনো চালক নেই। ওপরের ফর্ম থেকে যুক্ত করুন।</td></tr>';
+}
+function adminResetForm() {
+  adminEditingId = null;
+  ['fName', 'fMobile', 'fCar', 'fBasic'].forEach(i => $(i).value = '');
+  $('fStatus').value = 'Active'; $('drvFormTitle').textContent = 'নতুন চালক যুক্ত করুন';
+  $('fSubmit').textContent = '➕ যুক্ত করুন'; $('fCancel').hidden = true;
+}
+async function adminSendDriver(driver) {
+  const res = await api('adminSaveDriver', { driver });
+  must(res); toast(res.message || 'সেভ হয়েছে', 'ok');
+  if (res.credentials) credModal(res.credentials, 'নতুন চালকের ইউজার আইডি');
+  await adminLoadDrivers(); return true;
+}
+$('fSubmit').onclick = async () => {
+  const name = $('fName').value.trim();
+  if (!name) { toast('চালকের নাম লিখুন।', 'warn'); return; }
+  setBusy($('fSubmit'), true);
+  try { await adminSendDriver({ id: adminEditingId, name, mobile: $('fMobile').value.trim(), carNo: $('fCar').value.trim(), basicPay: numIn($('fBasic').value), status: $('fStatus').value }); adminResetForm(); }
+  catch (e) { aErr(e); } finally { setBusy($('fSubmit'), false); }
+};
+$('fCancel').onclick = adminResetForm;
+$('drvBody').addEventListener('click', async e => {
+  const ed = e.target.closest('[data-edit]'), tg = e.target.closest('[data-tog]');
+  if (ed) {
+    const d = adminDrivers.find(x => x.id === +ed.dataset.edit); if (!d) return;
+    adminEditingId = d.id; $('fName').value = d.name; $('fMobile').value = d.mobile; $('fCar').value = d.carNo; $('fBasic').value = d.basicPay || ''; $('fStatus').value = d.status;
+    $('drvFormTitle').textContent = 'চালকের তথ্য সম্পাদনা (আইডি ' + d.id + ')'; $('fSubmit').textContent = '💾 আপডেট করুন'; $('fCancel').hidden = false; window.scrollTo(0, 0);
+  } else if (tg) {
+    const d = adminDrivers.find(x => x.id === +tg.dataset.tog); if (!d) return;
+    const off = d.status === 'Active';
+    if (!await confirmBox(off ? `${d.name} কে Inactive করবেন?\nতিনি আর নতুন বিলের তালিকায় আসবেন না এবং তাঁর আইডিতে প্রবেশ করা যাবে না; তবে পুরোনো রিপোর্ট অক্ষুণ্ণ থাকবে।\n(তাঁর শেষ মাসের বিল আগে সেভ করে নিয়েছেন তো?)` : `${d.name} কে আবার Active করবেন?`, off ? 'Inactive করুন' : 'Active করুন', off)) return;
+    try { await adminSendDriver({ id: d.id, name: d.name, mobile: d.mobile, carNo: d.carNo, basicPay: d.basicPay, status: off ? 'Inactive' : 'Active' }); dropCaches(); } catch (er) { aErr(er); }
+  }
+});
+
+/* ---------- মাসভিত্তিক গাড়ি ও বেতন ---------- */
+const asP = () => { const y = $('asYear').value, m = $('asMonth').value; return (y && m) ? { year: y, month: m } : null; };
+async function adminLoadAssign() {
+  const p = asP();
+  if (!p) { $('asBody').innerHTML = '<tr><td colspan="4" class="empty">সাল ও মাস বেছে নিন।</td></tr>'; $('asAddBox').hidden = true; return; }
+  $('asBody').innerHTML = '<tr><td colspan="4" class="loading-row">লোড হচ্ছে…</td></tr>';
+  try { adminAssign = must(await api('adminGetAssignments', p)); renderAssign(); } catch (e) { aErr(e); }
+}
+function renderAssign() {
+  const list = adminAssign.assignments || [];
+  $('asBody').innerHTML = list.length ? list.map(a => {
+    const on = a.status === 'Active';
+    return `<tr class="${on ? '' : 'inactive'}" data-id="${a.driverId}"><td><b>${esc(a.name)}</b> <span class="badge ${on ? 'b-ok' : 'b-gray'}">${on ? 'Active' : 'Inactive'}</span></td>
+      <td><input class="as-car" value="${esc(a.carNo)}" maxlength="60"></td><td><input class="as-basic" value="${esc(a.basicPay)}" maxlength="12" inputmode="numeric"></td>
+      <td class="act"><button class="btn sm ok" data-save="${a.driverId}">💾 সেভ</button> <button class="btn sm bad" data-del="${a.driverId}">🗑 মুছুন</button></td></tr>`;
+  }).join('') : '<tr><td colspan="4" class="empty">এই মাসে এখনো কোনো চালক যুক্ত নেই। ওপরের "সব Active চালককে এই মাসে যুক্ত করুন" বা নিচের ফর্ম ব্যবহার করুন।</td></tr>';
+  const c = adminAssign.candidates || [];
+  $('asAddBox').hidden = !c.length;
+  $('asCand').innerHTML = c.map(x => `<option value="${x.id}">${esc(x.name)}${x.status === 'Active' ? '' : ' (Inactive)'}</option>`).join('');
+  candChange();
+}
+function candChange() {
+  const c = (adminAssign.candidates || []).find(x => String(x.id) === $('asCand').value);
+  $('asCar').value = c ? c.carNo : ''; $('asBasic').value = c && c.basicPay ? c.basicPay : '';
+}
+async function sendAssign(driverId, car, basic) {
+  const p = asP(); if (!p) return;
+  const b = numIn(basic);
+  if (!(b > 0)) { toast('মূল বেতন সঠিকভাবে লিখুন।', 'warn'); return; }
+  try { must(await api('adminSaveAssignment', Object.assign({ driverId, carNo: car, basicPay: b }, p))); dropCaches(); toast('সেভ হয়েছে', 'ok'); adminLoadAssign(); } catch (e) { aErr(e); }
+}
+$('asYear').onchange = $('asMonth').onchange = adminLoadAssign;
+$('asCand').onchange = candChange;
+$('asAdd').onclick = () => { if ($('asCand').value !== '') sendAssign(+$('asCand').value, $('asCar').value.trim(), $('asBasic').value); };
+$('asFill').onclick = async () => {
+  const p = asP(); if (!p) { toast('আগে সাল ও মাস বাছুন।', 'warn'); return; }
+  try { const r = must(await api('adminFillMonth', p)); dropCaches(); toast(r.message, 'ok', 5000); adminLoadAssign(); } catch (e) { aErr(e); }
+};
+$('asBody').addEventListener('click', async e => {
+  const s = e.target.closest('[data-save]'), d = e.target.closest('[data-del]');
+  if (s) { const tr = s.closest('tr'); sendAssign(+s.dataset.save, tr.querySelector('.as-car').value.trim(), tr.querySelector('.as-basic').value); }
+  else if (d) {
+    const a = adminAssign.assignments.find(x => x.driverId === +d.dataset.del);
+    if (!await confirmBox(`${a ? a.name : 'এই চালক'}কে এই মাসের তালিকা থেকে সরাবেন?\n(এই মাসে তাঁর সেভ করা বিল থাকলে তা মুছবে না।)`, 'সরান', true)) return;
+    try { must(await api('adminDeleteAssignment', Object.assign({ driverId: +d.dataset.del }, asP()))); dropCaches(); toast('মুছে ফেলা হয়েছে', 'ok'); adminLoadAssign(); } catch (er) { aErr(er); }
+  }
+});
+
+/* ---------- ইউজার ও অনুমতি ---------- */
+async function adminLoadUsers() {
+  try {
+    const [u, d] = await Promise.all([api('adminListUsers'), api('adminListDrivers')]);
+    adminUsers = must(u).users; adminDrivers = must(d).drivers;
+    renderUsers(); renderMatrix();
+    $('nuDriver').innerHTML = adminDrivers.map(x => `<option value="${x.id}">${esc(x.name)}${x.status === 'Active' ? '' : ' (Inactive)'}</option>`).join('');
+    toggleNuRole();
+  } catch (e) { aErr(e); }
+}
+function renderUsers() {
+  $('uBody').innerHTML = adminUsers.map(u => {
+    const on = u.status === 'Active', me = u.id === USER.id;
+    return `<tr class="${on ? '' : 'inactive'}"><td class="mono"><b>${esc(u.id)}</b></td><td>${esc(u.name)}</td>
+      <td>${u.role === 'admin' ? '<span class="badge b-blue">অ্যাডমিন</span>' : 'চালক'}</td>
+      <td><span class="badge ${on ? 'b-ok' : 'b-gray'}">${on ? 'চালু' : 'বন্ধ'}</span>${u.mustChange ? ' <span class="badge b-warn">পাসওয়ার্ড বদল বাকি</span>' : ''}</td>
+      <td class="small muted">${esc(u.lastLogin || '—')}</td>
+      <td class="act"><button class="btn sm ghost" data-reset="${esc(u.id)}">🔑 পাসওয়ার্ড রিসেট</button>
+        <button class="btn sm ${on ? 'bad' : 'ok'}" data-utog="${esc(u.id)}"${me ? ' disabled' : ''}>${on ? 'বন্ধ করুন' : 'চালু করুন'}</button></td></tr>`;
+  }).join('');
+}
+function renderMatrix() {
+  const drv = adminDrivers.filter(d => d.status === 'Active');
+  const us = adminUsers.filter(u => u.role === 'user');
+  if (!us.length) { $('uMatrix').innerHTML = '<tr><td class="empty">কোনো চালক-ইউজার নেই।</td></tr>'; return; }
+  $('uMatrix').innerHTML = '<thead><tr><th>ইউজার ↓ / বিল তৈরির চালক →</th>' + drv.map(d => `<th>${esc(d.name)}</th>`).join('') + '</tr></thead><tbody>' +
+    us.map(u => `<tr data-u="${esc(u.id)}"><td><b>${esc(u.name)}</b><div class="small muted mono">${esc(u.id)}</div></td>` +
+      drv.map(d => `<td><input type="checkbox" data-d="${d.id}"${(u.editable || []).includes(d.id) ? ' checked' : ''}${u.status === 'Active' ? '' : ' disabled'}></td>`).join('') + '</tr>').join('') + '</tbody>';
+}
+$('uSavePerm').onclick = async () => {
+  const map = {};
+  document.querySelectorAll('#uMatrix tr[data-u]').forEach(tr => { map[tr.dataset.u] = [...tr.querySelectorAll('input:checked')].map(c => +c.dataset.d); });
+  setBusy($('uSavePerm'), true);
+  try { must(await api('adminSavePermissions', { map })); toast('অনুমতি সেভ হয়েছে', 'ok'); adminLoadUsers(); } catch (e) { aErr(e); } finally { setBusy($('uSavePerm'), false); }
+};
+$('uMakeAll').onclick = async () => {
+  setBusy($('uMakeAll'), true);
+  try { const r = must(await api('adminCreateDriverUsers')); toast(r.message, 'ok'); credModal(r.credentials, 'নতুন ইউজারদের প্রবেশ-তথ্য'); adminLoadUsers(); } catch (e) { aErr(e); } finally { setBusy($('uMakeAll'), false); }
+};
+$('uBody').addEventListener('click', async e => {
+  const r = e.target.closest('[data-reset]'), t = e.target.closest('[data-utog]');
+  if (r) {
+    if (!await confirmBox(`${r.dataset.reset} এর পাসওয়ার্ড রিসেট করবেন? পুরোনো পাসওয়ার্ড আর চলবে না এবং তিনি সব ডিভাইস থেকে বের হয়ে যাবেন।`, 'রিসেট করুন', true)) return;
+    try { const res = must(await api('adminResetPassword', { userId: r.dataset.reset })); credModal(res.credentials, 'নতুন পাসওয়ার্ড'); adminLoadUsers(); } catch (er) { aErr(er); }
+  } else if (t) {
+    const u = adminUsers.find(x => x.id === t.dataset.utog); if (!u) return;
+    const off = u.status === 'Active';
+    if (!await confirmBox(`${u.id} কে ${off ? 'বন্ধ' : 'চালু'} করবেন?`, off ? 'বন্ধ করুন' : 'চালু করুন', off)) return;
+    try { must(await api('adminSaveUser', { userId: u.id, name: u.name, role: u.role, driverId: u.driverId >= 0 ? u.driverId : '', status: off ? 'Inactive' : 'Active', editable: u.editable === 'all' ? [] : u.editable })); toast('হয়েছে', 'ok'); adminLoadUsers(); } catch (er) { aErr(er); }
+  }
+});
+function toggleNuRole() { $('nuDriver').disabled = $('nuRole').value === 'admin'; }
+$('nuRole').onchange = toggleNuRole;
+$('nuAdd').onclick = async () => {
+  const role = $('nuRole').value;
+  setBusy($('nuAdd'), true);
+  try {
+    const r = must(await api('adminSaveUser', { userId: $('nuId').value.trim(), name: $('nuName').value.trim(), role, driverId: role === 'user' ? $('nuDriver').value : '', status: 'Active', editable: role === 'user' ? [+$('nuDriver').value] : [] }));
+    toast(r.message, 'ok'); credModal(r.credentials, 'নতুন ইউজার'); $('nuId').value = ''; $('nuName').value = ''; adminLoadUsers();
+  } catch (e) { aErr(e); } finally { setBusy($('nuAdd'), false); }
+};
+
+/* ---------- মাসিক সারসংক্ষেপ ---------- */
+let smData = null, smInit = false;
+function initSummary() {
+  if (!smInit) {
+    fillYears($('smYear'), 'সাল'); fillMonths($('smMonth'), 'মাস');
+    const [ty, tm] = CONFIG.today.split('-').map(Number); let y = ty, m = tm - 1; if (m < 1) { m = 12; y--; }
+    if (CONFIG.years.indexOf(y) < 0) y = CONFIG.years[0];
+    $('smYear').value = y; $('smMonth').value = pad2(m);
+    $('smYear').onchange = $('smMonth').onchange = loadSummary; smInit = true;
+  }
+  loadSummary();
+}
+async function loadSummary() {
+  const y = $('smYear').value, m = $('smMonth').value;
+  smData = null;
+  if (!y || !m) { $('smBody').innerHTML = '<tr><td colspan="7" class="empty">সাল ও মাস বাছুন।</td></tr>'; $('smStats').innerHTML = ''; $('smFoot').innerHTML = ''; return; }
+  $('smBody').innerHTML = '<tr><td colspan="7" class="loading-row">লোড হচ্ছে…</td></tr>';
+  try {
+    const r = must(await api('adminMonthSummary', { year: y, month: m }));
+    if ($('smYear').value !== y || $('smMonth').value !== m) return;
+    smData = Object.assign(r, { y, m });
+    $('smStats').innerHTML = `<div class="stat ok"><div class="n">${toBn(r.counts.Locked)}</div><div class="l">লক করা</div></div>
+      <div class="stat warn"><div class="n">${toBn(r.counts.Draft)}</div><div class="l">খসড়া</div></div>
+      <div class="stat bad"><div class="n">${toBn(r.counts.None)}</div><div class="l">বিল হয়নি</div></div>
+      <div class="stat"><div class="n">${money(r.total)}</div><div class="l">মোট টাকা</div></div>`;
+    $('smBody').innerHTML = r.rows.length ? r.rows.map(x => `<tr class="${x.active ? '' : 'inactive'}"><td><b>${esc(x.name)}</b>${x.active ? '' : ' <span class="badge b-gray">Inactive</span>'}</td>
+      <td>${esc(toBn(x.carNo) || '—')}</td><td class="num">${x.basicPay ? money(x.basicPay) : '—'}</td><td class="num">${x.rate ? toBn(x.rate) : '—'}</td>
+      <td class="num">${x.status === 'None' ? '—' : toBn(x.totalHours)}</td><td class="num">${x.status === 'None' ? '—' : money(x.total) + '/='}</td><td>${badgeFor(x.status)}</td></tr>`).join('')
+      : '<tr><td colspan="7" class="empty">এই মাসে কোনো চালক নেই।</td></tr>';
+    $('smFoot').innerHTML = `<tr style="font-weight:700;background:#f8fafc"><td colspan="4" class="num">সর্বমোট</td><td class="num">${toBn(r.totalHours)}</td><td class="num">${money(r.total)}/=</td><td></td></tr>`;
+  } catch (e) { aErr(e); }
+}
+$('smCsv').onclick = () => {
+  if (!smData) { toast('আগে সাল ও মাস বাছুন।', 'warn'); return; }
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const st = { Locked: 'লক করা', Draft: 'খসড়া', None: 'বিল হয়নি' };
+  const lines = [['চালক', 'গাড়ি নং', 'মূল বেতন', 'ঘণ্টার রেট', 'মোট ঘণ্টা', 'মোট টাকা', 'অবস্থা'].map(q).join(',')];
+  smData.rows.forEach(x => lines.push([x.name, x.carNo, x.basicPay, x.rate, x.status === 'None' ? '' : x.totalHours, x.status === 'None' ? '' : x.total, st[x.status]].map(q).join(',')));
+  lines.push(['সর্বমোট', '', '', '', smData.totalHours, smData.total, ''].map(q).join(','));
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `overtime-summary-${smData.y}-${smData.m}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$('smPdf').onclick = () => {
+  if (!smData) { toast('আগে সাল ও মাস বাছুন।', 'warn'); return; }
+  const r = smData, mn = monthNameOf(r.m);
+  const st = { Locked: 'লক করা', Draft: 'খসড়া', None: 'বিল হয়নি' };
+  $('printSheet').innerHTML = `<div class="print-page" style="height:auto;min-height:100vh">
+    <h2>${esc(CONFIG.billTitle)}</h2><div class="hl"><b>${toBn(r.y)} সালের ${esc(mn)} মাসের সারসংক্ষেপ</b></div>
+    <table style="margin-top:8px"><thead><tr><th>ক্রম</th><th>চালকের নাম</th><th>গাড়ি নং</th><th>মূল বেতন</th><th>মোট ঘণ্টা</th><th>মোট টাকা</th><th>অবস্থা</th></tr></thead><tbody>` +
+    r.rows.map((x, i) => `<tr><td>${toBn(i + 1)}</td><td style="text-align:left">${esc(x.name)}</td><td>${esc(toBn(x.carNo) || '—')}</td><td>${x.basicPay ? money(x.basicPay) : '—'}</td>
+      <td>${x.status === 'None' ? '—' : toBn(x.totalHours)}</td><td>${x.status === 'None' ? '—' : money(x.total)}</td><td>${st[x.status]}</td></tr>`).join('') +
+    `</tbody><tfoot><tr style="font-weight:bold"><td colspan="4" style="text-align:right">সর্বমোট</td><td>${toBn(r.totalHours)}</td><td>${money(r.total)}/=</td><td></td></tr></tfoot></table>
+    <div class="words">(${esc(r.words)})</div></div>`;
+  setTimeout(doPrint, 60);
+};
+$('smLock').onclick = async () => {
+  if (!smData) return;
+  if (!await confirmBox(`${toBn(smData.y)} ${monthNameOf(smData.m)} মাসের সব খসড়া বিল লক করবেন?\nএরপর এগুলো আর সম্পাদনা করা যাবে না (আনলক করা যাবে)। যাদের বিল হয়নি তারা লক হবে না।`, '🔒 সব লক করুন', false)) return;
+  setBusy($('smLock'), true);
+  try { const r = must(await api('adminLockMonth', { year: smData.y, month: smData.m })); dropCaches(); toast(r.message, 'ok'); loadSummary(); } catch (e) { aErr(e); } finally { setBusy($('smLock'), false); }
+};
+
+/* ---------- কার্যকলাপ লগ ---------- */
+const ACT = { login: 'প্রবেশ', login_fail: 'ভুল প্রবেশ-চেষ্টা', logout: 'বের হওয়া', create_bill: 'নতুন বিল', update_bill: 'বিল আপডেট', lock_bill: 'বিল লক', unlock_bill: 'বিল আনলক', lock_month: 'মাসের সব লক',
+  change_password: 'পাসওয়ার্ড বদল', reset_password: 'পাসওয়ার্ড রিসেট', add_user: 'ইউজার যুক্ত', edit_user: 'ইউজার সম্পাদনা', add_driver: 'চালক যুক্ত', edit_driver: 'চালক সম্পাদনা',
+  set_assignment: 'মাসের গাড়ি/বেতন', delete_assignment: 'মাসের তথ্য মুছা', fill_month: 'মাস পূরণ', save_permissions: 'অনুমতি সেভ', create_driver_users: 'চালক-ইউজার তৈরি', setup: 'সিস্টেম সেটআপ',
+  backup: 'ব্যাকআপ', backup_fail: 'ব্যাকআপ ব্যর্থ', set_holiday: 'ছুটি সেট', delete_holiday: 'ছুটি মুছা', save_settings: 'সেটিংস সেভ' };
+let logInit = false;
+function initLog() {
+  if (!logInit) {
+    $('lgAction').innerHTML = '<option value="">সব</option>' + Object.keys(ACT).map(k => `<option value="${k}">${esc(ACT[k])}</option>`).join('');
+    $('lgUser').innerHTML = '<option value="">সব</option>';
+    $('lgReload').onclick = adminLoadLog;
+    $('lgFilter').onkeydown = e => { if (e.key === 'Enter') adminLoadLog(); };
+    logInit = true;
+  }
+  adminLoadLog();
+}
+async function adminLoadLog() {
+  $('lgBody').innerHTML = '<tr><td colspan="4" class="loading-row">লোড হচ্ছে…</td></tr>';
+  try {
+    const keep = $('lgUser').value;
+    const r = must(await api('adminLog', { limit: 300, user: keep, actionType: $('lgAction').value, from: $('lgFrom').value, to: $('lgTo').value, q: $('lgFilter').value.trim() }));
+    $('lgUser').innerHTML = '<option value="">সব</option>' + r.users.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
+    $('lgUser').value = keep;
+    $('lgBody').innerHTML = r.log.length ? r.log.map(x => `<tr><td class="small" style="white-space:nowrap">${esc(x.time)}</td><td class="mono">${esc(x.user)}</td>
+      <td class="log-act">${x.action === 'login_fail' || x.action === 'backup_fail' ? '<span class="badge b-bad">' + esc(ACT[x.action]) + '</span>' : esc(ACT[x.action] || x.action)}</td><td class="small">${esc(x.detail)}</td></tr>`).join('')
+      : '<tr><td colspan="4" class="empty">কিছু পাওয়া যায়নি।</td></tr>';
+  } catch (e) { aErr(e); }
+}
+
+/* ---------- ব্যাকআপ, ছুটি, সেটিংস ---------- */
+let sysInit = false;
+function initSystem() {
+  if (!sysInit) {
+    fillYears($('hlYear'), 'সব সাল');
+    const ty = +CONFIG.today.slice(0, 4); $('hlYear').value = CONFIG.years.includes(ty) ? ty : '';
+    $('hlYear').onchange = loadHolidays; sysInit = true;
+  }
+  loadSystemInfo(); loadHolidays();
+}
+async function loadSystemInfo() {
+  try {
+    const r = must(await api('adminSystemInfo'));
+    $('stMax').value = r.maxHours;
+    $('bkInfo').innerHTML = `শেষ ব্যাকআপ: <b>${esc(r.lastBackup || 'এখনো হয়নি')}</b> • স্বয়ংক্রিয় সাপ্তাহিক ব্যাকআপ: ` + (r.trigger ? '<span class="badge b-ok">চালু</span>' : '<span class="badge b-bad">বন্ধ — Apps Script-এ systemSetup আবার চালান</span>') +
+      `<br>Google Drive-এর "${esc(r.folder)}" ফোল্ডারে সর্বশেষ ${toBn(r.keep)}টি কপি রাখা হয়; পুরোনোগুলো নিজে মুছে যায়।`;
+    $('bkList').innerHTML = r.backupError ? `<div class="notice warn">${esc(r.backupError)}</div>` : (r.backups.length ? '<table class="tbl">' + r.backups.map(b => `<tr><td>${esc(b.name)}</td><td class="small muted">${esc(b.time)}</td><td class="act"><a class="btn sm ghost" href="${esc(b.url)}" target="_blank" rel="noopener">খুলুন</a></td></tr>`).join('') + '</table>' : '<div class="muted small">এখনো কোনো ব্যাকআপ নেই।</div>');
+  } catch (e) { aErr(e); }
+}
+$('bkNow').onclick = async () => {
+  setBusy($('bkNow'), true, 'ব্যাকআপ হচ্ছে…');
+  try { const r = must(await api('adminBackupNow')); toast(r.message, 'ok', 5000); loadSystemInfo(); } catch (e) { aErr(e); } finally { setBusy($('bkNow'), false); }
+};
+$('stSave').onclick = async () => {
+  try { must(await api('adminSaveSettings', { maxHours: numIn($('stMax').value) })); toast('সেটিংস সেভ হয়েছে', 'ok'); } catch (e) { aErr(e); }
+};
+async function loadHolidays() {
+  try {
+    const r = must(await api('adminListHolidays', { year: $('hlYear').value }));
+    $('hlBody').innerHTML = r.holidays.length ? r.holidays.map(h => {
+      const [y, m, d] = h.date.split('-');
+      return `<tr><td>${toBn(d)}/${toBn(m)}/${toBn(y)}</td><td>${esc(h.type)}</td><td>${esc(h.note)}</td><td class="act"><button class="btn sm bad" data-hdel="${esc(h.date)}">🗑 মুছুন</button></td></tr>`;
+    }).join('') : '<tr><td colspan="4" class="empty">এই সালের কোনো ছুটি যুক্ত করা নেই।</td></tr>';
+  } catch (e) { aErr(e); }
+}
+$('hlAdd').onclick = async () => {
+  if (!$('hlDate').value) { toast('তারিখ বাছুন।', 'warn'); return; }
+  try { must(await api('adminSaveHoliday', { date: $('hlDate').value, type: $('hlType').value, note: $('hlNote').value.trim() })); $('hlNote').value = ''; toast('ছুটি সেভ হয়েছে', 'ok'); loadHolidays(); } catch (e) { aErr(e); }
+};
+$('hlBody').addEventListener('click', async e => {
+  const b = e.target.closest('[data-hdel]'); if (!b) return;
+  if (!await confirmBox(`${b.dataset.hdel} তারিখের ছুটি মুছবেন?`, 'মুছুন', true)) return;
+  try { must(await api('adminDeleteHoliday', { date: b.dataset.hdel })); toast('মুছে ফেলা হয়েছে', 'ok'); loadHolidays(); } catch (er) { aErr(er); }
+});
+
+/* ---------- চালু ---------- */
+boot();
 
-    function checkEnterKey(event) {
-        if (event.key === "Enter") {
-            verifyPin();
-        }
-    }
-
-    // লগইনের পর সার্ভার থেকে পাওয়া চালকদের তালিকা দিয়ে ড্রপডাউন ভরা
-    function fillDriverLists() {
-        const main = document.getElementById('driverSelect');
-        const search = document.getElementById('searchDriver');
-        main.innerHTML = '';
-        while (search.options.length > 1) search.remove(1);   // প্রথম "চালকের নাম বেছে নিন" থাকবে
-        driversData.forEach((d, i) => {
-            const o1 = document.createElement('option');
-            o1.value = i; o1.textContent = d.name;
-            main.appendChild(o1);
-            const o2 = document.createElement('option');
-            o2.value = i; o2.textContent = d.name;
-            search.appendChild(o2);
-        });
-    }
-
-    // ================= মূল স্ক্রিপ্ট =================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvMwBdQbrtz9y9jbbyQ05hzL2AeTVbqGyHGzpWRsQHsybhJgf2DhVZZD0Ulfa4IVrl/exec";
-
-    let driversData = [];   // লগইনের পর সার্ভার থেকে ভরে
-
-    let currentZoom = 1.0;
-
-    // Undo / Redo ব্যবস্থার জন্য Variable & Logic
-    let undoStack = [];
-    let redoStack = [];
-    let isUndoRedoAction = false;
-
-    // ট্র্যাক করার জন্য variable যে ডাটা কি কোনো লোড করা ডাটা কিনা
-    let loadedRecordId = null; 
-
-    function captureState() {
-        let rows = [];
-        document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
-            rows.push({
-                day: row.querySelector('.day-select').value,
-                dutyPlace: row.querySelector('.duty-place').value,
-                startTime: row.querySelector('.start-time').value,
-                endTime: row.querySelector('.end-time').value,
-                remarks: row.querySelector('.remarks').value
-            });
-        });
-
-        return {
-            driverIndex: document.getElementById('driverSelect').value,
-            year: document.getElementById('yearSelect').value,
-            monthIndex: document.getElementById('monthSelect').selectedIndex,
-            rows: rows
-        };
-    }
-
-    function saveStateForUndo() {
-        if (isUndoRedoAction) return;
-        let currentState = captureState();
-        let lastState = undoStack.length > 0 ? JSON.stringify(undoStack[undoStack.length - 1]) : null;
-        
-        if (JSON.stringify(currentState) !== lastState) {
-            undoStack.push(currentState);
-            if (undoStack.length > 30) undoStack.shift(); // সর্বোচ্চ ৩০টি হিস্ট্রি রাখা হবে
-            redoStack = []; 
-            updateUndoRedoButtons();
-        }
-    }
-
-    function updateUndoRedoButtons() {
-        document.getElementById('undoBtn').disabled = undoStack.length <= 1;
-        document.getElementById('redoBtn').disabled = redoStack.length === 0;
-    }
-
-    function applyState(state) {
-        isUndoRedoAction = true;
-
-        document.getElementById('driverSelect').value = state.driverIndex;
-        document.getElementById('yearSelect').value = state.year;
-        document.getElementById('monthSelect').selectedIndex = state.monthIndex;
-
-        updateDriverInfo();
-        onMonthOrYearChange();
-
-        let tbody = document.querySelector('#overtimeTable tbody');
-        tbody.innerHTML = '';
-
-        state.rows.forEach(r => {
-            let monthSelect = document.getElementById('monthSelect');
-            let yearSelect = document.getElementById('yearSelect');
-            let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-            let year = yearSelect.value;
-            let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-            let newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>
-                    <div class="date-cell-container">
-                        <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                    </div>
-                </td>
-                <td>
-                    <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                        <option value=""></option>
-                        <option value="শুক্রবার">শুক্রবার</option>
-                        <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                        <option value="অতিরিক্ত">অতিরিক্ত</option>
-                        <option value="ঢাকা">ঢাকা</option>
-                        <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                        <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                        <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                    </select>
-                </td>
-                <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
-                <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
-                <td><span class="hours">০</span></td>
-                <td><span class="rate">0.00</span></td>
-                <td><span class="amount">0</span></td>
-                <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
-                <td class="no-print">
-                    <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                    <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-                </td>
-            `;
-            tbody.appendChild(newRow);
-
-            let daySelect = newRow.querySelector('.day-select');
-            populateDayDropdown(daySelect, r.day);
-            newRow.querySelector('.duty-place').value = r.dutyPlace;
-            autoCalculateHours(newRow.querySelector('.start-time'));
-        });
-
-        calculateAll();
-        saveDataToStorage();
-        isUndoRedoAction = false;
-        updateUndoRedoButtons();
-    }
-
-    function undo() {
-        if (undoStack.length > 1) {
-            let currentState = undoStack.pop();
-            redoStack.push(currentState);
-            let previousState = undoStack[undoStack.length - 1];
-            applyState(previousState);
-        }
-    }
-
-    function redo() {
-        if (redoStack.length > 0) {
-            let nextState = redoStack.pop();
-            undoStack.push(nextState);
-            applyState(nextState);
-        }
-    }
-
-    function zoomPage(step) {
-        currentZoom += step;
-        if (currentZoom < 0.6) currentZoom = 0.6;
-        if (currentZoom > 2.0) currentZoom = 2.0;
-        applyZoom();
-    }
-
-    function resetZoom() {
-        currentZoom = 1.0;
-        applyZoom();
-    }
-
-    function applyZoom() {
-        let container = document.getElementById('pageContainer');
-        container.style.transform = `scale(${currentZoom})`;
-        document.getElementById('zoomVal').innerText = toBanglaNum(Math.round(currentZoom * 100)) + '%';
-    }
-
-    function toBanglaNum(num) {
-        if (num === null || num === undefined) return '';
-        const banglaDigits = {'0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯', '.': '.'};
-        return num.toString().replace(/[0-9.]/g, digit => banglaDigits[digit] || digit);
-    }
-
-    function engToBanglaText(str) {
-        if (!str) return '';
-        const banglaDigits = {'0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'};
-        return str.toString().replace(/[0-9]/g, digit => banglaDigits[digit] || digit);
-    }
-
-    function parseBanglaOrEnglishNum(str) {
-        if (!str) return 0;
-        const banglaToEng = {'০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'};
-        let engStr = str.toString().replace(/[০-৯]/g, d => banglaToEng[d]);
-        let val = parseFloat(engStr);
-        return isNaN(val) ? 0 : val;
-    }
-
-    function numToBanglaWords(num) {
-        if (num === 0) return 'শূন্য টাকা মাত্র';
-        const units = [
-            '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ', 
-            'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
-            'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
-            'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
-            'একচল্লিশ', 'বায়াল্লিশ', 'তেতাল্লিশ', 'চৌয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
-            'একান্ন', 'বায়ান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
-            'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
-            'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
-            'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশী', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
-            'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই'
-        ];
-
-        function convertGroup(n) {
-            let str = '';
-            if (n >= 100) { str += units[Math.floor(n / 100)] + 'শত '; n %= 100; }
-            if (n > 0) { str += units[n] + ' '; }
-            return str;
-        }
-
-        let words = '';
-        let crore = Math.floor(num / 10000000); num %= 10000000;
-        let lakh = Math.floor(num / 100000); num %= 100000;
-        let thousand = Math.floor(num / 1000); num %= 1000;
-
-        if (crore > 0) words += convertGroup(crore) + 'কোটি ';
-        if (lakh > 0) words += convertGroup(lakh) + 'লক্ষ ';
-        if (thousand > 0) words += convertGroup(thousand) + 'হাজার ';
-        if (num > 0) words += convertGroup(num);
-
-        return words.trim() + ' টাকা মাত্র';
-    }
-
-    function extractTimeInHours(str) {
-        if (!str) return NaN;
-        
-        const banglaToEng = {'০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'};
-        let engStr = str.replace(/[০-৯]/g, d => banglaToEng[d]);
-
-        let matches = engStr.match(/(\d+)(?::(\d+))?/);
-        if (!matches) return NaN;
-
-        let hours = parseFloat(matches[1]);
-        let minutes = matches[2] ? parseFloat(matches[2]) : 0;
-
-        let totalHours = hours + (minutes / 60);
-        let lower = str.toLowerCase();
-
-        let isLateNightEarlyMorning = lower.includes('রাত') && (hours === 12 || hours < 6);
-        let isPM = (lower.includes('বিকাল') || lower.includes('সন্ধ্যা') || lower.includes('দুপুর') || lower.includes('pm') || (lower.includes('রাত') && !isLateNightEarlyMorning));
-        let isAM = lower.includes('সকাল') || lower.includes('ভোর') || lower.includes('am') || isLateNightEarlyMorning;
-
-        if (isPM && hours < 12) totalHours += 12;
-        if (isAM && hours === 12) totalHours = 0 + (minutes / 60);
-
-        return totalHours;
-    }
-
-    function handleTimeInput(elem) {
-        elem.value = engToBanglaText(elem.value);
-        autoCalculateHours(elem);
-    }
-
-    function autoCalculateHours(elem) {
-        let row = elem.closest('tr');
-        let startText = row.querySelector('.start-time').value;
-        let endText = row.querySelector('.end-time').value;
-        let hoursSpan = row.querySelector('.hours');
-
-        let startHour = extractTimeInHours(startText);
-        let endHour = extractTimeInHours(endText);
-
-        if (!isNaN(startHour) && !isNaN(endHour)) {
-            let diff = endHour - startHour;
-            if (diff <= 0) diff += 24;
-            diff = Math.round(diff * 100) / 100;
-            hoursSpan.innerText = toBanglaNum(diff);
-        } else {
-            hoursSpan.innerText = '০';
-        }
-        calculateAll();
-        triggerAutoSave();
-    }
-
-    let currentBasicPay = 0;
-
-    function populateDayDropdown(selectElement, selectedDay = 1) {
-        let monthSelect = document.getElementById('monthSelect');
-        let daysInMonth = parseInt(monthSelect.value) || 31;
-
-        selectElement.innerHTML = '';
-        for (let i = 1; i <= daysInMonth; i++) {
-            let dayStr = i < 10 ? '0' + i : i.toString();
-            let option = document.createElement('option');
-            option.value = i;
-            option.innerText = toBanglaNum(dayStr);
-            if (i === parseInt(selectedDay)) option.selected = true;
-            selectElement.appendChild(option);
-        }
-    }
-
-    function updateDriverInfo() {
-        let driverSelect = document.getElementById('driverSelect');
-        let selectedIndex = parseInt(driverSelect.value);
-        let driver = driversData[selectedIndex];
-        if (!driver) return;   // চালকের তথ্য আসার আগে কিছু করবে না
-
-        currentBasicPay = driver.basicPay;
-
-        document.getElementById('driverText').innerText = driver.name;
-        document.getElementById('carNoDisplay').innerText = driver.carNo;
-        document.getElementById('basicPayBn').innerText = toBanglaNum(driver.basicPay.toLocaleString('en-IN'));
-        document.getElementById('driverSignatureName').innerText = driver.name;
-        document.getElementById('driverMobile').innerText = driver.mobile;
-
-        calculateAll();
-        triggerAutoSave();
-    }
-
-    function onMonthOrYearChange() {
-        let monthSelect = document.getElementById('monthSelect');
-        let yearSelect = document.getElementById('yearSelect');
-
-        let selectedOption = monthSelect.options[monthSelect.selectedIndex];
-        let monthCode = selectedOption.getAttribute('data-month');
-        let monthName = selectedOption.getAttribute('data-name');
-        let year = yearSelect.value;
-
-        document.getElementById('monthText').innerText = monthName;
-        document.getElementById('yearText').innerText = year;
-
-        let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-        document.querySelectorAll('.fixed-month-year').forEach(el => {
-            el.innerText = monthYearStr;
-        });
-
-        document.querySelectorAll('.day-select').forEach(selectEl => {
-            let currentSelected = selectEl.value || 1;
-            populateDayDropdown(selectEl, currentSelected);
-        });
-
-        calculateAll();
-        triggerAutoSave();
-    }
-
-    function calculateAll() {
-        let daysInMonth = parseInt(document.getElementById('monthSelect').value) || 30;
-        let rawRate = currentBasicPay / daysInMonth / 8;
-        let hourlyRate = (Math.floor(rawRate * 100) / 100).toFixed(2); 
-
-        let rows = document.querySelectorAll('#overtimeTable tbody tr');
-        let totalHours = 0;
-        let grandTotal = 0;
-
-        rows.forEach(row => {
-            let hoursSpan = row.querySelector('.hours');
-            let hours = parseBanglaOrEnglishNum(hoursSpan.innerText);
-            let amount = hours * hourlyRate;
-
-            row.querySelector('.rate').innerText = toBanglaNum(hourlyRate);
-
-            let formattedAmount = amount.toFixed(2);
-            if (formattedAmount.endsWith('.00')) {
-                formattedAmount = Math.floor(amount).toString();
-            }
-
-            row.querySelector('.amount').innerText = toBanglaNum(formattedAmount);
-
-            totalHours += hours;
-            grandTotal += amount;
-        });
-
-        let totalTakaOnly = Math.floor(grandTotal);
-
-        document.getElementById('totalHours').innerText = toBanglaNum(totalHours);
-        document.getElementById('grandTotal').innerText = toBanglaNum(totalTakaOnly);
-        document.getElementById('inWords').innerText = numToBanglaWords(totalTakaOnly);
-    }
-
-    function addRow(btn) {
-        let currentTr = btn.closest('tr');
-        let currentDaySelect = currentTr.querySelector('.day-select');
-        let currentDay = currentDaySelect ? parseInt(currentDaySelect.value) : 1;
-        
-        let daysInMonth = parseInt(document.getElementById('monthSelect').value) || 31;
-        let nextDay = currentDay < daysInMonth ? currentDay + 1 : currentDay;
-
-        let monthSelect = document.getElementById('monthSelect');
-        let yearSelect = document.getElementById('yearSelect');
-        let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-        let year = yearSelect.value;
-        let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-        let newRow = document.createElement('tr');
-        newRow.innerHTML = `
-            <td>
-                <div class="date-cell-container">
-                    <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                </div>
-            </td>
-            <td>
-                <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                    <option value="" selected></option>
-                    <option value="শুক্রবার">শুক্রবার</option>
-                    <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                    <option value="অতিরিক্ত">অতিরিক্ত</option>
-                    <option value="ঢাকা">ঢাকা</option>
-                    <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                    <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                    <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                </select>
-            </td>
-            <td><input type="text" class="start-time" value="" oninput="handleTimeInput(this)"></td>
-            <td><input type="text" class="end-time" value="" oninput="handleTimeInput(this)"></td>
-            <td><span class="hours">০</span></td>
-            <td><span class="rate">0.00</span></td>
-            <td><span class="amount">0</span></td>
-            <td><input type="text" class="remarks" value="" oninput="triggerAutoSave()"></td>
-            <td class="no-print">
-                <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-            </td>
-        `;
-        
-        currentTr.parentNode.insertBefore(newRow, currentTr.nextSibling);
-        let newDaySelect = newRow.querySelector('.day-select');
-        populateDayDropdown(newDaySelect, nextDay);
-        calculateAll();
-        triggerAutoSave();
-    }
-
-    function deleteRow(btn) {
-        let tbody = document.querySelector('#overtimeTable tbody');
-        if (tbody.querySelectorAll('tr').length > 1) {
-            let row = btn.closest('tr');
-            row.remove();
-            calculateAll();
-            triggerAutoSave();
-        } else {
-            alert('সর্বনিম্ন একটি রো থাকতে হবে!');
-        }
-    }
-
-    // ================= স্মার্ট সেভ ও ওভাররাইট পিন লজিক =================
-    
-    function currentRecordInfo() {
-        let driverIndex = document.getElementById('driverSelect').value;
-        let driver = driversData[driverIndex];
-        if (!driver) return null;
-        let monthSelect = document.getElementById('monthSelect');
-        let year = document.getElementById('yearSelect').value;
-        let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-        let monthName = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-name');
-        return {
-            driverIndex: driverIndex,
-            driverName: driver.name,
-            monthCode: monthCode,
-            monthName: monthName,
-            year: year,
-            recordId: `DRIVER${driverIndex}-${monthCode}-${year}`
-        };
-    }
-
-    let pendingSaveInfo = null;
-
-    function saveToCloud() {
-        let info = currentRecordInfo();
-        if (!info) { alert('আগে চালক নির্বাচন করুন।'); return; }
-
-        if (loadedRecordId === info.recordId) {
-            openOverwriteModal(info);
-            return;
-        }
-
-        let statusEl = document.getElementById('saveStatus');
-        statusEl.innerText = '🔍 ডাটা যাচাই হচ্ছে...';
-        statusEl.style.color = '#0284c7';
-        statusEl.style.display = 'inline';
-
-        callServer('checkExists', { recordId: info.recordId })
-        .then(res => {
-            statusEl.style.display = 'none';
-            if (res.status !== 'success') {
-                alert(res.message || 'যাচাই করা যায়নি। আবার চেষ্টা করুন।');
-                return;
-            }
-            if (res.exists) {
-                openOverwriteModal(info);
-            } else {
-                executeSaveProcess(info, APP_PIN, null);
-            }
-        })
-        .catch(() => {
-            statusEl.style.display = 'none';
-            alert('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
-        });
-    }
-
-    function openOverwriteModal(info) {
-        pendingSaveInfo = info;
-        let msg = `<b>${escHtml(info.driverName)}</b> এর <b>${escHtml(info.monthName)} ${escHtml(info.year)}</b> সালের ডাটা পূর্বে অনলাইনে সেভ করা আছে!<br>আপনি কি নতুন ডাটা দিয়ে এটি আপডেট/ওভাররাইট করতে চান?`;
-        document.getElementById('overwriteMsgText').innerHTML = msg;
-        document.getElementById('overwritePinInput').value = '';
-        document.getElementById('overwritePinError').style.display = 'none';
-        document.getElementById('overwriteModal').style.display = 'flex';
-        setTimeout(() => document.getElementById('overwritePinInput').focus(), 100);
-    }
-
-    function closeOverwriteModal() {
-        document.getElementById('overwriteModal').style.display = 'none';
-        document.getElementById('overwritePinInput').value = '';
-    }
-
-    function checkOverwriteEnterKey(event) {
-        if (event.key === "Enter") {
-            confirmOverwriteAndSave();
-        }
-    }
-
-    function confirmOverwriteAndSave() {
-        let typed = document.getElementById('overwritePinInput').value;
-        if (!typed || !pendingSaveInfo) return;
-        // পাসওয়ার্ড সঠিক কি না সার্ভার যাচাই করবে
-        executeSaveProcess(pendingSaveInfo, typed, function (message) {
-            let errEl = document.getElementById('overwritePinError');
-            errEl.innerText = message || 'ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।';
-            errEl.style.display = 'block';
-            document.getElementById('overwritePinInput').value = '';
-        });
-    }
-
-    function executeSaveProcess(info, pin, onAuthFail) {
-        let rows = [];
-        document.querySelectorAll('#overtimeTable tbody tr').forEach(row => {
-            rows.push({
-                day: row.querySelector('.day-select').value,
-                dutyPlace: row.querySelector('.duty-place').value,
-                startTime: row.querySelector('.start-time').value,
-                endTime: row.querySelector('.end-time').value,
-                remarks: row.querySelector('.remarks').value
-            });
-        });
-
-        let statusEl = document.getElementById('saveStatus');
-        statusEl.innerText = '☁️ সেভ হচ্ছে...';
-        statusEl.style.color = '#d97706';
-        statusEl.style.display = 'inline';
-
-        callServer('save', {
-            recordId: info.recordId,
-            driverIndex: info.driverIndex,
-            driverName: info.driverName,
-            monthCode: info.monthCode,
-            monthName: info.monthName,
-            year: info.year,
-            rows: rows
-        }, pin).then(res => {
-            if (res.status === 'success') {
-                closeOverwriteModal();
-                loadedRecordId = info.recordId;
-                statusEl.innerText = '✓ সফলভাবে অনলাইনে সেভ হয়েছে';
-                statusEl.style.color = '#16a34a';
-                setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
-            } else if ((res.status === 'auth_error' || res.status === 'locked') && onAuthFail) {
-                statusEl.style.display = 'none';
-                onAuthFail(res.message);
-            } else {
-                statusEl.style.display = 'none';
-                alert(res.message || 'অনলাইনে সেভ করতে সমস্যা হয়েছে!');
-            }
-        }).catch(() => {
-            alert('অনলাইনে সেভ করতে সমস্যা হয়েছে! ইন্টারনেট দেখে আবার চেষ্টা করুন।');
-            statusEl.style.display = 'none';
-        });
-    }
-
-    function loadFromCloud() {
-        let sDriver = document.getElementById('searchDriver').value;
-        let sMonth = document.getElementById('searchMonth').value;
-        let sYear = document.getElementById('searchYear').value;
-
-        if (!sDriver || !sMonth || !sYear) {
-            alert('অনুগ্ৰহ করে চালকের নাম, মাস এবং সাল সঠিকভাবে সিলেক্ট করুন!');
-            return;
-        }
-
-        let recordId = `DRIVER${sDriver}-${sMonth}-${sYear}`;
-
-        let payload = {
-            action: "load",
-            pin: APP_PIN,
-            recordId: recordId
-        };
-
-        let statusEl = document.getElementById('saveStatus');
-        statusEl.innerText = '📂 লোড হচ্ছে...';
-        statusEl.style.color = '#d97706';
-        statusEl.style.display = 'inline';
-
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(res => {
-            statusEl.style.display = 'none';
-            if (res.status === 'success') {
-                let data = res.data;
-
-                document.getElementById('driverSelect').value = data.driverIndex;
-                document.getElementById('yearSelect').value = data.year;
-
-                let mSelect = document.getElementById('monthSelect');
-                for (let i = 0; i < mSelect.options.length; i++) {
-                    if (mSelect.options[i].getAttribute('data-month') === data.monthCode) {
-                        mSelect.selectedIndex = i;
-                        break;
-                    }
-                }
-
-                updateDriverInfo();
-                onMonthOrYearChange();
-
-                let tbody = document.querySelector('#overtimeTable tbody');
-                tbody.innerHTML = '';
-
-                data.rows.forEach(r => {
-                    let monthCode = mSelect.options[mSelect.selectedIndex].getAttribute('data-month');
-                    let year = data.year;
-                    let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-                    let newRow = document.createElement('tr');
-                    newRow.innerHTML = `
-                        <td>
-                            <div class="date-cell-container">
-                                <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                                <option value=""></option>
-                                <option value="শুক্রবার">শুক্রবার</option>
-                                <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                                <option value="অতিরিক্ত">অতিরিক্ত</option>
-                                <option value="ঢাকা">ঢাকা</option>
-                                <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                                <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                                <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                            </select>
-                        </td>
-                        <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
-                        <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
-                        <td><span class="hours">০</span></td>
-                        <td><span class="rate">0.00</span></td>
-                        <td><span class="amount">0</span></td>
-                        <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
-                        <td class="no-print">
-                            <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                            <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-                        </td>
-                    `;
-                    tbody.appendChild(newRow);
-
-                    let daySelect = newRow.querySelector('.day-select');
-                    populateDayDropdown(daySelect, r.day);
-                    newRow.querySelector('.duty-place').value = r.dutyPlace;
-                    autoCalculateHours(newRow.querySelector('.start-time'));
-                });
-
-                calculateAll();
-                
-                undoStack = [captureState()];
-                redoStack = [];
-                updateUndoRedoButtons();
-                
-                loadedRecordId = recordId;
-
-                document.getElementById('searchDriver').selectedIndex = 0;
-                document.getElementById('searchMonth').selectedIndex = 0;
-                document.getElementById('searchYear').selectedIndex = 0;
-
-                alert('রিপোর্ট সফলভাবে লোড হয়েছে!');
-            } else {
-                alert(res.message || 'ডাটা পাওয়া যায়নি!');
-            }
-        })
-        .catch(err => {
-            statusEl.style.display = 'none';
-            alert('ক্লাউড থেকে ডাটা লোড করতে ব্যর্থ হয়েছে!');
-        });
-    }
-
-    let saveTimeout = null;
-
-    function triggerAutoSave() {
-        saveStateForUndo();
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            saveDataToStorage();
-        }, 300);
-    }
-
-    function saveDataToStorage() {
-        let data = captureState();
-        let jsonStr = JSON.stringify(data);
-
-        try {
-            localStorage.setItem('rmch_autosaver_v3', jsonStr);
-        } catch(e) {
-            document.cookie = "rmch_autosaver_v3=" + encodeURIComponent(jsonStr) + ";path=/;max-age=31536000";
-        }
-
-        let statusEl = document.getElementById('saveStatus');
-        statusEl.innerText = '✓ অটো সেভ হয়েছে';
-        statusEl.style.color = '#16a34a';
-        statusEl.style.display = 'inline';
-        setTimeout(() => { statusEl.style.display = 'none'; }, 1500);
-    }
-
-    function loadSavedDataFromStorage() {
-        let saved = null;
-        try {
-            saved = localStorage.getItem('rmch_autosaver_v3');
-        } catch(e) {}
-
-        if (!saved) {
-            saveStateForUndo();
-            return;
-        }
-
-        try {
-            let data = JSON.parse(saved);
-
-            document.getElementById('driverSelect').value = data.driverIndex;
-            document.getElementById('yearSelect').value = data.year;
-            document.getElementById('monthSelect').selectedIndex = data.monthIndex;
-
-            updateDriverInfo();
-            onMonthOrYearChange();
-
-            let tbody = document.querySelector('#overtimeTable tbody');
-            tbody.innerHTML = '';
-
-            data.rows.forEach(r => {
-                let monthSelect = document.getElementById('monthSelect');
-                let yearSelect = document.getElementById('yearSelect');
-                let monthCode = monthSelect.options[monthSelect.selectedIndex].getAttribute('data-month');
-                let year = yearSelect.value;
-                let monthYearStr = `${toBanglaNum(monthCode)}/${year}`;
-
-                let newRow = document.createElement('tr');
-                newRow.innerHTML = `
-                    <td>
-                        <div class="date-cell-container">
-                            <select class="day-select" onchange="triggerAutoSave()"></select>/<span class="fixed-month-year">${escHtml(monthYearStr)}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <select class="duty-place" style="width: 95%;" onchange="triggerAutoSave()">
-                            <option value=""></option>
-                            <option value="শুক্রবার">শুক্রবার</option>
-                            <option value="সরকারি ছুটি">সরকারি ছুটি</option>
-                            <option value="অতিরিক্ত">অতিরিক্ত</option>
-                            <option value="ঢাকা">ঢাকা</option>
-                            <option value="রাজ-ঢাকা">রাজ-ঢাকা</option>
-                            <option value="ঢাকা-রাজ">ঢাকা-রাজ</option>
-                            <option value="ঈদের ছুটি">ঈদের ছুটি</option>
-                        </select>
-                    </td>
-                    <td><input type="text" class="start-time" value="${escAttr(r.startTime)}" oninput="handleTimeInput(this)"></td>
-                    <td><input type="text" class="end-time" value="${escAttr(r.endTime)}" oninput="handleTimeInput(this)"></td>
-                    <td><span class="hours">০</span></td>
-                    <td><span class="rate">0.00</span></td>
-                    <td><span class="amount">0</span></td>
-                    <td><input type="text" class="remarks" value="${escAttr(r.remarks)}" oninput="triggerAutoSave()"></td>
-                    <td class="no-print">
-                        <button class="action-btn btn-add" onclick="addRow(this)">+</button>
-                        <button class="action-btn btn-remove" onclick="deleteRow(this)">-</button>
-                    </td>
-                `;
-                tbody.appendChild(newRow);
-
-                let daySelect = newRow.querySelector('.day-select');
-                populateDayDropdown(daySelect, r.day);
-                newRow.querySelector('.duty-place').value = r.dutyPlace;
-                autoCalculateHours(newRow.querySelector('.start-time'));
-            });
-
-            calculateAll();
-            saveStateForUndo();
-        } catch(err) {}
-    }
-
-    function resetData() {
-        if (!confirm("আপনি কি রিসেট করতে চান? বর্তমান পেজ ফাঁকা হয়ে যাবে।")) return;
-
-        // ১) সংরক্ষিত অটোসেভ মুছে ফেলা (আগের মতোই)
-        try { localStorage.removeItem('rmch_autosaver_v3'); } catch (e) {}
-        document.cookie = "rmch_autosaver_v3=;path=/;max-age=0";
-        clearTimeout(saveTimeout);
-
-        // ২) পেজ রিলোড না করে একদম শুরুর (নতুন খোলা) অবস্থায় ফিরিয়ে আনা।
-        //    পাসওয়ার্ড মেমরিতেই থাকে, তাই আবার চাইবে না।
-        isUndoRedoAction = true;                       // মাঝের ধাপগুলো যেন আনডু-হিস্ট্রিতে না ঢোকে
-        document.querySelector('#overtimeTable tbody').innerHTML = INITIAL_UI.tbodyHTML;
-        Object.keys(INITIAL_UI.selects).forEach(id => {
-            document.getElementById(id).selectedIndex = INITIAL_UI.selects[id];
-        });
-        document.getElementById('driverSelect').selectedIndex = 0;
-        document.querySelectorAll('.day-select').forEach(selectEl => populateDayDropdown(selectEl, 1));
-
-        loadedRecordId = null;
-        pendingSaveInfo = null;
-        undoStack = [];
-        redoStack = [];
-        isUndoRedoAction = false;
-
-        closeOverwriteModal();
-        resetZoom();
-        document.getElementById('pageContainer').style.transform = '';   // নতুন খোলা পেজের মতোই কোনো জুম-স্টাইল নেই
-        let statusEl = document.getElementById('saveStatus');
-        statusEl.style.display = 'none';
-
-        // ৩) নাম, গাড়ি, বেতন ও হিসাব নতুন করে সাজানো (পেজ প্রথমবার খোলার সময় যেভাবে হয়)
-        updateDriverInfo();
-        onMonthOrYearChange();
-        saveStateForUndo();
-        window.scrollTo(0, 0);
-    }
-
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'z') {
-            e.preventDefault();
-            undo();
-        } else if (e.ctrlKey && e.key === 'y') {
-            e.preventDefault();
-            redo();
-        }
-    });
-
-    document.querySelectorAll('.day-select').forEach(selectEl => {
-        populateDayDropdown(selectEl, 1);
-    });
-    
-    // রিসেটের জন্য: পেজের একদম শুরুর অবস্থা মনে রাখা (লগইনেরও আগে, তখনো কেউ কিছু বদলায়নি)
-    const INITIAL_UI = (function () {
-        const selects = {};
-        ['monthSelect', 'yearSelect', 'searchDriver', 'searchMonth', 'searchYear'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) selects[id] = el.selectedIndex;
-        });
-        return { tbodyHTML: document.querySelector('#overtimeTable tbody').innerHTML, selects: selects };
-    })();
-
-    // পেজ চালু করার কাজ: লগইন সফল হওয়ার পরেই চলে (আগে চালকদের তথ্য থাকে না)
-    function startApp() {
-        updateDriverInfo();
-        onMonthOrYearChange();
-        loadSavedDataFromStorage();
-    }
 </script>
-
 </body>
 </html>
