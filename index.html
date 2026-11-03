@@ -472,8 +472,9 @@ a.btn{text-decoration:none}
           <p class="muted small" style="margin:0 0 10px">এখানে সরকারি/ঈদের ছুটির তারিখ দিলে বিলে ওই তারিখ বাছলে "ডিউটির স্থান" নিজে বসবে। শুক্রবার নিজে থেকেই ধরা হয়। (বিলে হাতে বদলানো যায়।)</p>
           <div class="grid-4">
             <div class="field"><label>তারিখ</label><input type="date" id="hlDate"></div>
-            <div class="field"><label>ধরন</label><select id="hlType"><option>সরকারি ছুটি</option><option>ঈদের ছুটি</option></select></div>
-            <div class="field"><label>নোট (ঐচ্ছিক)</label><input id="hlNote" maxlength="80" placeholder="যেমন: বিজয় দিবস"></div>
+            <div class="field"><label>ধরন</label><select id="hlType"></select></div>
+            <div class="field" id="hlOtherBox" hidden><label>ধরন লিখুন (বিলে এটিই বসবে)</label><input id="hlOther" maxlength="40" placeholder="যেমন: শোক দিবস"></div>
+            <div class="field"><label>নোট (ঐচ্ছিক, শুধু অ্যাডমিনের জন্য)</label><input id="hlNote" maxlength="80" placeholder="যেমন: বিজয় দিবস"></div>
             <div class="field"><label>&nbsp;</label><button class="btn ok" id="hlAdd">➕ যুক্ত করুন</button></div>
           </div>
           <div class="filters" style="margin-top:6px"><div class="field" style="max-width:200px"><label>দেখুন: সাল</label><select id="hlYear"></select></div></div>
@@ -1091,7 +1092,11 @@ function renderEditor() {
 
 function renderRows() {
   const days = daysIn(E.year, E.month), ro = !E.perms.canEdit;
-  const places = [''].concat(CONFIG.dutyPlaces);
+  const base = [''].concat(CONFIG.dutyPlaces);
+  const extras = [];
+  E.rows.forEach(r => { if (r.dutyPlace && base.indexOf(r.dutyPlace) < 0 && extras.indexOf(r.dutyPlace) < 0) extras.push(r.dutyPlace); });
+  Object.keys(E.suggest || {}).forEach(k => { const v = E.suggest[k]; if (base.indexOf(v) < 0 && extras.indexOf(v) < 0) extras.push(v); });
+  const places = base.concat(extras);
   $('eBody').innerHTML = E.rows.map((r, i) => {
     let dopts = '';
     for (let d = 1; d <= days; d++) dopts += `<option value="${d}"${+r.day === d ? ' selected' : ''}>${toBn(pad2(d))}</option>`;
@@ -1192,8 +1197,20 @@ function rowEvent(e) {
   let v = e.target.value;
   if (f === 'startTime' || f === 'endTime') { const b = toBn(v); if (b !== v) { e.target.value = b; v = b; } }
   if (E.rows[i][f] === v) return;
+  const oldDay = E.rows[i].day;
   E.rows[i][f] = v;
-  if (f === 'day' && applySuggestion(i)) { const sel = e.target.closest('tr').querySelector('[data-f=dutyPlace]'); if (sel) sel.value = E.rows[i].dutyPlace; }
+  if (f === 'day') {
+    // তারিখ বদলালে: ডিউটির স্থান ফাঁকা বা আগের তারিখের স্বয়ংক্রিয় মান হলে নতুন তারিখের মান বসে (হাতে বদলানো মান অক্ষুণ্ণ)
+    const cur = E.rows[i].dutyPlace;
+    if (!cur || cur === (E.suggest || {})[oldDay]) {
+      const nv = (E.suggest || {})[v] || '';
+      if (nv !== cur) {
+        E.rows[i].dutyPlace = nv;
+        const sel = e.target.closest('tr').querySelector('[data-f=dutyPlace]');
+        if (sel) { if (nv && ![...sel.options].some(o => o.value === nv)) sel.add(new Option(nv, nv)); sel.value = nv; }
+      }
+    }
+  }
   touched();
 }
 $('eBody').addEventListener('input', rowEvent);
@@ -1569,6 +1586,8 @@ async function adminLoadLog() {
 let sysInit = false;
 function initSystem() {
   if (!sysInit) {
+    $('hlType').innerHTML = (CONFIG.holidayTypes || ['সরকারি ছুটি', 'ঈদের ছুটি']).concat(['অন্যান্য']).map(t => `<option>${esc(t)}</option>`).join('');
+    $('hlType').onchange = () => { $('hlOtherBox').hidden = $('hlType').value !== 'অন্যান্য'; if (!$('hlOtherBox').hidden) $('hlOther').focus(); };
     fillYears($('hlYear'), 'সব সাল');
     const ty = +CONFIG.today.slice(0, 4); $('hlYear').value = CONFIG.years.includes(ty) ? ty : '';
     $('hlYear').onchange = loadHolidays; sysInit = true;
@@ -1602,7 +1621,9 @@ async function loadHolidays() {
 }
 $('hlAdd').onclick = async () => {
   if (!$('hlDate').value) { toast('তারিখ বাছুন।', 'warn'); return; }
-  try { must(await api('adminSaveHoliday', { date: $('hlDate').value, type: $('hlType').value, note: $('hlNote').value.trim() })); $('hlNote').value = ''; toast('ছুটি সেভ হয়েছে', 'ok'); loadHolidays(); } catch (e) { aErr(e); }
+  let type = $('hlType').value;
+  if (type === 'অন্যান্য') { type = $('hlOther').value.trim(); if (!type) { toast('ছুটির ধরনটি লিখুন।', 'warn'); $('hlOther').focus(); return; } }
+  try { must(await api('adminSaveHoliday', { date: $('hlDate').value, type, note: $('hlNote').value.trim() })); $('hlNote').value = ''; $('hlOther').value = ''; toast('ছুটি সেভ হয়েছে', 'ok'); loadHolidays(); } catch (e) { aErr(e); }
 };
 $('hlBody').addEventListener('click', async e => {
   const b = e.target.closest('[data-hdel]'); if (!b) return;
