@@ -7,13 +7,26 @@
 <title>অধিকাল বিল — RMCH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:'NikoshBAN';font-weight:400 700;font-display:swap;
+  src:local('NikoshBAN'),url('fonts/NikoshBAN.woff2') format('woff2'),url('fonts/NikoshBAN.ttf') format('truetype')}
+/* নিকষ (Nikosh) — ইউনিকোড বাংলা ফন্ট। ফাইল fonts/Nikosh.ttf (ও NikoshBAN.ttf) দিলে সবার ব্রাউজারে চলে;
+   না দিলে কম্পিউটারে ইনস্টল থাকলে সেটি। */
+@font-face{font-family:'Nikosh';font-weight:400 700;font-display:swap;
+  src:local('Nikosh'),local('NikoshBAN'),url('fonts/Nikosh.woff2') format('woff2'),url('fonts/Nikosh.ttf') format('truetype')}
+/* সুতন্নি-ধাঁচের ফন্ট (ইউনিকোড: SutonnyOMJ)। ফন্ট-ফাইল fonts/ ফোল্ডারে দিলে সবার ব্রাউজারে চলে;
+   না দিলে কম্পিউটারে ইনস্টল থাকলে সেটি, নইলে Noto Sans Bengali ব্যবহার হয়। */
+@font-face{font-family:'Sutonny';font-weight:400;font-display:swap;
+  src:local('SutonnyOMJ'),local('Sutonny OMJ'),local('SutonnyOMJ Regular'),url('fonts/SutonnyOMJ.woff2') format('woff2'),url('fonts/SutonnyOMJ.ttf') format('truetype')}
+@font-face{font-family:'Sutonny';font-weight:700;font-display:swap;
+  src:local('SutonnyOMJ Bold'),local('Sutonny OMJ Bold'),url('fonts/SutonnyOMJ-Bold.woff2') format('woff2'),url('fonts/SutonnyOMJ-Bold.ttf') format('truetype'),
+      local('SutonnyOMJ'),local('Sutonny OMJ'),url('fonts/SutonnyOMJ.woff2') format('woff2'),url('fonts/SutonnyOMJ.ttf') format('truetype')}
 :root{
   --bg:#f1f5f9; --card:#fff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --line2:#cbd5e1;
   --pri:#0369a1; --pri-d:#075985; --pri-l:#e0f2fe; --ok:#16a34a; --ok-l:#dcfce7; --warn:#d97706; --warn-l:#fef3c7;
   --bad:#dc2626; --bad-l:#fee2e2; --side:#0f172a; --side2:#1e293b; --rad:12px;
-  --font:'Hind Siliguri','Noto Sans Bengali','SolaimanLipi','Kalpurush',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  --font:'Nikosh','NikoshBAN','Sutonny','Noto Sans Bengali','SolaimanLipi','Kalpurush',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
@@ -190,7 +203,7 @@ table.bill .rowbtn{border:none;border-radius:6px;width:26px;height:26px;color:#f
   body>*:not(#printSheet){display:none!important}
   #printSheet{display:block!important}
 }
-.print-page{font-family:'SolaimanLipi','Kalpurush','Hind Siliguri','Noto Sans Bengali',Arial,sans-serif;color:#000;font-size:10.5px;
+.print-page{font-family:'Nikosh','NikoshBAN','Sutonny','SolaimanLipi','Kalpurush','Noto Sans Bengali',Arial,sans-serif;color:#000;font-size:10.5px;
   width:100%;height:100vh;padding:5mm 8mm;position:relative;box-sizing:border-box;background:#fff}
 .print-page h2{text-align:center;margin:0 0 5px;font-size:15px}
 .print-page .hl{text-align:center;font-size:11.5px;margin-bottom:4px;line-height:1.5}
@@ -498,6 +511,22 @@ const daysIn = (y, m) => new Date(+y, +m, 0).getDate();   // শুধু তা
 const numIn = s => { const v = parseFloat(toEn(s).replace(/[^0-9.]/g, '')); return isNaN(v) ? 0 : v; };
 
 let SESSION = null, USER = null, CONFIG = null;
+
+/* ---------- হিসাবের ইঞ্জিন (সার্ভার থেকে এসে ব্রাউজারের ক্যাশে থাকে) ---------- */
+// সূত্র Google Apps Script-এর; লগইনের সময় কোডটি নেমে এসে config-এর সাথে ক্যাশে জমা হয়।
+// নামার পর নিজেকে একটি পরীক্ষায় যাচাই করে; মিল না হলে ব্রাউজার সার্ভারের হিসাবই ব্যবহার করে।
+let ENG = { v: '', fn: null };
+function getEngine() {
+  const e = CONFIG && CONFIG.engine;
+  if (!e) return null;
+  if (ENG.v === e.v) return ENG.fn;
+  ENG = { v: e.v, fn: null };
+  try {
+    const fn = new Function('return (' + e.src + ')')();
+    if (JSON.stringify(fn(e.test.basicPay, e.test.y, e.test.m, e.test.rows)) === e.expect) ENG.fn = fn;
+  } catch (err) {}
+  return ENG.fn;
+}
 
 /* ---------- ব্রাউজার ক্যাশ ---------- */
 const LS = {
@@ -1140,10 +1169,15 @@ function scheduleDraft() {
   }, 300);
 }
 
-function scheduleCalc(ms) { clearTimeout(timers.calc); timers.calc = setTimeout(runCalc, ms); }
+function scheduleCalc(ms) { clearTimeout(timers.calc); timers.calc = setTimeout(runCalc, getEngine() ? Math.min(ms, 80) : ms); }
 
 async function runCalc() {
   if (!(E.driverId && E.year && E.month)) return;
+  const eng = getEngine();
+  if (eng && E.driver) {      // ক্যাশে থাকা ইঞ্জিন: সাথে সাথে হিসাব, সার্ভারে যেতে হয় না
+    E.calcSeq++; E.calc = eng(+E.driver.basicPay || 0, +E.year, +E.month, E.rows);
+    paintCalc(); $('eCalcState').textContent = ''; return;
+  }
   const seq = ++E.calcSeq, st = $('eCalcState');
   st.textContent = '⏳ হিসাব হচ্ছে…';
   try {
