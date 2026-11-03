@@ -254,7 +254,7 @@ a.btn{text-decoration:none}
     <a href="#/admin/drivers" data-r="admin" id="navAdmin" hidden>⚙️ অ্যাডমিন প্যানেল</a>
     <div class="sep"></div>
     <a href="#" id="navPw">🔑 পাসওয়ার্ড পরিবর্তন</a>
-    <div class="ver">সংস্করণ ৩</div>
+    <div class="ver" id="appVer"></div>
   </nav>
   <div id="backdrop"></div>
 
@@ -527,13 +527,37 @@ function getEngine() {
 }
 
 /* ---------- ব্রাউজার ক্যাশ ---------- */
+// প্রবেশের সেশন একটি "সেশন-কুকি"-তে থাকে: সব ট্যাবে একই সেশন চলে, রিলোডেও থাকে,
+// কিন্তু পুরো ব্রাউজার বন্ধ করলে কুকিটি নিজে মুছে যায় — তখন আবার প্রবেশ করতে হয়।
+// প্রোফাইল, সেটিংস ও ক্যাশ localStorage-এ থাকে (সব ট্যাবে দ্রুত খোলে); কুকি না থাকলে (ব্রাউজার বন্ধ হয়েছিল)
+// শুরুতেই সেগুলো মুছে ফেলা হয়। অসংরক্ষিত খসড়া ও শেষ ইউজার আইডি মোছা হয় না।
+const persistent = k => k.indexOf('draft_') === 0 || k === 'lastuid' || k === 'lastactive';
+const COOKIE_NAME = 'rmch_sid';
+const COOKIE_PATH = location.pathname.replace(/[^/]*$/, '') || '/';
+const COOKIE_TAIL = '; path=' + COOKIE_PATH + '; SameSite=Strict' + (location.protocol === 'https:' ? '; Secure' : '');
+function readCookie(name) { const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : ''; }
+const cookieOK = (() => { try { document.cookie = 'rmch_t=1' + COOKIE_TAIL; const ok = readCookie('rmch_t') === '1'; document.cookie = 'rmch_t=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + COOKIE_TAIL; return ok; } catch (e) { return false; } })();
 const LS = {
-  get(k) { try { return JSON.parse(localStorage.getItem('rmch_' + k)); } catch (e) { return null; } },
-  set(k, v) { try { localStorage.setItem('rmch_' + k, JSON.stringify(v)); } catch (e) {} },
-  del(k) { try { localStorage.removeItem('rmch_' + k); } catch (e) {} },
+  get(k) {
+    if (k === 'session') { const t = cookieOK ? readCookie(COOKIE_NAME) : (sessionStorage.getItem('rmch_session_t') || ''); return t ? { token: t } : null; }
+    try { return JSON.parse(localStorage.getItem('rmch_' + k)); } catch (e) { return null; }
+  },
+  set(k, v) {
+    if (k === 'session') { if (cookieOK) document.cookie = COOKIE_NAME + '=' + encodeURIComponent(v.token) + COOKIE_TAIL; else sessionStorage.setItem('rmch_session_t', v.token); return; }
+    try { localStorage.setItem('rmch_' + k, JSON.stringify(v)); } catch (e) {}
+  },
+  del(k) {
+    if (k === 'session') { document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + COOKIE_TAIL; sessionStorage.removeItem('rmch_session_t'); return; }
+    try { localStorage.removeItem('rmch_' + k); } catch (e) {}
+  },
   dropPrefix(p) { try { Object.keys(localStorage).filter(k => k.indexOf('rmch_' + p) === 0).forEach(k => localStorage.removeItem(k)); } catch (e) {} },
-  clearSession() { ['session', 'user', 'config'].forEach(k => LS.del(k)); LS.dropPrefix('c_'); }
+  clearSession() {
+    LS.del('session');
+    try { Object.keys(localStorage).filter(k => k.indexOf('rmch_') === 0 && !persistent(k.slice(5))).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  }
 };
+if (!LS.get('session')) LS.clearSession();   // কুকি নেই = ব্রাউজার বন্ধ হয়েছিল বা বের হওয়া হয়েছে → আগের সব সেশন-তথ্য মুছে ফেলা
+let lastApi = Date.now();
 
 /* ---------- ছোট UI সহায়ক ---------- */
 function toast(msg, type, ms) {
@@ -600,6 +624,10 @@ function setBusy(btn, on, label) {
 
 /* ---------- সার্ভার যোগাযোগ ---------- */
 async function api(action, payload) {
+  if (action !== 'login' && action !== 'ping') {
+    SESSION = LS.get('session');          // সব ট্যাবের সবচেয়ে নতুন টোকেন
+    if (!SESSION && USER) { forceLogout(''); throw new Error('আবার প্রবেশ করুন।'); }
+  }
   let res;
   try {
     const r = await fetch(API_URL, {
@@ -608,7 +636,9 @@ async function api(action, payload) {
     });
     res = await r.json();
   } catch (e) { throw new Error('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।'); }
-  if (res.status === 'auth_error' && res.code === 'session') { forceLogout(res.message); throw new Error(res.message); }
+  lastApi = Date.now();
+  if (res.nt && USER && LS.get('session') && !res.token) { LS.set('session', { token: res.nt }); }   // সক্রিয় থাকলে সেশনের মেয়াদ বাড়ে
+  if (res.status === 'auth_error' && res.code === 'session') { forceLogout(res.expired ? '' : res.message); throw new Error(res.message); }
   return res;
 }
 function must(res) { if (res.status !== 'success') throw new Error(res.message || 'কাজটি করা যায়নি।'); return res; }
@@ -637,9 +667,18 @@ function showLogin(msg) {
   ($('loginUser').value ? $('loginPass') : $('loginUser')).focus();
 }
 
+function wipeUI() {
+  ['dBody', 'dStats', 'dAlerts', 'bBody', 'bSummary', 'eBody', 'eInfo', 'eNotice', 'drvBody', 'asBody', 'uBody', 'uMatrix', 'smBody', 'smStats', 'smFoot',
+   'lgBody', 'hlBody', 'bkList', 'bkInfo', 'printSheet', 'modalRoot'].forEach(id => { const el = $(id); if (el) el.innerHTML = ''; });
+  $('eTableCard').hidden = true; $('eActions').hidden = true;
+}
+
 function forceLogout(msg) {
-  SESSION = null; USER = null; CONFIG = null;
+  try { flushDraft(); } catch (e) {}              // অসংরক্ষিত কাজ খসড়া হিসেবে থেকে যায়
+  SESSION = null; USER = null; CONFIG = null; appShown = false;
   LS.clearSession();
+  resetEditorForLogout(); wipeUI();
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   document.body.classList.remove('nav-open');
   showLogin(msg || '');
 }
@@ -661,6 +700,7 @@ $('loginForm').addEventListener('submit', async e => {
       SESSION = { token: res.token }; USER = res.user; CONFIG = res.config;
       LS.set('session', SESSION); LS.set('user', USER); LS.set('config', CONFIG); LS.set('lastuid', uid);
       $('loginPass').value = '';
+      markActive();
       enterApp();
     } else { $('loginErr').textContent = res.message || 'প্রবেশ করা যায়নি।'; $('loginErr').hidden = false; $('loginPass').value = ''; $('loginPass').focus(); }
   } catch (err) { $('loginErr').textContent = err.message; $('loginErr').hidden = false; }
@@ -672,6 +712,7 @@ function paintChrome() {
   $('uRole').textContent = USER.role === 'admin' ? 'অ্যাডমিন' : 'চালক';
   $('uAvatar').textContent = (USER.name || '?').trim().charAt(0);
   $('navAdmin').hidden = USER.role !== 'admin';
+  $('appVer').textContent = CONFIG && CONFIG.version ? 'সংস্করণ ' + CONFIG.version + (CONFIG.updated ? ' • ' + CONFIG.updated : '') : '';
 }
 
 let appShown = false;
@@ -697,6 +738,29 @@ async function boot() {
     if (!appShown) showLogin(SESSION ? e.message : '');
   }
 }
+
+/* ---------- নিষ্ক্রিয়তায় স্বয়ংক্রিয় বের হওয়া (১৫ মিনিট; কোনো বার্তা ছাড়া) ---------- */
+let IDLE_MS = 15 * 60 * 1000;
+let lastActive = Date.now(), lastWrite = 0;
+function markActive() {
+  const now = Date.now();
+  lastActive = now;
+  if (now - lastWrite > 3000) { lastWrite = now; LS.set('lastactive', now); }   // অন্য ট্যাবও জানতে পারে
+}
+['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'].forEach(ev => document.addEventListener(ev, markActive, { passive: true }));
+function idleTick() {
+  if (!USER) return;
+  if (!LS.get('session')) { forceLogout(''); return; }      // অন্য ট্যাবে বের হয়ে গেলে এখানেও
+  const idle = Date.now() - Math.max(lastActive, Number(LS.get('lastactive')) || 0);
+  if (idle >= IDLE_MS) {            // কম্পিউটার ঘুমিয়ে থাকলেও জেগে ওঠার পর এখানে ধরা পড়ে
+    api('logout').catch(() => {}); forceLogout('');
+    return;
+  }
+  // সক্রিয় (গত ৫ মিনিটে কিছু করেছেন) থাকলে সার্ভারের সেশন বাঁচিয়ে রাখা; বসে থাকলে বাঁচানো হয় না
+  if (idle < 5 * 60 * 1000 && Date.now() - lastApi > 4 * 60 * 1000) api('touch').catch(() => {});
+}
+setInterval(idleTick, 2000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) idleTick(); });
 
 $('logoutBtn').onclick = async () => {
   try { await api('logout'); } catch (e) {}
@@ -1160,6 +1224,18 @@ function scheduleUndo() {
     const s = snap();
     if (s !== E.undo[E.undo.length - 1]) { E.undo.push(s); if (E.undo.length > 30) E.undo.shift(); E.redo = []; updateButtons(); }
   }, 400);
+}
+
+function flushDraft() {
+  if (!USER) return;
+  clearTimeout(timers.draft);
+  if (E.dirty && E.driverId) LS.set(draftKey(), { year: E.year, month: E.month, driverId: E.driverId, rows: E.rows, version: E.version, savedAt: Date.now() });
+}
+function resetEditorForLogout() {
+  clearTimeout(timers.calc); clearTimeout(timers.undo); clearTimeout(timers.draft);
+  Object.assign(E, { ready: false, year: '', month: '', driverId: '', driver: null, list: [], rows: [blankRow(1)], status: 'None', exists: false, version: '',
+    updatedAt: '', updatedBy: '', lockedBy: '', lockedAt: '', perms: {}, reason: '', dirty: false, calc: null, loading: false, staleDraft: false,
+    undo: [], redo: [], baseSnap: '', suggest: {}, unlockNote: '' });
 }
 
 function scheduleDraft() {
