@@ -9,19 +9,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-@font-face{font-family:'NikoshBAN';font-weight:400 700;font-display:swap;
+@font-face{font-family:'NikoshBAN';font-weight:400;font-display:swap;
   src:local('NikoshBAN'),url('fonts/NikoshBAN.woff2') format('woff2'),url('fonts/NikoshBAN.ttf') format('truetype')}
 /* নিকষ (Nikosh) — ইউনিকোড বাংলা ফন্ট। ফাইল fonts/Nikosh.ttf (ও NikoshBAN.ttf) দিলে সবার ব্রাউজারে চলে;
    না দিলে কম্পিউটারে ইনস্টল থাকলে সেটি। */
-@font-face{font-family:'Nikosh';font-weight:400 700;font-display:swap;
+@font-face{font-family:'Nikosh';font-weight:400;font-display:swap;
   src:local('Nikosh'),local('NikoshBAN'),url('fonts/Nikosh.woff2') format('woff2'),url('fonts/Nikosh.ttf') format('truetype')}
 /* সুতন্নি-ধাঁচের ফন্ট (ইউনিকোড: SutonnyOMJ)। ফন্ট-ফাইল fonts/ ফোল্ডারে দিলে সবার ব্রাউজারে চলে;
    না দিলে কম্পিউটারে ইনস্টল থাকলে সেটি, নইলে Noto Sans Bengali ব্যবহার হয়। */
 @font-face{font-family:'Sutonny';font-weight:400;font-display:swap;
   src:local('SutonnyOMJ'),local('Sutonny OMJ'),local('SutonnyOMJ Regular'),url('fonts/SutonnyOMJ.woff2') format('woff2'),url('fonts/SutonnyOMJ.ttf') format('truetype')}
-@font-face{font-family:'Sutonny';font-weight:700;font-display:swap;
-  src:local('SutonnyOMJ Bold'),local('Sutonny OMJ Bold'),url('fonts/SutonnyOMJ-Bold.woff2') format('woff2'),url('fonts/SutonnyOMJ-Bold.ttf') format('truetype'),
-      local('SutonnyOMJ'),local('Sutonny OMJ'),url('fonts/SutonnyOMJ.woff2') format('woff2'),url('fonts/SutonnyOMJ.ttf') format('truetype')}
 :root{
   --bg:#f1f5f9; --card:#fff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --line2:#cbd5e1;
   --pri:#0369a1; --pri-d:#075985; --pri-l:#e0f2fe; --ok:#16a34a; --ok-l:#dcfce7; --warn:#d97706; --warn-l:#fef3c7;
@@ -208,7 +205,7 @@ table.bill .rowbtn{border:none;border-radius:6px;width:26px;height:26px;color:#f
 .print-page h2{text-align:center;margin:0 0 5px;font-size:15px}
 .print-page .hl{text-align:center;font-size:11.5px;margin-bottom:4px;line-height:1.5}
 .print-page .bp{text-align:center;font-size:11.5px;margin-bottom:6px}
-.print-page .u{display:inline-block;border-bottom:1px solid #000;font-weight:bold;padding:0 3px}
+.print-page .u{display:inline-block;font-weight:bold;padding:0 3px}
 .print-page table{width:100%;border-collapse:collapse;margin-top:2px}
 .print-page th,.print-page td{border:1px solid #000;padding:1.5px 2px;text-align:center;font-size:10.5px;white-space:nowrap}
 .print-page th{font-weight:bold;background:#fff}
