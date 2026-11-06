@@ -235,7 +235,10 @@ a.btn{text-decoration:none}
 .dmy-wrap input[type=date]{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;right:10px;bottom:0;padding:0;border:0}
 
 /* ---------- ডিউটির স্থান: "অন্যান্য" ---------- */
-table.bill td input.place-other{margin-top:4px;border:1px solid var(--line2);background:#fff}
+table.bill td .place-wrap{position:relative;display:block}
+table.bill td .place-wrap[hidden]{display:none}
+table.bill td input.place-other{border:1px solid var(--line2);background:#fff;padding-right:26px}
+table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:#64748b;cursor:pointer;font-size:14px;padding:2px 5px}
 </style>
 </head>
 <body>
@@ -1251,7 +1254,9 @@ function syncPlaceCell(tr, i) {
   const r = E.rows[i], other = isOther(r);
   const sel = tr.querySelector('[data-f=placeSel]'), inp = tr.querySelector('[data-f=dutyPlace]');
   sel.value = other ? OTHER : (r.dutyPlace || '');
-  inp.hidden = !other; inp.value = r.dutyPlace || '';
+  sel.hidden = other;                                   // "অন্যান্য" হলে ড্রপডাউন লুকিয়ে শুধু লেখার ঘর
+  inp.value = r.dutyPlace || '';
+  inp.parentElement.hidden = !other;
 }
 
 function renderRows() {
@@ -1264,8 +1269,8 @@ function renderRows() {
       + `<option value="${OTHER}"${other ? ' selected' : ''}>${OTHER}</option>`;
     return `<tr data-i="${i}">
       <td class="dt"><select data-f="day"${ro ? ' disabled' : ''}>${dopts}</select><span class="muted">/${toBn(E.month)}/${toBn(E.year)}</span></td>
-      <td><select data-f="placeSel"${ro ? ' disabled' : ''}>${popts}</select>
-        <input data-f="dutyPlace" class="place-other" value="${esc(r.dutyPlace)}" placeholder="এখানে লিখুন" maxlength="60"${other ? '' : ' hidden'}${ro ? ' disabled' : ''}></td>
+      <td><select data-f="placeSel"${other ? ' hidden' : ''}${ro ? ' disabled' : ''}>${popts}</select>
+        <span class="place-wrap"${other ? '' : ' hidden'}><input data-f="dutyPlace" class="place-other" value="${esc(r.dutyPlace)}" placeholder="এখানে লিখুন" maxlength="60"${ro ? ' disabled' : ''}>${ro ? '' : '<button type="button" class="place-back" data-back title="তালিকা থেকে বাছুন">▾</button>'}</span></td>
       <td><input data-f="startTime" value="${esc(r.startTime)}" placeholder="রাত ১০:০০"${ro ? ' disabled' : ''}></td>
       <td><input data-f="endTime" value="${esc(r.endTime)}" placeholder="ভোর ৪:০০"${ro ? ' disabled' : ''}></td>
       <td class="calc c-h">…</td><td class="calc c-r">…</td><td class="calc c-a">…</td>
@@ -1395,6 +1400,12 @@ function rowEvent(e) {
 $('eBody').addEventListener('input', rowEvent);
 $('eBody').addEventListener('change', rowEvent);
 $('eBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-back]');
+  if (b) {                              // লেখার ঘর থেকে আবার তালিকায় ফেরা
+    const tr = b.closest('tr'), i = +tr.dataset.i;
+    delete E.rows[i]._o; E.rows[i].dutyPlace = '';
+    syncPlaceCell(tr, i); tr.querySelector('[data-f=placeSel]').focus(); touched(); return;
+  }
   const a = e.target.closest('[data-add]'), d = e.target.closest('[data-del]');
   if (!a && !d) return;
   if (a) {
