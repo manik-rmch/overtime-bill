@@ -216,11 +216,7 @@ table.bill .rowbtn{border:none;border-radius:6px;width:26px;height:26px;color:#f
 a.btn{text-decoration:none}
 
 /* ---------- ইউজার / অ্যাডমিন লগইন আলাদা চেহারা ---------- */
-.mode-tabs{display:flex;gap:6px;background:#f1f5f9;border-radius:12px;padding:5px;margin-bottom:16px}
-.mode-tabs button{flex:1;border:none;background:transparent;border-radius:9px;padding:9px 6px;font-weight:700;color:#64748b;cursor:pointer}
-.mode-tabs button.active{background:#fff;color:var(--pri);box-shadow:0 1px 4px rgba(15,23,42,.15)}
-#loginView[data-mode=admin] .mode-tabs button.active{color:#6d28d9}
-.login-card{border-top:6px solid var(--pri)}
+#loginView[data-mode=admin] .login-card{border-top:6px solid var(--pri)}
 #loginView[data-mode=admin] .login-card{border-top-color:#7c3aed}
 .mode-ribbon{display:block;text-align:center;font-size:12px;font-weight:700;letter-spacing:.3px;color:#075985;background:var(--pri-l);border-radius:99px;padding:3px 12px;width:max-content;margin:0 auto 10px}
 #loginView[data-mode=admin] .mode-ribbon{color:#5b21b6;background:#ede9fe}
@@ -248,10 +244,6 @@ table.bill td input.place-other{margin-top:4px;border:1px solid var(--line2);bac
 <!-- ============ লগইন ============ -->
 <div id="loginView" data-mode="user" hidden>
   <form class="login-card" id="loginForm" autocomplete="on">
-    <div class="mode-tabs" role="tablist">
-      <button type="button" data-m="user" class="active">👤 চালক / ইউজার</button>
-      <button type="button" data-m="admin">🛡️ অ্যাডমিন</button>
-    </div>
     <div class="mode-ribbon" id="loginRibbon">চালক / ইউজার লগইন</div>
     <div class="login-logo" id="loginLogo">🚗</div>
     <h1 id="loginTitle">চালক / ইউজার লগইন</h1>
@@ -747,11 +739,13 @@ function wipeUI() {
 
 function forceLogout(msg) {
   try { flushDraft(); } catch (e) {}              // অসংরক্ষিত কাজ খসড়া হিসেবে থেকে যায়
+  const wasAdmin = !!(USER && USER.role === 'admin');
   SESSION = null; USER = null; CONFIG = null; appShown = false;
   LS.clearSession();
   resetEditorForLogout(); wipeUI();
-  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  history.replaceState(null, '', location.pathname + location.search + (wasAdmin ? '#admin' : ''));   // অ্যাডমিন বের হলে অ্যাডমিন লগইনে, ইউজার বের হলে ইউজার লগইনে
   document.body.classList.remove('nav-open');
+  setLoginMode(wasAdmin ? 'admin' : 'user');
   showLogin(msg || '');
 }
 
@@ -761,25 +755,27 @@ $('pwToggle').onclick = () => {
 };
 
 /* ---------- ইউজার / অ্যাডমিন লগইন (আলাদা চেহারা) ---------- */
-let loginMode = LS.get('loginmode') === 'admin' ? 'admin' : 'user';
+let loginMode = (location.hash || '').toLowerCase() === '#admin' ? 'admin' : 'user';   // #admin ঠিকানা = অ্যাডমিন লগইন; মূল ঠিকানা = ইউজার লগইন
 const LOGIN_TXT = {
   user: { ribbon: 'চালক / ইউজার লগইন', title: 'চালক / ইউজার লগইন', sub: 'আপনার ইউজার আইডি ও পাসওয়ার্ড দিয়ে প্রবেশ করুন', logo: '🚗', ph: 'যেমন: driver01', help: 'আইডি বা পাসওয়ার্ড ভুলে গেলে অ্যাডমিনের সাথে যোগাযোগ করুন।', btn: 'প্রবেশ করুন' },
-  admin: { ribbon: '🔒 শুধু অ্যাডমিনের জন্য', title: 'অ্যাডমিন লগইন', sub: 'অ্যাডমিন প্যানেল ও সব বিল ব্যবস্থাপনা', logo: '🛡️', ph: 'অ্যাডমিন আইডি', help: 'অ্যাডমিন পাসওয়ার্ড ভুলে গেলে Google Apps Script থেকে resetAdminPassword চালান।', btn: 'অ্যাডমিন হিসেবে প্রবেশ' }
+  admin: { ribbon: '🔒 শুধু অ্যাডমিনের জন্য', title: 'অ্যাডমিন লগইন', sub: 'অ্যাডমিন প্যানেল ও সব বিল ব্যবস্থাপনা', logo: '🛡️', ph: 'অ্যাডমিন আইডি', help: '', btn: 'অ্যাডমিন হিসেবে প্রবেশ' }
 };
 function setLoginMode(m, keepInputs) {
   loginMode = m === 'admin' ? 'admin' : 'user';
-  LS.set('loginmode', loginMode);
   const t = LOGIN_TXT[loginMode];
   $('loginView').dataset.mode = loginMode;
-  document.querySelectorAll('.mode-tabs button').forEach(b => b.classList.toggle('active', b.dataset.m === loginMode));
   $('loginRibbon').textContent = t.ribbon; $('loginTitle').textContent = t.title; $('loginSub').textContent = t.sub;
   $('loginUserLabel').textContent = loginMode === 'admin' ? 'অ্যাডমিন আইডি' : 'ইউজার আইডি';
-  $('loginLogo').textContent = t.logo; $('loginUser').placeholder = t.ph; $('loginHelp').textContent = t.help; $('loginBtn').textContent = t.btn;
+  $('loginLogo').textContent = t.logo; $('loginUser').placeholder = t.ph; $('loginHelp').textContent = t.help; $('loginHelp').hidden = !t.help; $('loginBtn').textContent = t.btn;
   $('loginErr').hidden = true;
   if (!keepInputs) { $('loginUser').value = LS.get('lastuid_' + loginMode) || ''; $('loginPass').value = ''; }
 }
-document.querySelectorAll('.mode-tabs button').forEach(b => b.onclick = () => { setLoginMode(b.dataset.m); ($('loginUser').value ? $('loginPass') : $('loginUser')).focus(); });
 setLoginMode(loginMode);
+window.addEventListener('hashchange', () => {        // লগইন পেজ খোলা অবস্থায় ঠিকানা বদলালে ফর্মও বদলায়
+  if (USER || $('loginView').hidden) return;
+  const m = (location.hash || '').toLowerCase() === '#admin' ? 'admin' : 'user';
+  if (m !== loginMode) { setLoginMode(m); ($('loginUser').value ? $('loginPass') : $('loginUser')).focus(); }
+});
 
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
