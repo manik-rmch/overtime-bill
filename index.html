@@ -38,7 +38,8 @@ h3{font-size:15px;margin:0 0 8px}
 
 /* ---------- লগইন ---------- */
 #splash{position:fixed;inset:0;background:var(--side);display:flex;align-items:center;justify-content:center;color:#cbd5e1;z-index:9999;font-size:16px}
-#loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a 0%,#0c4a6e 100%)}
+#loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a 0%,#0c4a6e 100%);transition:background .3s}
+#loginView[data-mode=admin]{background:linear-gradient(135deg,#1e1b4b 0%,#581c87 100%)}
 .login-card{background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.35);width:100%;max-width:400px;padding:30px 28px}
 .login-logo{width:54px;height:54px;border-radius:14px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
 .login-card h1{text-align:center;font-size:20px}
@@ -213,25 +214,57 @@ table.bill .rowbtn{border:none;border-radius:6px;width:26px;height:26px;color:#f
 .print-page .footer-section{position:absolute;bottom:8mm;left:8mm;right:8mm;display:flex;justify-content:space-between;align-items:flex-start}
 .print-page .signature-box{text-align:center;font-size:10.5px;line-height:1.3;flex:1}
 a.btn{text-decoration:none}
+
+/* ---------- ইউজার / অ্যাডমিন লগইন আলাদা চেহারা ---------- */
+.mode-tabs{display:flex;gap:6px;background:#f1f5f9;border-radius:12px;padding:5px;margin-bottom:16px}
+.mode-tabs button{flex:1;border:none;background:transparent;border-radius:9px;padding:9px 6px;font-weight:700;color:#64748b;cursor:pointer}
+.mode-tabs button.active{background:#fff;color:var(--pri);box-shadow:0 1px 4px rgba(15,23,42,.15)}
+#loginView[data-mode=admin] .mode-tabs button.active{color:#6d28d9}
+.login-card{border-top:6px solid var(--pri)}
+#loginView[data-mode=admin] .login-card{border-top-color:#7c3aed}
+.mode-ribbon{display:block;text-align:center;font-size:12px;font-weight:700;letter-spacing:.3px;color:#075985;background:var(--pri-l);border-radius:99px;padding:3px 12px;width:max-content;margin:0 auto 10px}
+#loginView[data-mode=admin] .mode-ribbon{color:#5b21b6;background:#ede9fe}
+#loginView[data-mode=admin] .login-logo{background:#7c3aed}
+#loginView[data-mode=admin] #loginBtn{background:#7c3aed}
+#loginView[data-mode=admin] input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.18)}
+
+/* ---------- "অপেক্ষা করুন" ---------- */
+#waitBox{position:fixed;top:72px;left:50%;transform:translateX(-50%);background:#fff;color:#0f172a;border:1px solid var(--line2);border-radius:99px;padding:9px 20px;font-weight:700;box-shadow:0 8px 24px rgba(15,23,42,.25);z-index:500;display:flex;align-items:center;gap:10px;pointer-events:none}
+
+/* ---------- তারিখের ঘর (dd/mm/yyyy) ---------- */
+.dmy-wrap{position:relative}
+.dmy-wrap input.dmy{padding-right:40px}
+.dmy-wrap .dmy-cal{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;font-size:17px;padding:5px 7px;border-radius:7px}
+.dmy-wrap .dmy-cal:hover{background:#f1f5f9}
+.dmy-wrap input[type=date]{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;right:10px;bottom:0;padding:0;border:0}
+
+/* ---------- ডিউটির স্থান: "অন্যান্য" ---------- */
+table.bill td input.place-other{margin-top:4px;border:1px solid var(--line2);background:#fff}
 </style>
 </head>
 <body>
 <div id="splash">⏳ লোড হচ্ছে…</div>
 
 <!-- ============ লগইন ============ -->
-<div id="loginView" hidden>
+<div id="loginView" data-mode="user" hidden>
   <form class="login-card" id="loginForm" autocomplete="on">
-    <div class="login-logo">🚗</div>
-    <h1>অধিকাল বিল ব্যবস্থাপনা</h1>
-    <p class="sub">রাজশাহী মেডিকেল কলেজ হাসপাতাল — গাড়িচালক শাখা</p>
+    <div class="mode-tabs" role="tablist">
+      <button type="button" data-m="user" class="active">👤 চালক / ইউজার</button>
+      <button type="button" data-m="admin">🛡️ অ্যাডমিন</button>
+    </div>
+    <div class="mode-ribbon" id="loginRibbon">চালক / ইউজার লগইন</div>
+    <div class="login-logo" id="loginLogo">🚗</div>
+    <h1 id="loginTitle">চালক / ইউজার লগইন</h1>
+    <p class="sub" id="loginSub">আপনার ইউজার আইডি ও পাসওয়ার্ড দিয়ে প্রবেশ করুন</p>
     <div id="loginErr" class="err" hidden></div>
-    <div class="field"><label for="loginUser">ইউজার আইডি</label>
+    <div class="field"><label for="loginUser" id="loginUserLabel">ইউজার আইডি</label>
       <input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="40"></div>
     <div class="field"><label for="loginPass">পাসওয়ার্ড</label>
       <div class="pw-wrap"><input id="loginPass" name="password" type="password" autocomplete="current-password" maxlength="100">
         <button type="button" id="pwToggle" tabindex="-1">দেখুন</button></div></div>
     <button class="btn block" id="loginBtn" type="submit">প্রবেশ করুন</button>
-    <p class="muted small" style="text-align:center;margin:14px 0 0">আইডি বা পাসওয়ার্ড ভুলে গেলে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+    <p class="muted small" style="text-align:center;margin:14px 0 0" id="loginHelp">আইডি বা পাসওয়ার্ড ভুলে গেলে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+    <p class="muted small" style="text-align:center;margin:10px 0 0">রাজশাহী মেডিকেল কলেজ হাসপাতাল — গাড়িচালক শাখা</p>
   </form>
 </div>
 
@@ -272,8 +305,8 @@ a.btn{text-decoration:none}
       </div>
       <div class="stats" id="dStats"></div>
       <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr>
-        <th>চালক</th><th>গাড়ি নং</th><th>বিলের অবস্থা</th><th class="num">টাকা</th><th class="act">কাজ</th></tr></thead>
-        <tbody id="dBody"><tr><td colspan="5" class="loading-row">লোড হচ্ছে…</td></tr></tbody></table></div></div>
+        <th>চালক</th><th>গাড়ি নং</th><th>মাস</th><th class="num">টাকা</th><th>বিলের অবস্থা</th><th class="act">কাজ</th></tr></thead>
+        <tbody id="dBody"><tr><td colspan="6" class="loading-row">লোড হচ্ছে…</td></tr></tbody></table></div></div>
     </section>
 
     <!-- বিল তৈরি / সম্পাদনা -->
@@ -444,8 +477,8 @@ a.btn{text-decoration:none}
           <div class="grid-4">
             <div class="field"><label>ইউজার</label><select id="lgUser"></select></div>
             <div class="field"><label>কাজের ধরন</label><select id="lgAction"></select></div>
-            <div class="field"><label>তারিখ থেকে</label><input type="date" id="lgFrom"></div>
-            <div class="field"><label>তারিখ পর্যন্ত</label><input type="date" id="lgTo"></div>
+            <div class="field"><label>তারিখ থেকে</label><input id="lgFrom" class="dmy" placeholder="dd/mm/yyyy" inputmode="numeric" maxlength="10"></div>
+            <div class="field"><label>তারিখ পর্যন্ত</label><input id="lgTo" class="dmy" placeholder="dd/mm/yyyy" inputmode="numeric" maxlength="10"></div>
           </div>
           <div class="filters"><div class="field" style="flex:3"><label>লেখা খুঁজুন (বিবরণে)</label><input id="lgFilter"></div>
             <div class="field"><label>&nbsp;</label><button class="btn" id="lgReload">🔍 খুঁজুন</button></div></div>
@@ -469,9 +502,9 @@ a.btn{text-decoration:none}
         </div>
         <div class="card">
           <h2>📅 ছুটির তালিকা</h2>
-          <p class="muted small" style="margin:0 0 10px">এখানে সরকারি/ঈদের ছুটির তারিখ দিলে বিলে ওই তারিখ বাছলে "ডিউটির স্থান" নিজে বসবে। শুক্রবার নিজে থেকেই ধরা হয়। (বিলে হাতে বদলানো যায়।)</p>
+          <p class="muted small" style="margin:0 0 10px">এখানে ছুটির তারিখ ও ধরন দিলে বিলে ওই তারিখ বাছলে "ডিউটির স্থান"-এ সেটি নিজে বসবে। শুক্রবার নিজে থেকেই ধরা হয়। (বিলে হাতে বদলানো যায়।)</p>
           <div class="grid-4">
-            <div class="field"><label>তারিখ</label><input type="date" id="hlDate"></div>
+            <div class="field"><label>তারিখ</label><input id="hlDate" class="dmy" placeholder="dd/mm/yyyy" inputmode="numeric" maxlength="10"></div>
             <div class="field"><label>ধরন</label><select id="hlType"></select></div>
             <div class="field" id="hlOtherBox" hidden><label>ধরন লিখুন (বিলে এটিই বসবে)</label><input id="hlOther" maxlength="40" placeholder="যেমন: শোক দিবস"></div>
             <div class="field"><label>নোট (ঐচ্ছিক, শুধু অ্যাডমিনের জন্য)</label><input id="hlNote" maxlength="80" placeholder="যেমন: বিজয় দিবস"></div>
@@ -486,6 +519,7 @@ a.btn{text-decoration:none}
 </div>
 
 <div id="printSheet"></div>
+<div id="waitBox" hidden><span class="spin dark"></span> অপেক্ষা করুন…</div>
 <div id="toasts"></div>
 <div id="modalRoot"></div>
 
@@ -531,7 +565,7 @@ function getEngine() {
 // কিন্তু পুরো ব্রাউজার বন্ধ করলে কুকিটি নিজে মুছে যায় — তখন আবার প্রবেশ করতে হয়।
 // প্রোফাইল, সেটিংস ও ক্যাশ localStorage-এ থাকে (সব ট্যাবে দ্রুত খোলে); কুকি না থাকলে (ব্রাউজার বন্ধ হয়েছিল)
 // শুরুতেই সেগুলো মুছে ফেলা হয়। অসংরক্ষিত খসড়া ও শেষ ইউজার আইডি মোছা হয় না।
-const persistent = k => k.indexOf('draft_') === 0 || k === 'lastuid' || k === 'lastactive';
+const persistent = k => k.indexOf('draft_') === 0 || k.indexOf('lastuid') === 0 || k === 'lastactive' || k === 'loginmode';
 const COOKIE_NAME = 'rmch_sid';
 const COOKIE_PATH = location.pathname.replace(/[^/]*$/, '') || '/';
 const COOKIE_TAIL = '; path=' + COOKIE_PATH + '; SameSite=Strict' + (location.protocol === 'https:' ? '; Secure' : '');
@@ -558,6 +592,7 @@ const LS = {
 };
 if (!LS.get('session')) LS.clearSession();   // কুকি নেই = ব্রাউজার বন্ধ হয়েছিল বা বের হওয়া হয়েছে → আগের সব সেশন-তথ্য মুছে ফেলা
 let lastApi = Date.now();
+let sessionEpoch = 0;     // প্রবেশ/পাসওয়ার্ড বদলালে বাড়ে; তার আগে শুরু হওয়া অনুরোধের পুরোনো টোকেন আর বসানো হয় না
 
 /* ---------- ছোট UI সহায়ক ---------- */
 function toast(msg, type, ms) {
@@ -622,13 +657,50 @@ function setBusy(btn, on, label) {
   else { if (btn.dataset.h !== undefined) btn.innerHTML = btn.dataset.h; btn.disabled = false; delete btn.dataset.h; }
 }
 
+/* ---------- "অপেক্ষা করুন" ---------- */
+let pendingCalls = 0, waitTimer = null;
+const QUIET = ['ping', 'touch', 'calc', 'logout'];     // এগুলোতে অপেক্ষার বার্তা দেখানো হয় না
+function waitOn() { pendingCalls++; if (pendingCalls === 1) waitTimer = setTimeout(() => { const w = $('waitBox'); if (w) w.hidden = false; }, 150); }
+function waitOff() { pendingCalls = Math.max(0, pendingCalls - 1); if (pendingCalls === 0) { clearTimeout(waitTimer); const w = $('waitBox'); if (w) w.hidden = true; } }
+
+/* ---------- তারিখের ঘর: dd/mm/yyyy ---------- */
+function dmyToIso(v) {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(toEn(v).trim());
+  if (!m) return '';
+  const d = +m[1], mo = +m[2], y = +m[3], dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return '';
+  return m[3] + '-' + m[2] + '-' + m[1];
+}
+function isoToDmy(iso) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+function attachDmy(el) {
+  if (el.dataset.dmy) return; el.dataset.dmy = '1';
+  el.addEventListener('input', () => {
+    const d = toEn(el.value).replace(/\D/g, '').slice(0, 8);
+    el.value = d.length > 4 ? d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4) : d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+  });
+  const wrap = document.createElement('div'); wrap.className = 'dmy-wrap';
+  el.parentNode.insertBefore(wrap, el); wrap.appendChild(el);
+  const pick = document.createElement('input'); pick.type = 'date'; pick.tabIndex = -1;
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'dmy-cal'; btn.title = 'ক্যালেন্ডার থেকে বাছুন'; btn.textContent = '📅';
+  btn.onclick = () => { pick.value = dmyToIso(el.value); try { pick.showPicker ? pick.showPicker() : pick.click(); } catch (e) { pick.click(); } };
+  pick.onchange = () => { el.value = isoToDmy(pick.value); el.dispatchEvent(new Event('change')); };
+  wrap.appendChild(btn); wrap.appendChild(pick);
+}
+document.querySelectorAll('input.dmy').forEach(attachDmy);
+
 /* ---------- সার্ভার যোগাযোগ ---------- */
 async function api(action, payload) {
+  const loud = QUIET.indexOf(action) < 0;
+  if (loud) waitOn();
+  try { return await apiCall(action, payload); } finally { if (loud) waitOff(); }
+}
+async function apiCall(action, payload) {
   if (action !== 'login' && action !== 'ping') {
     SESSION = LS.get('session');          // সব ট্যাবের সবচেয়ে নতুন টোকেন
     if (!SESSION && USER) { forceLogout(''); throw new Error('আবার প্রবেশ করুন।'); }
   }
   let res;
+  const epoch = sessionEpoch;
   try {
     const r = await fetch(API_URL, {
       method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -637,7 +709,7 @@ async function api(action, payload) {
     res = await r.json();
   } catch (e) { throw new Error('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।'); }
   lastApi = Date.now();
-  if (res.nt && USER && LS.get('session') && !res.token) { LS.set('session', { token: res.nt }); }   // সক্রিয় থাকলে সেশনের মেয়াদ বাড়ে
+  if (res.nt && USER && epoch === sessionEpoch && LS.get('session') && !res.token) { LS.set('session', { token: res.nt }); }   // সক্রিয় থাকলে সেশনের মেয়াদ বাড়ে
   if (res.status === 'auth_error' && res.code === 'session') { forceLogout(res.expired ? '' : res.message); throw new Error(res.message); }
   return res;
 }
@@ -662,7 +734,7 @@ function showLogin(msg) {
   $('splash').hidden = true; $('appView').hidden = true; $('loginView').hidden = false;
   const er = $('loginErr');
   if (msg) { er.textContent = msg; er.hidden = false; } else er.hidden = true;
-  const last = LS.get('lastuid');
+  const last = LS.get('lastuid_' + loginMode);
   if (last && !$('loginUser').value) $('loginUser').value = last;
   ($('loginUser').value ? $('loginPass') : $('loginUser')).focus();
 }
@@ -688,6 +760,27 @@ $('pwToggle').onclick = () => {
   p.type = show ? 'text' : 'password'; $('pwToggle').textContent = show ? 'লুকান' : 'দেখুন';
 };
 
+/* ---------- ইউজার / অ্যাডমিন লগইন (আলাদা চেহারা) ---------- */
+let loginMode = LS.get('loginmode') === 'admin' ? 'admin' : 'user';
+const LOGIN_TXT = {
+  user: { ribbon: 'চালক / ইউজার লগইন', title: 'চালক / ইউজার লগইন', sub: 'আপনার ইউজার আইডি ও পাসওয়ার্ড দিয়ে প্রবেশ করুন', logo: '🚗', ph: 'যেমন: driver01', help: 'আইডি বা পাসওয়ার্ড ভুলে গেলে অ্যাডমিনের সাথে যোগাযোগ করুন।', btn: 'প্রবেশ করুন' },
+  admin: { ribbon: '🔒 শুধু অ্যাডমিনের জন্য', title: 'অ্যাডমিন লগইন', sub: 'অ্যাডমিন প্যানেল ও সব বিল ব্যবস্থাপনা', logo: '🛡️', ph: 'অ্যাডমিন আইডি', help: 'অ্যাডমিন পাসওয়ার্ড ভুলে গেলে Google Apps Script থেকে resetAdminPassword চালান।', btn: 'অ্যাডমিন হিসেবে প্রবেশ' }
+};
+function setLoginMode(m, keepInputs) {
+  loginMode = m === 'admin' ? 'admin' : 'user';
+  LS.set('loginmode', loginMode);
+  const t = LOGIN_TXT[loginMode];
+  $('loginView').dataset.mode = loginMode;
+  document.querySelectorAll('.mode-tabs button').forEach(b => b.classList.toggle('active', b.dataset.m === loginMode));
+  $('loginRibbon').textContent = t.ribbon; $('loginTitle').textContent = t.title; $('loginSub').textContent = t.sub;
+  $('loginUserLabel').textContent = loginMode === 'admin' ? 'অ্যাডমিন আইডি' : 'ইউজার আইডি';
+  $('loginLogo').textContent = t.logo; $('loginUser').placeholder = t.ph; $('loginHelp').textContent = t.help; $('loginBtn').textContent = t.btn;
+  $('loginErr').hidden = true;
+  if (!keepInputs) { $('loginUser').value = LS.get('lastuid_' + loginMode) || ''; $('loginPass').value = ''; }
+}
+document.querySelectorAll('.mode-tabs button').forEach(b => b.onclick = () => { setLoginMode(b.dataset.m); ($('loginUser').value ? $('loginPass') : $('loginUser')).focus(); });
+setLoginMode(loginMode);
+
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const uid = $('loginUser').value.trim().toLowerCase(), pw = $('loginPass').value;
@@ -695,10 +788,11 @@ $('loginForm').addEventListener('submit', async e => {
   $('loginErr').hidden = true;
   setBusy($('loginBtn'), true, 'যাচাই হচ্ছে…');
   try {
-    const res = await api('login', { userId: uid, password: pw });
+    const res = await api('login', { userId: uid, password: pw, mode: loginMode });
     if (res.status === 'success') {
-      SESSION = { token: res.token }; USER = res.user; CONFIG = res.config;
-      LS.set('session', SESSION); LS.set('user', USER); LS.set('config', CONFIG); LS.set('lastuid', uid);
+      sessionEpoch++; SESSION = { token: res.token }; USER = res.user; CONFIG = res.config;
+      LS.set('session', SESSION); LS.set('user', USER); LS.set('config', CONFIG); LS.set('lastuid_' + loginMode, uid);
+      history.replaceState(null, '', location.pathname + location.search + '#/dashboard');     // প্রবেশের পর সবসময় ড্যাশবোর্ডে
       $('loginPass').value = '';
       markActive();
       enterApp();
@@ -782,7 +876,7 @@ function openChangePassword(forced) {
       if (n !== n2) return fail('নতুন পাসওয়ার্ড দুইবার একই হয়নি।');
       try {
         const res = await api('changePassword', { oldPassword: o, newPassword: n });
-        if (res.status === 'success') { SESSION = { token: res.token }; LS.set('session', SESSION); USER.mustChange = false; LS.set('user', USER); close(); toast('পাসওয়ার্ড বদলানো হয়েছে', 'ok'); }
+        if (res.status === 'success') { sessionEpoch++; SESSION = { token: res.token }; LS.set('session', SESSION); USER.mustChange = false; LS.set('user', USER); close(); toast('পাসওয়ার্ড বদলানো হয়েছে', 'ok'); }
         else fail(res.message || 'বদলানো যায়নি।');
       } catch (e) { fail(e.message); }
     } }]) });
@@ -864,9 +958,9 @@ async function loadAlerts() {
 
 async function loadDashboard() {
   const y = $('dYear').value, m = $('dMonth').value;
-  if (!y || !m) { $('dBody').innerHTML = '<tr><td colspan="5" class="empty">সাল ও মাস বাছুন।</td></tr>'; $('dStats').innerHTML = ''; return; }
+  if (!y || !m) { $('dBody').innerHTML = '<tr><td colspan="6" class="empty">সাল ও মাস বাছুন।</td></tr>'; $('dStats').innerHTML = ''; return; }
   try { await cachedApi(`dash_${y}_${m}`, 'dashboard', { year: y, month: m }, res => renderDashboard(res.drivers, y, m)); }
-  catch (e) { $('dBody').innerHTML = `<tr><td colspan="5" class="empty">${esc(e.message)}</td></tr>`; }
+  catch (e) { $('dBody').innerHTML = `<tr><td colspan="6" class="empty">${esc(e.message)}</td></tr>`; }
 }
 
 function renderDashboard(list, y, m) {
@@ -878,7 +972,7 @@ function renderDashboard(list, y, m) {
     <div class="stat ok"><div class="n">${toBn(cnt('Locked'))}</div><div class="l">লক করা বিল</div></div>
     <div class="stat warn"><div class="n">${toBn(cnt('Draft'))}</div><div class="l">খসড়া (লক বাকি)</div></div>
     <div class="stat bad"><div class="n">${toBn(cnt('None'))}</div><div class="l">বিল হয়নি</div></div>`;
-  if (!list.length) { $('dBody').innerHTML = '<tr><td colspan="5" class="empty">এই মাসের জন্য কোনো চালক নেই।</td></tr>'; return; }
+  if (!list.length) { $('dBody').innerHTML = '<tr><td colspan="6" class="empty">এই মাসের জন্য কোনো চালক নেই।</td></tr>'; return; }
   $('dBody').innerHTML = list.map(d => {
     const q = `d=${d.id}&y=${y}&m=${m}`;
     let acts = '';
@@ -886,7 +980,7 @@ function renderDashboard(list, y, m) {
     else if (d.status !== 'None') acts += `<a class="btn sm ghost" href="#/editor?${q}">👁 দেখুন</a> `;
     if (d.status === 'Locked') acts += `<button class="btn sm ghost" data-print="${q}">🖨️ প্রিন্ট</button>`;
     return `<tr class="${d.active ? '' : 'inactive'}"><td><b>${esc(d.name)}</b>${d.active ? '' : ' <span class="badge b-gray">Inactive</span>'}</td>
-      <td>${esc(toBn(d.carNo) || '—')}</td><td>${badgeFor(d.status)}</td><td class="num">${d.status === 'None' ? '—' : money(d.total) + '/='}</td><td class="act">${acts}</td></tr>`;
+      <td>${esc(toBn(d.carNo) || '—')}</td><td>${esc(monthNameOf(m))} ${toBn(y)}</td><td class="num">${d.status === 'None' ? '—' : money(d.total) + '/='}</td><td>${badgeFor(d.status)}</td><td class="act">${acts}</td></tr>`;
   }).join('');
 }
 
@@ -1154,20 +1248,28 @@ function renderEditor() {
   updateButtons();
 }
 
+const OTHER = 'অন্যান্য';
+// তালিকার বাইরের (বা "অন্যান্য" বাছা) ডিউটির স্থান = লেখার ঘর দেখাবে
+const isOther = r => !!r._o || (!!r.dutyPlace && CONFIG.dutyPlaces.indexOf(r.dutyPlace) < 0);
+function syncPlaceCell(tr, i) {
+  const r = E.rows[i], other = isOther(r);
+  const sel = tr.querySelector('[data-f=placeSel]'), inp = tr.querySelector('[data-f=dutyPlace]');
+  sel.value = other ? OTHER : (r.dutyPlace || '');
+  inp.hidden = !other; inp.value = r.dutyPlace || '';
+}
+
 function renderRows() {
   const days = daysIn(E.year, E.month), ro = !E.perms.canEdit;
-  const base = [''].concat(CONFIG.dutyPlaces);
-  const extras = [];
-  E.rows.forEach(r => { if (r.dutyPlace && base.indexOf(r.dutyPlace) < 0 && extras.indexOf(r.dutyPlace) < 0) extras.push(r.dutyPlace); });
-  Object.keys(E.suggest || {}).forEach(k => { const v = E.suggest[k]; if (base.indexOf(v) < 0 && extras.indexOf(v) < 0) extras.push(v); });
-  const places = base.concat(extras);
   $('eBody').innerHTML = E.rows.map((r, i) => {
     let dopts = '';
     for (let d = 1; d <= days; d++) dopts += `<option value="${d}"${+r.day === d ? ' selected' : ''}>${toBn(pad2(d))}</option>`;
-    const popts = places.map(p => `<option value="${esc(p)}"${p === r.dutyPlace ? ' selected' : ''}>${esc(p)}</option>`).join('');
+    const other = isOther(r);
+    const popts = [''].concat(CONFIG.dutyPlaces).map(p => `<option value="${esc(p)}"${!other && p === r.dutyPlace ? ' selected' : ''}>${esc(p)}</option>`).join('')
+      + `<option value="${OTHER}"${other ? ' selected' : ''}>${OTHER}</option>`;
     return `<tr data-i="${i}">
       <td class="dt"><select data-f="day"${ro ? ' disabled' : ''}>${dopts}</select><span class="muted">/${toBn(E.month)}/${toBn(E.year)}</span></td>
-      <td><select data-f="dutyPlace"${ro ? ' disabled' : ''}>${popts}</select></td>
+      <td><select data-f="placeSel"${ro ? ' disabled' : ''}>${popts}</select>
+        <input data-f="dutyPlace" class="place-other" value="${esc(r.dutyPlace)}" placeholder="এখানে লিখুন" maxlength="60"${other ? '' : ' hidden'}${ro ? ' disabled' : ''}></td>
       <td><input data-f="startTime" value="${esc(r.startTime)}" placeholder="রাত ১০:০০"${ro ? ' disabled' : ''}></td>
       <td><input data-f="endTime" value="${esc(r.endTime)}" placeholder="ভোর ৪:০০"${ro ? ' disabled' : ''}></td>
       <td class="calc c-h">…</td><td class="calc c-r">…</td><td class="calc c-a">…</td>
@@ -1272,6 +1374,15 @@ function rowEvent(e) {
   const i = +e.target.closest('tr').dataset.i;
   let v = e.target.value;
   if (f === 'startTime' || f === 'endTime') { const b = toBn(v); if (b !== v) { e.target.value = b; v = b; } }
+  const tr = e.target.closest('tr');
+  if (f === 'placeSel') {              // ড্রপডাউন বদল: "অন্যান্য" হলে লেখার ঘর খোলে
+    if (v === OTHER) { E.rows[i]._o = true; if (CONFIG.dutyPlaces.indexOf(E.rows[i].dutyPlace) >= 0) E.rows[i].dutyPlace = ''; }
+    else { delete E.rows[i]._o; E.rows[i].dutyPlace = v; }
+    syncPlaceCell(tr, i);
+    if (v === OTHER) tr.querySelector('[data-f=dutyPlace]').focus();
+    touched(); return;
+  }
+  if (f === 'dutyPlace') E.rows[i]._o = true;
   if (E.rows[i][f] === v) return;
   const oldDay = E.rows[i].day;
   E.rows[i][f] = v;
@@ -1280,11 +1391,7 @@ function rowEvent(e) {
     const cur = E.rows[i].dutyPlace;
     if (!cur || cur === (E.suggest || {})[oldDay]) {
       const nv = (E.suggest || {})[v] || '';
-      if (nv !== cur) {
-        E.rows[i].dutyPlace = nv;
-        const sel = e.target.closest('tr').querySelector('[data-f=dutyPlace]');
-        if (sel) { if (nv && ![...sel.options].some(o => o.value === nv)) sel.add(new Option(nv, nv)); sel.value = nv; }
-      }
+      if (nv !== cur) { E.rows[i].dutyPlace = nv; delete E.rows[i]._o; syncPlaceCell(tr, i); }
     }
   }
   touched();
@@ -1649,7 +1756,9 @@ async function adminLoadLog() {
   $('lgBody').innerHTML = '<tr><td colspan="4" class="loading-row">লোড হচ্ছে…</td></tr>';
   try {
     const keep = $('lgUser').value;
-    const r = must(await api('adminLog', { limit: 300, user: keep, actionType: $('lgAction').value, from: $('lgFrom').value, to: $('lgTo').value, q: $('lgFilter').value.trim() }));
+    const fromIso = dmyToIso($('lgFrom').value), toIso = dmyToIso($('lgTo').value);
+    if (($('lgFrom').value && !fromIso) || ($('lgTo').value && !toIso)) { toast('তারিখ dd/mm/yyyy ধাঁচে সঠিকভাবে লিখুন।', 'warn'); $('lgBody').innerHTML = ''; return; }
+    const r = must(await api('adminLog', { limit: 300, user: keep, actionType: $('lgAction').value, from: fromIso, to: toIso, q: $('lgFilter').value.trim() }));
     $('lgUser').innerHTML = '<option value="">সব</option>' + r.users.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
     $('lgUser').value = keep;
     $('lgBody').innerHTML = r.log.length ? r.log.map(x => `<tr><td class="small" style="white-space:nowrap">${esc(x.time)}</td><td class="mono">${esc(x.user)}</td>
@@ -1662,7 +1771,7 @@ async function adminLoadLog() {
 let sysInit = false;
 function initSystem() {
   if (!sysInit) {
-    $('hlType').innerHTML = (CONFIG.holidayTypes || ['সরকারি ছুটি', 'ঈদের ছুটি']).concat(['অন্যান্য']).map(t => `<option>${esc(t)}</option>`).join('');
+    $('hlType').innerHTML = (CONFIG.holidayTypes || ['সরকারি ছুটি', 'ঈদের ছুটি', 'পূজার ছুটি', 'শুক্রবার']).concat(['অন্যান্য']).map(t => `<option>${esc(t)}</option>`).join('');
     $('hlType').onchange = () => { $('hlOtherBox').hidden = $('hlType').value !== 'অন্যান্য'; if (!$('hlOtherBox').hidden) $('hlOther').focus(); };
     fillYears($('hlYear'), 'সব সাল');
     const ty = +CONFIG.today.slice(0, 4); $('hlYear').value = CONFIG.years.includes(ty) ? ty : '';
@@ -1696,10 +1805,11 @@ async function loadHolidays() {
   } catch (e) { aErr(e); }
 }
 $('hlAdd').onclick = async () => {
-  if (!$('hlDate').value) { toast('তারিখ বাছুন।', 'warn'); return; }
+  const hIso = dmyToIso($('hlDate').value);
+  if (!hIso) { toast('তারিখ dd/mm/yyyy ধাঁচে সঠিকভাবে লিখুন (যেমন ১৬/১২/২০২৬)।', 'warn'); $('hlDate').focus(); return; }
   let type = $('hlType').value;
   if (type === 'অন্যান্য') { type = $('hlOther').value.trim(); if (!type) { toast('ছুটির ধরনটি লিখুন।', 'warn'); $('hlOther').focus(); return; } }
-  try { must(await api('adminSaveHoliday', { date: $('hlDate').value, type, note: $('hlNote').value.trim() })); $('hlNote').value = ''; $('hlOther').value = ''; toast('ছুটি সেভ হয়েছে', 'ok'); loadHolidays(); } catch (e) { aErr(e); }
+  try { must(await api('adminSaveHoliday', { date: hIso, type, note: $('hlNote').value.trim() })); $('hlNote').value = ''; $('hlOther').value = ''; $('hlDate').value = ''; toast('ছুটি সেভ হয়েছে', 'ok'); loadHolidays(); } catch (e) { aErr(e); }
 };
 $('hlBody').addEventListener('click', async e => {
   const b = e.target.closest('[data-hdel]'); if (!b) return;
