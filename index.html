@@ -221,6 +221,8 @@ a.btn{text-decoration:none}
 .tp-chip.on{background:#16a34a;border-color:#16a34a;color:#fff}
 .tp-chip.on::before{content:'✔ '}
 .rs-tbl td.l{text-align:left}
+.rs-tbl select.rs-extra{color:#c2410c;font-weight:700}
+.rs-chk{display:flex;align-items:center;gap:6px;margin-top:6px;font-weight:500;font-size:13px}
 .rs-lbl{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
 .rs-dumrow{display:flex;gap:8px;align-items:center}
 .rs-dumrow input{flex:1;min-width:0;height:42px;box-sizing:border-box}
@@ -584,7 +586,8 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
             <button class="btn ok" id="rsGrpSave">💾 জোড়া সেভ করুন</button>
           </div>
           <div class="filters">
-            <div class="field"><label>মাসের ১ তারিখের সকাল শিফটে কোন জোড়া</label><select id="rsStart"></select></div>
+            <div class="field"><label>কত তারিখ থেকে ভরবেন</label><select id="rsFrom"></select></div>
+            <div class="field"><label>ঐ তারিখের সকাল শিফটে কোন জোড়া</label><select id="rsStart"></select></div>
             <div class="field"><label>&nbsp;</label><button class="btn purple" id="rsAuto">⚡ অটো ভরুন</button></div>
           </div>
           <div id="rsStartHint" class="muted small"></div>
@@ -1247,7 +1250,7 @@ const E = {
   ready: false, year: '', month: '', driverId: '', driver: null, list: [], rows: [blankRow(1)],
   status: 'None', exists: false, version: '', updatedAt: '', updatedBy: '', lockedBy: '', lockedAt: '',
   perms: {}, reason: '', dirty: false, calc: null, calcSeq: 0, loading: false, staleDraft: false,
-  undo: [], redo: [], baseSnap: '', suggest: {}, unlockNote: ''
+  undo: [], redo: [], baseSnap: '', suggest: {}, unlockNote: '', autoNote: ''
 };
 const snap = () => JSON.stringify(E.rows);
 const editorKey = () => `${E.driverId}|${E.year}|${E.month}`;
@@ -1341,13 +1344,19 @@ async function loadBill(draft) {
     E.perms = res.perms; E.reason = res.reason; E.calc = res.calc; E.calcSeq++;
     E.suggest = res.suggest || {}; E.unlockNote = res.bill.unlockNote || '';
     E.rows = res.bill.rows.length ? res.bill.rows.map(r => ({ day: String(r.day || 1), dutyPlace: r.dutyPlace || '', startTime: r.startTime || '', endTime: r.endTime || '', remarks: r.remarks || '' })) : [blankRow(1)];
-    if (!E.exists && E.perms.canEdit) applySuggestion(0, true);
+    E.autoNote = '';
+    const au = res.auto;
+    if (!E.exists && E.perms.canEdit && au && au.rows && au.rows.length) {     // রোস্টার ও ঢাকা যাতায়াত থেকে নিজে বসানো সারি
+      E.rows = au.rows.map(r => ({ day: String(r.day), dutyPlace: r.dutyPlace || '', startTime: r.startTime || '', endTime: r.endTime || '', remarks: r.remarks || '' }));
+      E.autoNote = `রোস্টার থেকে ${toBn(au.fromRoster)}টি ও ঢাকা যাতায়াত থেকে ${toBn(au.fromTrips)}টি সারি নিজে বসেছে` +
+        (au.dropped ? `; যাতায়াতের সময়ের সাথে মিলে যাওয়ায় রোস্টারের ${toBn(au.dropped)}টি সারি বাদ গেছে` : '') + '। সারিগুলো দেখে নিন; দরকারে বদলান, মুছুন বা নতুন সারি যোগ করুন, তারপর সেভ করুন।';
+    } else if (!E.exists && E.perms.canEdit) applySuggestion(0, true);
     E.baseSnap = snap(); E.dirty = false; E.undo = [snap()]; E.redo = []; E.staleDraft = false;
     LS.del(draftKey());
     if (draft) {
       if (E.perms.canEdit && Array.isArray(draft.rows) && draft.rows.length) {
         E.staleDraft = String(draft.version || '') !== E.version;
-        E.rows = draft.rows; E.version = String(draft.version || ''); E.calc = null;
+        E.rows = draft.rows; E.version = String(draft.version || ''); E.calc = null; E.autoNote = '';
         E.dirty = true; E.undo = [snap()]; scheduleDraft(); scheduleCalc(50);
         toast('অসংরক্ষিত খসড়া ফিরিয়ে আনা হয়েছে', 'warn');
       } else toast('আগের অসংরক্ষিত খসড়াটি আর প্রযোজ্য নয় (বিল লক বা অনুমতি নেই), তাই বাদ গেছে।', 'warn', 5000);
@@ -1373,6 +1382,7 @@ function renderEditor() {
     if (E.reason) n += `<div class="notice ${E.status === 'Locked' ? 'ok' : 'warn'}">${esc(E.reason)}</div>`;
     if (!(E.driver.basicPay > 0)) n += `<div class="notice bad">⚠️ এই চালকের জন্য মূল বেতন নির্ধারিত নেই। অ্যাডমিন প্যানেলে গাড়ি ও বেতন সেট না হলে বিল সেভ হবে না।</div>`;
     else if (E.driver.source === 'inherited' || E.driver.source === 'default') n += `<div class="notice info">ℹ️ এই মাসের জন্য আলাদা গাড়ি/বেতন নির্ধারিত নেই; সর্বশেষ নির্ধারিত তথ্য দেখানো হচ্ছে। ভুল হলে অ্যাডমিনকে দিয়ে ঠিক করিয়ে নিন।</div>`;
+    if (E.autoNote && !E.exists) n += `<div class="notice info">🗓️ ${esc(E.autoNote)}</div>`;
     if (E.unlockNote && E.status === 'Draft') n += `<div class="notice warn">🔓 আনলক করা হয়েছিল — ${esc(E.unlockNote)}</div>`;
     if (E.staleDraft) n += `<div class="notice warn">⚠️ সার্ভারে এই বিলটি আপনার খসড়ার পরে বদলেছে। সেভ করতে গেলে সংঘাত আসবে; চাইলে "সার্ভার থেকে নতুন করে লোড" চাপুন।</div>`;
   }
@@ -2108,6 +2118,9 @@ const RS_DEF = () => ({
   groups: []
 });
 let R = null, rosterInit = false;
+const rsDisp = v => String(v || '').split('/').map(n => n.trim().charAt(0) === '+' ? n.trim().slice(1) + ' (অতিরিক্ত)' : n).join('/');
+const rsPlain = v => String(v || '').split('/').map(n => n.trim().replace(/^\+\s*/, '')).join('/');
+const rsHasExtra = v => /(^|\/)\s*\+/.test(String(v || ''));
 const rsLabel = g => (g.a && g.b) ? g.a + '/' + g.b : (g.a || g.b || '');
 const rsLabels = () => R.st.groups.map(rsLabel).filter(Boolean);
 function rsDirty(on) { if (!R) return; R.dirty = on !== false; $('rsDirty').hidden = !R.dirty; }
@@ -2138,7 +2151,8 @@ function initRoster() {
       R.st.groups.splice(+b.dataset.gdel, 1); rsRenderGroups(); rsRenderTable();
     });
     $('rsAuto').onclick = rsAutoFill;
-    $('rsStart').onchange = () => { R.start = +$('rsStart').value || 0; };
+    $('rsStart').onchange = () => { if (!+$('rsFrom').value || +$('rsFrom').value === 1) R.start = +$('rsStart').value || 0; };
+    $('rsFrom').onchange = () => rsRenderStart();
     $('rsBody').addEventListener('change', rsCellChange);
     $('rsBody').addEventListener('click', e => {
       const b = e.target.closest('[data-g]'); if (!b) return;
@@ -2213,10 +2227,20 @@ function rsRenderGroups() {
     <button type="button" class="btn sm bad" data-gdel="${i}" title="জোড়া মুছুন">×</button></div>`).join('');
 }
 function rsRenderStart() {
-  const labs = rsLabels(), pi = labs.indexOf(R.prevLast);
-  let cur = R.start === null ? (pi >= 0 ? (pi + 1) % labs.length : 0) : R.start;
+  const nd = R.days.length, keepF = Math.min(+$('rsFrom').value || 1, nd);
+  $('rsFrom').innerHTML = R.days.map((d, i) => `<option value="${i + 1}"${i + 1 === keepF ? ' selected' : ''}>${toBn(i + 1)} তারিখ${i === 0 ? ' (মাসের শুরু)' : ''}</option>`).join('');
+  const F = keepF, labs = rsLabels();
+  let cur = 0, hint = '';
+  if (F === 1) {
+    const pi = labs.indexOf(R.prevLast);
+    cur = R.start === null ? (pi >= 0 ? (pi + 1) % labs.length : 0) : R.start;
+    if (R.start === null && pi >= 0) hint = `গত মাসের শেষ দিনের সকাল শিফটে ছিল "${R.prevLast}", তাই রোটেশন চালু রাখতে পরের জোড়া বেছে দেওয়া হয়েছে (বদলানো যায়)।`;
+  } else {
+    const prev = rsPlain(R.days[F - 2].s[0]), pi = labs.indexOf(prev);     // আগের দিনের সকাল শিফট
+    if (pi >= 0) { cur = (pi + 1) % labs.length; hint = `${toBn(F - 1)} তারিখের সকাল শিফটে ছিল "${prev}", তাই পরের জোড়া বেছে দেওয়া হয়েছে। মাসের মাঝে ক্রম বদলাতে চাইলে এখানে নতুন শুরুর জোড়া বেছে নিন।`; }
+  }
   cur = Math.min(cur, Math.max(labs.length - 1, 0));
-  $('rsStartHint').textContent = R.start === null && pi >= 0 ? `গত মাসের শেষ দিনের সকাল শিফটে ছিল "${R.prevLast}", তাই রোটেশন চালু রাখতে পরের জোড়া বেছে দেওয়া হয়েছে (বদলানো যায়)।` : '';
+  $('rsStartHint').textContent = hint;
   $('rsStart').innerHTML = labs.length ? labs.map((l, i) => `<option value="${i}"${i === cur ? ' selected' : ''}>${esc(l)}</option>`).join('') : '<option value="0">— আগে জোড়া দিন —</option>';
 }
 function rsFillSettings() {
@@ -2249,7 +2273,7 @@ const rsGray = i => { const o = R.days[i].off; return o === 'g' ? true : o === '
 function rsCellOpts(val) {
   const labs = rsLabels();
   let o = '<option value=""></option>' + labs.map(l => `<option value="${esc(l)}"${l === val ? ' selected' : ''}>${esc(l)}</option>`).join('');
-  if (val && labs.indexOf(val) < 0) o += `<option value="${esc(val)}" selected>${esc(val)}</option>`;
+  if (val && labs.indexOf(val) < 0) o += `<option value="${esc(val)}" selected>${esc(rsDisp(val))}</option>`;
   return o + '<option value="__other">✎ অন্য নাম বাছুন…</option>';
 }
 function rsRenderTable() {
@@ -2258,7 +2282,7 @@ function rsRenderTable() {
     const day = i + 1, gray = rsGray(i), hol = R.hols[day];
     return `<tr data-i="${i}"${gray ? ' class="rs-off"' : ''}><td style="white-space:nowrap">${toBn(pad2(day))}/${toBn(pad2(R.month))}/${toBn(R.year)}</td>
       <td style="white-space:nowrap">${WD[rsWeekday(day)]}${hol ? `<div class="muted small">${esc(hol)}</div>` : ''}</td>
-      ${[0, 1, 2].map(k => `<td><select data-k="${k}">${rsCellOpts(d.s[k])}</select></td>`).join('')}
+      ${[0, 1, 2].map(k => `<td><select data-k="${k}"${rsHasExtra(d.s[k]) ? ' class="rs-extra"' : ''}>${rsCellOpts(d.s[k])}</select></td>`).join('')}
       <td><button type="button" class="btn sm ${gray ? 'ok' : 'ghost'}" data-g="${i}">${gray ? '✔ ধূসর' : 'সাদা'}</button></td></tr>`;
   }).join('');
 }
@@ -2266,22 +2290,26 @@ function rsCellChange(e) {
   const sel = e.target.closest('select[data-k]'); if (!sel) return;
   const i = +sel.closest('tr').dataset.i, k = +sel.dataset.k;
   if (sel.value !== '__other') { R.days[i].s[k] = sel.value; rsDirty(); return; }
-  const m = modal({ title: 'নাম বাছুন', dismissible: false, html: `<div class="field"><label>১ম জন</label><input id="rsO1" list="rosterPeople" maxlength="60"></div>
-      <div class="field"><label>২য় জন (ঐচ্ছিক)</label><input id="rsO2" list="rosterPeople" maxlength="60"></div>`,
+  const cur = String(R.days[i].s[k] || '').split('/').map(x => x.trim()).filter(Boolean).slice(0, 2);
+  const pre = cur.map(x => x.charAt(0) === '+' ? { n: x.slice(1).trim(), x: true } : { n: x, x: false });
+  const one = j => `<div class="field"><label>${j ? '২য়' : '১ম'} জন${j ? ' (ঐচ্ছিক)' : ''}</label><input id="rsO${j + 1}" list="rosterPeople" maxlength="60" value="${esc((pre[j] || {}).n || '')}">
+      <label class="rs-chk"><input type="checkbox" id="rsX${j + 1}"${(pre[j] || {}).x ? ' checked' : ''}> অতিরিক্ত (কারও বদলে এসেছেন)</label></div>`;
+  const m = modal({ title: 'নাম বাছুন', dismissible: false, html: one(0) + one(1) + '<div class="muted small">"অতিরিক্ত" টিক দিলে ঐ চালকের বিলে এই শিফট "অতিরিক্ত" ডিউটি হিসেবে বসবে। ছাপা রোস্টারে শুধু নাম দেখাবে।</div>',
     buttons: [{ label: 'বাতিল', cls: 'ghost', onClick: () => rsRenderTable() },
       { label: 'ঠিক আছে', onClick: back => {
-        const a = back.querySelector('#rsO1').value.trim(), b = back.querySelector('#rsO2').value.trim();
-        R.days[i].s[k] = rsLabel({ a, b }); rsDirty(); rsRenderTable();
+        const part = j => { const n = back.querySelector('#rsO' + (j + 1)).value.trim().replace(/^\+\s*/, ''); return n ? (back.querySelector('#rsX' + (j + 1)).checked ? '+' : '') + n : ''; };
+        R.days[i].s[k] = [part(0), part(1)].filter(Boolean).join('/'); rsDirty(); rsRenderTable();
       } }] });
   setTimeout(() => m.el.querySelector('#rsO1').focus(), 50);
 }
 async function rsAutoFill() {
   const gs = rsLabels();
   if (!gs.length) { toast('আগে অন্তত একটি জোড়া দিন।', 'warn'); return; }
-  if (R.days.some(d => d.s.some(Boolean)) && !await confirmBox('এই মাসের সব ঘর নতুন করে ভরা হবে (আগের হাতে-বদল মুছে যাবে)। এগিয়ে যাবেন?', 'হ্যাঁ, ভরুন', true)) return;
+  const F = (+$('rsFrom').value || 1) - 1;
+  if (R.days.slice(F).some(d => d.s.some(Boolean)) && !await confirmBox(`${toBn(F + 1)} তারিখ থেকে মাসের শেষ পর্যন্ত সব ঘর নতুন করে ভরা হবে (ঐ সময়ের হাতে-বদল ও "অতিরিক্ত" টিক মুছে যাবে${F ? '; আগের তারিখগুলো যেমন আছে তেমনই থাকবে' : ''})। এগিয়ে যাবেন?`, 'হ্যাঁ, ভরুন', true)) return;
   const o = +$('rsStart').value || 0, n = gs.length;
-  R.start = o;
-  R.days.forEach((d, i) => { const a = gs[(o + i) % n], b = gs[(o + i + 1) % n]; d.s = [a, b, a]; });
+  if (F === 0) R.start = o;
+  for (let i = F; i < R.days.length; i++) { const a = gs[(o + i - F) % n], b = gs[(o + i - F + 1) % n]; R.days[i].s = [a, b, a]; }
   rsDirty(); rsRenderTable();
 }
 async function rsSave() {
@@ -2296,7 +2324,7 @@ async function rsSave() {
 function rsPrint() {
   rsReadFields();
   const st = R.st;
-  const rows = R.days.map((d, i) => `<tr${rsGray(i) ? ' class="off"' : ''}><td>${toBn(pad2(i + 1))}/${toBn(pad2(R.month))}/${toBn(R.year)}</td><td>${WD[rsWeekday(i + 1)]}</td>${d.s.map(x => `<td>${esc(x)}</td>`).join('')}</tr>`).join('');
+  const rows = R.days.map((d, i) => `<tr${rsGray(i) ? ' class="off"' : ''}><td>${toBn(pad2(i + 1))}/${toBn(pad2(R.month))}/${toBn(R.year)}</td><td>${WD[rsWeekday(i + 1)]}</td>${d.s.map(x => `<td>${esc(rsPlain(x))}</td>`).join('')}</tr>`).join('');
   const sig = lines => `<div>${lines.map(x => esc(x)).join('<br>')}</div>`;
   $('printSheet').innerHTML = `<div class="roster-page">
     <div class="rt">${esc(st.title1)}<br>${esc(st.title2)}<br>${esc(monthNameOf(R.month))}/${toBn(R.year)}</div>
