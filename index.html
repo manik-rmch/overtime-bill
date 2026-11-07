@@ -217,6 +217,10 @@ a.btn{text-decoration:none}
 
 
 /* ---------- ডিউটি রোস্টার ---------- */
+.tp-chip{border:1px solid #c7d2fe;background:#fff;border-radius:99px;padding:5px 14px;font-weight:600;cursor:pointer;color:#334155}
+.tp-chip.on{background:#16a34a;border-color:#16a34a;color:#fff}
+.tp-chip.on::before{content:'✔ '}
+.rs-tbl td.l{text-align:left}
 .rs-lbl{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
 .rs-dumrow{display:flex;gap:8px;align-items:center}
 .rs-dumrow input{flex:1;min-width:0;height:42px;box-sizing:border-box}
@@ -408,6 +412,7 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
         <button data-t="summary">📑 মাসিক সারসংক্ষেপ</button>
         <button data-t="log">📜 কার্যকলাপ লগ</button>
         <button data-t="roster">🗓️ ডিউটি রোস্টার</button>
+        <button data-t="trips">🚗 ঢাকা যাতায়াত</button>
         <button data-t="system">🛠️ ব্যাকআপ, ছুটি ও সেটিংস</button>
       </div>
 
@@ -511,6 +516,43 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
         <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>সময়</th><th>ইউজার</th><th>কাজ</th><th>বিবরণ</th></tr></thead>
           <tbody id="lgBody"></tbody></table></div></div>
         <div class="muted small" style="margin-top:8px">সর্বোচ্চ ৩০০টি দেখানো হয়। ১৮০ দিনের বেশি পুরোনো লগ নিজে "ActivityLogArchive" ট্যাবে সরে যায় (সাপ্তাহিক ব্যাকআপের সময়)।</div>
+      </div>
+
+      <div id="a-trips" class="atab" hidden>
+        <div class="card">
+          <h2>🚗 ঢাকা যাতায়াত (রাজশাহী ⇄ ঢাকা)</h2>
+          <div class="filters">
+            <div class="field"><label>সাল</label><select id="tpYear"></select></div>
+            <div class="field"><label>মাস</label><select id="tpMonth"></select></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 id="tpFormTitle">➕ নতুন যাতায়াত</h2>
+          <div class="grid-3">
+            <div class="field"><label>তারিখ</label><input type="date" id="tpDate"></div>
+            <div class="field"><label>সময় হইতে</label><input id="tpFrom" placeholder="যেমন: সকাল ৮:০০" maxlength="30" autocomplete="off"></div>
+            <div class="field"><label>সময় পর্যন্ত</label><input id="tpTo" placeholder="যেমন: রাত ৯:৩০" maxlength="30" autocomplete="off"></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>ঘণ্টা (নিজে হিসাব হয়)</label><input id="tpHours" readonly placeholder="—"></div>
+            <div class="field"><label>মন্তব্য (ঐচ্ছিক)</label><input id="tpNote" maxlength="200" placeholder="যেমন: রোগী নিয়ে গেছে"></div>
+          </div>
+          <div class="field"><label>কে কে গেলেন (চাপ দিয়ে বাছুন)</label>
+            <div id="tpPeople" class="rs-chips" style="margin-top:4px"></div>
+            <div class="rs-dumrow" style="margin-top:8px"><input id="tpOther" list="rosterPeople" maxlength="60" placeholder="তালিকার বাইরের কেউ হলে নাম লিখে Enter চাপুন" autocomplete="off"><button class="btn ghost" id="tpOtherAdd" type="button">যোগ</button></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ok" id="tpSave">💾 সেভ করুন</button><button class="btn ghost" id="tpCancel" hidden>বাতিল</button></div>
+        </div>
+
+        <div class="card tight"><div class="table-wrap"><table class="tbl rs-tbl"><thead><tr><th>তারিখ</th><th>কে কে গেলেন</th><th>সময় হইতে</th><th>পর্যন্ত</th><th>ঘণ্টা</th><th>মন্তব্য</th><th>কাজ</th></tr></thead>
+          <tbody id="tpBody"><tr><td colspan="7" class="loading-row">সাল ও মাস বেছে নিন।</td></tr></tbody>
+          <tfoot id="tpFoot"></tfoot></table></div></div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><h2 style="margin:0">👥 চালকভিত্তিক সারসংক্ষেপ</h2><button class="btn" id="tpPrint">🖨️ প্রিন্ট</button></div>
+          <div class="table-wrap"><table class="tbl rs-tbl"><thead><tr><th>চালক</th><th>যাতায়াত (বার)</th><th>মোট ঘণ্টা</th></tr></thead><tbody id="tpSum"></tbody></table></div>
+        </div>
       </div>
 
       <div id="a-roster" class="atab" hidden>
@@ -1609,7 +1651,7 @@ window.addEventListener('beforeunload', e => { if (E.dirty) { e.preventDefault()
 let adminTabNow = '', adminDrivers = [], adminEditingId = null, adminAssign = { assignments: [], candidates: [] }, adminUsers = [], logData = [];
 
 function initAdmin(tab) {
-  if (!['drivers', 'assign', 'users', 'summary', 'log', 'roster', 'system'].includes(tab)) tab = 'drivers';
+  if (!['drivers', 'assign', 'users', 'summary', 'log', 'roster', 'trips', 'system'].includes(tab)) tab = 'drivers';
   adminTabNow = tab;
   document.querySelectorAll('#aPills button').forEach(b => b.classList.toggle('active', b.dataset.t === tab));
   document.querySelectorAll('.atab').forEach(t => t.hidden = t.id !== 'a-' + tab);
@@ -1620,6 +1662,7 @@ function initAdmin(tab) {
   else if (tab === 'summary') initSummary();
   else if (tab === 'system') initSystem();
   else if (tab === 'roster') initRoster();
+  else if (tab === 'trips') initTrips();
   else initLog();
 }
 $('aPills').onclick = e => { const b = e.target.closest('button'); if (b) location.hash = '#/admin/' + b.dataset.t; };
@@ -1849,7 +1892,7 @@ $('smLock').onclick = async () => {
 const ACT = { login: 'প্রবেশ', login_fail: 'ভুল প্রবেশ-চেষ্টা', logout: 'বের হওয়া', create_bill: 'নতুন বিল', update_bill: 'বিল আপডেট', lock_bill: 'বিল লক', unlock_bill: 'বিল আনলক', lock_month: 'মাসের সব লক',
   change_password: 'পাসওয়ার্ড বদল', reset_password: 'পাসওয়ার্ড রিসেট', add_user: 'ইউজার যুক্ত', edit_user: 'ইউজার সম্পাদনা', add_driver: 'চালক যুক্ত', edit_driver: 'চালক সম্পাদনা',
   set_assignment: 'মাসের গাড়ি/বেতন', delete_assignment: 'মাসের তথ্য মুছা', fill_month: 'মাস পূরণ', save_permissions: 'অনুমতি সেভ', create_driver_users: 'চালক-ইউজার তৈরি', setup: 'সিস্টেম সেটআপ',
-  backup: 'ব্যাকআপ', backup_fail: 'ব্যাকআপ ব্যর্থ', set_holiday: 'ছুটি সেট', delete_holiday: 'ছুটি মুছা', save_settings: 'সেটিংস সেভ', roster_dummies: 'ডামি চালক সেভ', roster_settings: 'রোস্টারের লেখা সেভ', roster_save: 'ডিউটি রোস্টার সেভ' };
+  backup: 'ব্যাকআপ', backup_fail: 'ব্যাকআপ ব্যর্থ', set_holiday: 'ছুটি সেট', delete_holiday: 'ছুটি মুছা', save_settings: 'সেটিংস সেভ', roster_dummies: 'ডামি চালক সেভ', roster_settings: 'রোস্টারের লেখা সেভ', roster_save: 'ডিউটি রোস্টার সেভ', trip_save: 'ঢাকা যাতায়াত সেভ', trip_delete: 'ঢাকা যাতায়াত মোছা' };
 let logInit = false;
 function initLog() {
   if (!logInit) {
@@ -1926,6 +1969,132 @@ $('hlBody').addEventListener('click', async e => {
   try { must(await api('adminDeleteHoliday', { date: b.dataset.hdel })); toast('মুছে ফেলা হয়েছে', 'ok'); loadHolidays(); } catch (er) { aErr(er); }
 });
 
+
+/* ---------- ঢাকা যাতায়াত ---------- */
+let TP = null, tpInit = false;
+const tpFmtH = h => toBn(String(Math.round(h * 100) / 100));
+const tpDmy = d => toBn(d.slice(8, 10)) + '/' + toBn(d.slice(5, 7)) + '/' + toBn(d.slice(0, 4));
+
+function initTrips() {
+  if (!tpInit) {
+    fillYears($('tpYear'), 'সাল'); fillMonths($('tpMonth'), 'মাস');
+    const ty = +CONFIG.today.slice(0, 4);
+    $('tpYear').value = CONFIG.years.includes(ty) ? ty : CONFIG.years[0]; $('tpMonth').value = CONFIG.today.slice(5, 7);
+    $('tpYear').onchange = $('tpMonth').onchange = () => loadTrips();
+    ['tpFrom', 'tpTo'].forEach(id => $(id).addEventListener('input', e => { const b = toBn(e.target.value); if (b !== e.target.value) e.target.value = b; tpHours(); }));
+    $('tpPeople').addEventListener('click', e => {
+      const b = e.target.closest('[data-n]'); if (!b) return;
+      const n = b.dataset.n, i = TP.sel.indexOf(n);
+      if (i >= 0) TP.sel.splice(i, 1); else TP.sel.push(n);
+      tpRenderPeople();
+    });
+    const addOther = () => {
+      const n = $('tpOther').value.trim(); if (!n) return;
+      if (TP.sel.indexOf(n) < 0) TP.sel.push(n);
+      $('tpOther').value = ''; tpRenderPeople();
+    };
+    $('tpOtherAdd').onclick = addOther;
+    $('tpOther').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addOther(); } });
+    $('tpSave').onclick = tpSave;
+    $('tpCancel').onclick = () => tpResetForm();
+    $('tpBody').addEventListener('click', tpRowClick);
+    $('tpPrint').onclick = tpPrint;
+    tpInit = true;
+  }
+  loadTrips();
+}
+
+async function loadTrips() {
+  const y = +$('tpYear').value, m = +$('tpMonth').value;
+  if (!y || !m) return;
+  $('tpBody').innerHTML = '<tr><td colspan="7" class="loading-row">লোড হচ্ছে…</td></tr>';
+  try {
+    const r = must(await api('adminTripList', { year: y, month: m }));
+    const people = []; r.dummies.concat(r.drivers).forEach(n => { if (people.indexOf(n) < 0) people.push(n); });
+    TP = { year: y, month: m, trips: r.trips, people, sel: [], editId: 0 };
+    $('rosterPeople').innerHTML = people.map(n => `<option value="${esc(n)}"></option>`).join('');
+    const pre = y + '-' + pad2(m) + '-';
+    $('tpDate').min = pre + '01'; $('tpDate').max = pre + pad2(daysIn(y, m));
+    tpResetForm(true);
+    tpRender();
+  } catch (e) { aErr(e); $('tpBody').innerHTML = '<tr><td colspan="7" class="empty">লোড করা যায়নি।</td></tr>'; }
+}
+
+function tpResetForm(keepDate) {
+  TP.editId = 0; TP.sel = [];
+  const pre = TP.year + '-' + pad2(TP.month) + '-';
+  if (!keepDate && $('tpDate').value.indexOf(pre) === 0) { /* তারিখ রেখে দেওয়া */ }
+  else $('tpDate').value = CONFIG.today.indexOf(pre) === 0 ? CONFIG.today : pre + '01';
+  $('tpFrom').value = ''; $('tpTo').value = ''; $('tpNote').value = ''; $('tpOther').value = '';
+  $('tpFormTitle').textContent = '➕ নতুন যাতায়াত'; $('tpCancel').hidden = true;
+  tpHours(); tpRenderPeople();
+}
+function tpRenderPeople() {
+  const all = TP.people.slice(); TP.sel.forEach(n => { if (all.indexOf(n) < 0) all.push(n); });
+  $('tpPeople').innerHTML = all.length ? all.map(n => `<button type="button" class="tp-chip${TP.sel.indexOf(n) >= 0 ? ' on' : ''}" data-n="${esc(n)}">${esc(n)}</button>`).join('')
+    : '<span class="muted small">কোনো চালক নেই — নিচের ঘরে নাম লিখে যোগ করুন।</span>';
+}
+function tpHours() {
+  const a = $('tpFrom').value.trim(), b = $('tpTo').value.trim(), eng = getEngine();
+  if (!a || !b) { $('tpHours').value = ''; return; }
+  if (!eng) { $('tpHours').value = 'সেভ করলে হিসাব হবে'; return; }
+  const h = eng(1, 2000, 1, [{ startTime: a, endTime: b }]).rows[0].hours;
+  $('tpHours').value = h > 0 ? tpFmtH(h) + ' ঘণ্টা' : 'সময় সঠিক নয়';
+}
+async function tpSave() {
+  const body = { id: TP.editId, date: $('tpDate').value, names: TP.sel, startTime: $('tpFrom').value.trim(), endTime: $('tpTo').value.trim(), note: $('tpNote').value.trim() };
+  if (!body.date) { toast('তারিখ দিন।', 'warn'); return; }
+  if (!body.names.length) { toast('কে কে গেলেন, অন্তত একজন বাছুন।', 'warn'); return; }
+  setBusy($('tpSave'), true);
+  try {
+    must(await api('adminTripSave', body));
+    toast('সেভ হয়েছে', 'ok');
+    const keep = $('tpDate').value; await loadTrips(); $('tpDate').value = keep;
+  } catch (e) { aErr(e); } finally { setBusy($('tpSave'), false); }
+}
+function tpRender() {
+  const T = TP.trips;
+  $('tpBody').innerHTML = T.length ? T.map(t => `<tr data-id="${t.id}"><td style="white-space:nowrap">${tpDmy(t.date)}</td><td class="l">${esc(t.names.join(', '))}</td>
+    <td>${esc(t.start)}</td><td>${esc(t.end)}</td><td><b>${tpFmtH(t.hours)}</b></td><td class="l">${esc(t.note)}</td>
+    <td style="white-space:nowrap"><button class="btn sm ghost" data-edit="${t.id}">✏️</button> <button class="btn sm bad" data-del="${t.id}">🗑️</button></td></tr>`).join('')
+    : '<tr><td colspan="7" class="empty">এই মাসে কোনো যাতায়াত যুক্ত করা হয়নি।</td></tr>';
+  const total = tpTotal();
+  $('tpFoot').innerHTML = T.length ? `<tr><td colspan="4" style="text-align:right"><b>মোট (${toBn(T.length)} বার)</b></td><td><b>${tpFmtH(total)}</b></td><td colspan="2"></td></tr>` : '';
+  const S = tpSummary();
+  $('tpSum').innerHTML = S.length ? S.map(x => `<tr><td class="l">${esc(x.name)}</td><td>${toBn(x.count)}</td><td><b>${tpFmtH(x.hours)}</b></td></tr>`).join('') : '<tr><td colspan="3" class="empty">—</td></tr>';
+}
+const tpTotal = () => TP.trips.reduce((a, t) => a + t.hours, 0);
+function tpSummary() {
+  const m = {};
+  TP.trips.forEach(t => t.names.forEach(n => { const o = (m[n] = m[n] || { name: n, count: 0, hours: 0 }); o.count++; o.hours += t.hours; }));
+  return Object.values(m).sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
+}
+async function tpRowClick(e) {
+  const ed = e.target.closest('[data-edit]'), de = e.target.closest('[data-del]');
+  if (ed) {
+    const t = TP.trips.find(x => String(x.id) === ed.dataset.edit); if (!t) return;
+    TP.editId = t.id; TP.sel = t.names.slice();
+    $('tpDate').value = t.date; $('tpFrom').value = t.start; $('tpTo').value = t.end; $('tpNote').value = t.note;
+    $('tpFormTitle').textContent = '✏️ যাতায়াত সম্পাদনা'; $('tpCancel').hidden = false;
+    tpHours(); tpRenderPeople(); $('tpFormTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else if (de) {
+    const t = TP.trips.find(x => String(x.id) === de.dataset.del); if (!t) return;
+    if (!await confirmBox(`${tpDmy(t.date)} তারিখের যাতায়াতটি (${t.names.join(', ')}) মুছে ফেলবেন?`, 'মুছুন', true)) return;
+    try { must(await api('adminTripDelete', { id: t.id })); toast('মুছে ফেলা হয়েছে', 'ok'); loadTrips(); } catch (er) { aErr(er); }
+  }
+}
+function tpPrint() {
+  if (!TP.trips.length) { toast('এই মাসে প্রিন্ট করার মতো যাতায়াত নেই।', 'warn'); return; }
+  const rows = TP.trips.map((t, i) => `<tr><td>${toBn(i + 1)}</td><td>${tpDmy(t.date)}</td><td style="text-align:left">${esc(t.names.join(', '))}</td><td>${esc(t.start)}</td><td>${esc(t.end)}</td><td>${tpFmtH(t.hours)}</td><td style="text-align:left">${esc(t.note)}</td></tr>`).join('');
+  const sum = tpSummary().map(x => `<tr><td style="text-align:left">${esc(x.name)}</td><td>${toBn(x.count)}</td><td>${tpFmtH(x.hours)}</td></tr>`).join('');
+  $('printSheet').innerHTML = `<div class="roster-page" style="min-height:0">
+    <div class="rt">${esc((CONFIG && CONFIG.orgLine) || 'রাজশাহী মেডিকেল কলেজ হাসপাতাল')}<br>ঢাকা যাতায়াতের তালিকা<br>${esc(monthNameOf(TP.month))}/${toBn(TP.year)}</div>
+    <table><thead><tr><th>ক্রম</th><th>তারিখ</th><th>কে কে গেলেন</th><th>সময় হইতে</th><th>পর্যন্ত</th><th>ঘণ্টা</th><th>মন্তব্য</th></tr></thead><tbody>${rows}
+      <tr><td colspan="5" style="text-align:right"><b>মোট (${toBn(TP.trips.length)} বার)</b></td><td><b>${tpFmtH(tpTotal())}</b></td><td></td></tr></tbody></table>
+    <div class="rt" style="font-size:14px;margin-top:14px">চালকভিত্তিক সারসংক্ষেপ</div>
+    <table style="width:70%;margin-left:auto;margin-right:auto"><thead><tr><th>চালক</th><th>যাতায়াত (বার)</th><th>মোট ঘণ্টা</th></tr></thead><tbody>${sum}</tbody></table></div>`;
+  setTimeout(doPrint, 60);
+}
 
 /* ---------- ডিউটি রোস্টার ও ডামি চালক ---------- */
 const WD = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
