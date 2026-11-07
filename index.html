@@ -379,6 +379,7 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
       <div class="actionbar" id="eActions" hidden>
         <button class="btn ok" id="eSave">💾 সেভ করুন</button>
         <button class="btn warn" id="eLock">🔒 লক করুন</button>
+        <button class="btn" id="eRefresh" hidden title="রোস্টার ও ঢাকা যাতায়াতে নতুন যা যুক্ত হয়েছে, বিলে যা নেই শুধু সেগুলো যোগ হবে">🔄 রোস্টার/যাতায়াত থেকে নতুন সারি আনুন</button>
         <button class="btn" id="ePrint">🖨️ প্রিন্ট / PDF</button>
         <button class="btn purple" id="eUnlock" hidden>🔓 আনলক (অ্যাডমিন)</button>
         <span class="spacer"></span>
@@ -1450,6 +1451,7 @@ function updateButtons() {
   const p = E.perms || {};
   $('eSave').disabled = !(p.canEdit && (E.dirty || !E.exists));
   $('eSave').hidden = !p.canEdit;
+  $('eRefresh').hidden = !p.canEdit;
   $('eLock').hidden = !p.canLock;
   $('eLock').disabled = E.dirty;
   $('eLock').title = E.dirty ? 'আগে সেভ করুন' : '';
@@ -1466,6 +1468,21 @@ function applySuggestion(i, silent) {
   const r = E.rows[i], s = E.suggest && E.suggest[r.day];
   if (r && !r.dutyPlace && s) { r.dutyPlace = s; return true; }
   return false;
+}
+
+/* ---------- রোস্টার/যাতায়াত থেকে নতুন সারি আনা (আগের সারি অক্ষত থাকে) ---------- */
+async function refreshAutoRows() {
+  if (!(E.driverId && E.perms.canEdit)) return;
+  const filled = E.rows.filter(r => r.dutyPlace || r.startTime || r.endTime || r.remarks);
+  setBusy($('eRefresh'), true);
+  try {
+    const res = must(await api('autoRows', { year: E.year, month: E.month, driverId: E.driverId, rows: filled }));
+    if (!res.add.length) { toast('নতুন কোনো সারি নেই — রোস্টার ও যাতায়াতের সব তথ্য বিলে আছে।', 'ok', 4000); return; }
+    const added = res.add.map(r => ({ day: String(r.day), dutyPlace: r.dutyPlace || '', startTime: r.startTime || '', endTime: r.endTime || '', remarks: r.remarks || '' }));
+    E.rows = filled.concat(added).map((r, i) => ({ r, i })).sort((a, b) => (+a.r.day - +b.r.day) || (a.i - b.i)).map(x => x.r);   // তারিখ অনুযায়ী; একই দিনে আগেরগুলো আগে
+    E.calc = null; E.autoNote = ''; renderRows(); touched(); scheduleCalc(0);
+    toast(`${toBn(added.length)}টি নতুন সারি যোগ হয়েছে। দেখে নিয়ে সেভ করুন।`, 'ok', 5000);
+  } catch (e) { toast(e.message, 'bad'); } finally { setBusy($('eRefresh'), false); }
 }
 
 /* ---------- সম্পাদনা ও হিসাব ---------- */
@@ -1650,7 +1667,7 @@ async function newBill() {
 $('eYear').onchange = $('eMonth').onchange = onPeriodChange;
 $('eDriver').onchange = onDriverChange;
 $('eSave').onclick = saveBill; $('eLock').onclick = lockBill; $('eUnlock').onclick = unlockBill;
-$('ePrint').onclick = printBill; $('eReload').onclick = reloadFromServer; $('eNew').onclick = newBill;
+$('eRefresh').onclick = refreshAutoRows; $('ePrint').onclick = printBill; $('eReload').onclick = reloadFromServer; $('eNew').onclick = newBill;
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && !$('page-editor').hidden) { e.preventDefault(); saveBill(); }
 });
