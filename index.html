@@ -1348,6 +1348,7 @@ async function loadBill(draft) {
     const au = res.auto;
     if (!E.exists && E.perms.canEdit && au && au.rows && au.rows.length) {     // রোস্টার ও ঢাকা যাতায়াত থেকে নিজে বসানো সারি
       E.rows = au.rows.map(r => ({ day: String(r.day), dutyPlace: r.dutyPlace || '', startTime: r.startTime || '', endTime: r.endTime || '', remarks: r.remarks || '' }));
+      E.calc = null; E.needCalc = true;       // সারি বসেছে: ঘণ্টা-রেট-টাকার হিসাব নতুন করে চালাতে হবে
       E.autoNote = `রোস্টার থেকে ${toBn(au.fromRoster)}টি ও ঢাকা যাতায়াত থেকে ${toBn(au.fromTrips)}টি সারি নিজে বসেছে` +
         (au.dropped ? `; যাতায়াতের সময়ের সাথে মিলে যাওয়ায় রোস্টারের ${toBn(au.dropped)}টি সারি বাদ গেছে` : '') + '। সারিগুলো দেখে নিন; দরকারে বদলান, মুছুন বা নতুন সারি যোগ করুন, তারপর সেভ করুন।';
     } else if (!E.exists && E.perms.canEdit) applySuggestion(0, true);
@@ -1363,6 +1364,7 @@ async function loadBill(draft) {
     }
   } catch (e) { toast(e.message, 'bad'); E.driverId = ''; E.driver = null; }
   E.loading = false; renderEditor(); fillDriverSelect();
+  if (E.needCalc) { E.needCalc = false; scheduleCalc(0); }
 }
 
 /* ---------- আঁকা ---------- */
