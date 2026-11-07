@@ -1229,7 +1229,17 @@ function buildPrintSheet(info, y, m, rows, calc) {
     <div class="footer-section">${sigs}</div></div>`;
 }
 
-function doPrint() { window.print(); }
+// প্রিন্ট/PDF-এর নাম ও শিরোনাম পেজের টাইটেল থেকে আসে; তাই প্রিন্টের সময় টাইটেল বদলে পরে আগেরটা ফিরিয়ে দেওয়া হয়
+const PAGE_TITLE = document.title;
+function doPrint(title) {
+  if (typeof title === 'string' && title) {
+    document.title = title;
+    const back = () => { document.title = PAGE_TITLE; window.removeEventListener('afterprint', back); };
+    window.addEventListener('afterprint', back);
+    setTimeout(back, 60000);        // afterprint না এলেও টাইটেল ফিরবে
+  }
+  window.print();
+}
 
 async function printFromServer(d, y, m, btn) {
   setBusy(btn, true, '…');
@@ -1237,7 +1247,7 @@ async function printFromServer(d, y, m, btn) {
     const res = must(await api('getBill', { driverId: d, year: y, month: m }));
     if (res.bill.status !== 'Locked') { toast('বিল লক না করা পর্যন্ত প্রিন্ট করা যায় না।', 'warn'); return; }
     buildPrintSheet(res.driver, y, m, res.bill.rows, res.calc);
-    setTimeout(doPrint, 60);
+    setTimeout(() => doPrint(`${res.driver.name} ${monthNameOf(m)} ${toBn(y)} ওভারটাইম বিল`), 60);
   } catch (e) { toast(e.message, 'bad'); }
   finally { setBusy(btn, false); }
 }
@@ -1649,7 +1659,7 @@ function printBill() {
   if (E.status !== 'Locked' || E.dirty) { toast('বিল লক না করা পর্যন্ত প্রিন্ট করা যায় না।', 'warn'); return; }
   if (!E.calc) { toast('হিসাব আসছে, একটু অপেক্ষা করুন…', 'warn'); runCalc().then(printBill); return; }
   buildPrintSheet(E.driver, E.year, E.month, E.rows, E.calc);
-  setTimeout(doPrint, 60);
+  setTimeout(() => doPrint(`${E.driver.name} ${monthNameOf(E.month)} ${toBn(E.year)} ওভারটাইম বিল`), 60);
 }
 
 async function reloadFromServer() {
@@ -1908,7 +1918,7 @@ $('smPdf').onclick = () => {
       <td>${x.status === 'None' ? '—' : toBn(x.totalHours)}</td><td>${x.status === 'None' ? '—' : money(x.total)}</td><td>${st[x.status]}</td></tr>`).join('') +
     `</tbody><tfoot><tr style="font-weight:bold"><td colspan="4" style="text-align:right">সর্বমোট</td><td>${toBn(r.totalHours)}</td><td>${money(r.total)}/=</td><td></td></tr></tfoot></table>
     <div class="words">(${esc(r.words)})</div></div>`;
-  setTimeout(doPrint, 60);
+  setTimeout(() => doPrint(`${mn} ${toBn(r.y)} ওভারটাইম বিলের মাসিক সারসংক্ষেপ`), 60);
 };
 $('smLock').onclick = async () => {
   if (!smData) return;
@@ -2122,7 +2132,7 @@ function tpPrint() {
       <tr><td colspan="5" style="text-align:right"><b>মোট (${toBn(TP.trips.length)} বার)</b></td><td><b>${tpFmtH(tpTotal())}</b></td><td></td></tr></tbody></table>
     <div class="rt" style="font-size:14px;margin-top:14px">চালকভিত্তিক সারসংক্ষেপ</div>
     <table style="width:70%;margin-left:auto;margin-right:auto"><thead><tr><th>চালক</th><th>যাতায়াত (বার)</th><th>মোট ঘণ্টা</th></tr></thead><tbody>${sum}</tbody></table></div>`;
-  setTimeout(doPrint, 60);
+  setTimeout(() => doPrint(`${monthNameOf(TP.month)} ${toBn(TP.year)} ঢাকা যাতায়াত (রাজশাহী ⇄ ঢাকা)`), 60);
 }
 
 /* ---------- ডিউটি রোস্টার ও ডামি চালক ---------- */
@@ -2350,7 +2360,7 @@ function rsPrint() {
     <table><thead><tr><th>তারিখ</th><th>বার</th>${st.heads.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
     ${st.notes.length ? `<ul>${st.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
     <div class="sigs">${sig(st.sigs[0])}${sig(st.sigs[1])}</div></div>`;
-  setTimeout(doPrint, 60);
+  setTimeout(() => doPrint(`${monthNameOf(R.month)} ${toBn(R.year)} ডিউটি রোস্টার`), 60);
 }
 
 /* ---------- চালু ---------- */
