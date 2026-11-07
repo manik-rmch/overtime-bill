@@ -536,6 +536,7 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
             <div class="field"><label>মাসের ১ তারিখের সকাল শিফটে কোন জোড়া</label><select id="rsStart"></select></div>
             <div class="field"><label>&nbsp;</label><button class="btn purple" id="rsAuto">⚡ অটো ভরুন</button></div>
           </div>
+          <div id="rsStartHint" class="muted small"></div>
         </div>
 
         <div class="card tight"><div class="table-wrap"><table class="tbl rs-tbl"><thead><tr><th>তারিখ</th><th>বার</th><th id="rsH0"></th><th id="rsH1"></th><th id="rsH2"></th><th>ধূসর (ছুটি)</th></tr></thead>
@@ -1952,6 +1953,7 @@ function initRoster() {
       R.st.groups.splice(+b.dataset.gdel, 1); rsRenderGroups(); rsRenderTable();
     });
     $('rsAuto').onclick = rsAutoFill;
+    $('rsStart').onchange = () => { R.start = +$('rsStart').value || 0; };
     $('rsBody').addEventListener('change', rsCellChange);
     $('rsBody').addEventListener('click', e => {
       const b = e.target.closest('[data-g]'); if (!b) return;
@@ -1978,7 +1980,7 @@ async function loadRoster() {
     const nd = daysIn(y, m), saved = (r.roster && r.roster.days) || [], days = [];
     for (let i = 0; i < nd; i++) { const x = saved[i] || {}; days.push({ s: [0, 1, 2].map(k => ((x.s || [])[k]) || ''), off: x.off || '' }); }
     const hols = {}; (r.holidays || []).forEach(h => { hols[h.day] = h.type; });
-    R = { year: y, month: m, st, days, start: (r.roster && r.roster.start) || 0, dummies: r.dummies || [], drivers: r.drivers || [], hols, dirty: false };
+    R = { year: y, month: m, st, days, start: r.roster ? (r.roster.start || 0) : null, prevLast: r.prevLast || '', dummies: r.dummies || [], drivers: r.drivers || [], hols, dirty: false };
     $('rsDirty').hidden = true;
     rsRenderAll();
   } catch (e) { aErr(e); $('rsBody').innerHTML = '<tr><td colspan="6" class="empty">লোড করা যায়নি।</td></tr>'; }
@@ -2025,7 +2027,10 @@ function rsRenderGroups() {
     <button type="button" class="btn sm bad" data-gdel="${i}" title="জোড়া মুছুন">×</button></div>`).join('');
 }
 function rsRenderStart() {
-  const labs = rsLabels(), cur = Math.min(R.start || 0, Math.max(labs.length - 1, 0));
+  const labs = rsLabels(), pi = labs.indexOf(R.prevLast);
+  let cur = R.start === null ? (pi >= 0 ? (pi + 1) % labs.length : 0) : R.start;
+  cur = Math.min(cur, Math.max(labs.length - 1, 0));
+  $('rsStartHint').textContent = R.start === null && pi >= 0 ? `গত মাসের শেষ দিনের সকাল শিফটে ছিল "${R.prevLast}", তাই রোটেশন চালু রাখতে পরের জোড়া বেছে দেওয়া হয়েছে (বদলানো যায়)।` : '';
   $('rsStart').innerHTML = labs.length ? labs.map((l, i) => `<option value="${i}"${i === cur ? ' selected' : ''}>${esc(l)}</option>`).join('') : '<option value="0">— আগে জোড়া দিন —</option>';
 }
 function rsFillSettings() {
@@ -2095,8 +2100,11 @@ async function rsAutoFill() {
 }
 async function rsSave() {
   R.start = +$('rsStart').value || 0;
+  rsReadFields();
   setBusy($('rsSave'), true);
-  try { must(await api('adminRosterSave', { year: R.year, month: R.month, roster: { days: R.days, start: R.start } })); rsDirty(false); toast('রোস্টার সেভ হয়েছে', 'ok'); }
+  try {
+    must(await api('adminRosterSaveSettings', { settings: R.st }));      // জোড়া ও স্থায়ী লেখাও একসাথে সেভ হয়, যাতে হারিয়ে না যায়
+    must(await api('adminRosterSave', { year: R.year, month: R.month, roster: { days: R.days, start: R.start } })); rsDirty(false); toast('রোস্টার ও জোড়া সেভ হয়েছে', 'ok'); }
   catch (e) { aErr(e); } finally { setBusy($('rsSave'), false); }
 }
 function rsPrint() {
