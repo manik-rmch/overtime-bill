@@ -215,6 +215,27 @@ table.bill .rowbtn{border:none;border-radius:6px;width:26px;height:26px;color:#f
 .print-page .signature-box{text-align:center;font-size:10.5px;line-height:1.3;flex:1}
 a.btn{text-decoration:none}
 
+
+/* ---------- ডিউটি রোস্টার ---------- */
+.rs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rs-chip{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:99px;padding:3px 6px 3px 12px;font-weight:600}
+.rs-chip button{border:none;background:#fff;border-radius:50%;width:20px;height:20px;line-height:18px;cursor:pointer;color:#b91c1c;font-weight:700;padding:0}
+.rs-grp{display:grid;grid-template-columns:28px 1fr 1fr 34px;gap:8px;align-items:center;margin-bottom:8px}
+.rs-tbl td,.rs-tbl th{text-align:center}
+.rs-tbl select{width:100%;min-width:150px}
+.rs-tbl tr.rs-off td{background:#d1d5db}
+.rs-tbl tr.rs-off select{background:#e5e7eb}
+.roster-page{font-family:'Nikosh','NikoshBAN','Sutonny','SolaimanLipi','Kalpurush','Noto Sans Bengali',Arial,sans-serif;color:#000;width:100%;padding:12mm 12mm 12mm;box-sizing:border-box;background:#fff;min-height:100vh;display:flex;flex-direction:column;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.roster-page .rt{text-align:center;font-weight:bold;font-size:17px;line-height:1.45}
+.roster-page table{width:100%;border-collapse:collapse;margin-top:6px}
+.roster-page th,.roster-page td{border:1px solid #000;text-align:center;font-size:12px;padding:1.3px 3px;line-height:1.3}
+.roster-page th{font-weight:bold;padding:2px 3px}
+.roster-page tr.off td{background:#b3b3b3}
+.roster-page ul{margin:7px 0 0;padding-left:22px;font-size:12.5px;line-height:1.55;text-align:justify}
+.roster-page .sigs{display:flex;justify-content:space-between;margin-top:auto;padding-top:8mm;font-size:13px;line-height:1.5;text-align:center}
+.roster-page .sigs div{min-width:42%}
+
 /* ---------- ইউজার / অ্যাডমিন লগইন আলাদা চেহারা ---------- */
 #loginView[data-mode=admin] .login-card{border-top:6px solid var(--pri)}
 #loginView[data-mode=admin] .login-card{border-top-color:#7c3aed}
@@ -378,6 +399,7 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
         <button data-t="users">🔐 ইউজার ও অনুমতি</button>
         <button data-t="summary">📑 মাসিক সারসংক্ষেপ</button>
         <button data-t="log">📜 কার্যকলাপ লগ</button>
+        <button data-t="roster">🗓️ ডিউটি রোস্টার</button>
         <button data-t="system">🛠️ ব্যাকআপ, ছুটি ও সেটিংস</button>
       </div>
 
@@ -483,6 +505,68 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
         <div class="muted small" style="margin-top:8px">সর্বোচ্চ ৩০০টি দেখানো হয়। ১৮০ দিনের বেশি পুরোনো লগ নিজে "ActivityLogArchive" ট্যাবে সরে যায় (সাপ্তাহিক ব্যাকআপের সময়)।</div>
       </div>
 
+      <div id="a-roster" class="atab" hidden>
+        <div class="card">
+          <h2>🗓️ ডিউটি রোস্টার</h2>
+          <div class="filters">
+            <div class="field"><label>সাল</label><select id="rsYear"></select></div>
+            <div class="field"><label>মাস</label><select id="rsMonth"></select></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>👥 ডামি চালক (শুধু রোস্টারের জন্য)</h2>
+          <p class="muted small" style="margin:0 0 10px">এদের ইউজার আইডি, বেতন, গাড়ি নম্বর বা ওভারটাইম বিল নেই; শুধু রোস্টারে নাম বসানো যায়। একসাথে একাধিক নাম যুক্ত করতে প্রতি লাইনে একটি করে নাম (বা কমা দিয়ে) লিখুন।</p>
+          <div class="grid-2" style="align-items:end">
+            <div class="field"><label>নাম (এক বা একাধিক)</label><textarea id="rsDumIn" rows="3" maxlength="1500" placeholder="যেমন:&#10;ইসমাইল&#10;সিরাজুল" style="resize:vertical"></textarea></div>
+            <div class="field"><button class="btn ok" id="rsDumAdd">➕ যুক্ত করুন</button></div>
+          </div>
+          <div id="rsDumList" class="rs-chips"></div>
+        </div>
+
+        <div class="card">
+          <h2>🔁 জোড়া ও অটো রোটেশন</h2>
+          <p class="muted small" style="margin:0 0 10px">প্রতিটি জোড়ায় এক বা দুইজনের নাম দিন (ডামি বা আসল চালক; তালিকার বাইরের নামও লেখা যায়)। শুরুর জোড়া বেছে "অটো ভরুন" চাপলে মাসের প্রতিদিন তিন দিন পরপর ঘুরে নিজে ভরে যাবে: সকাল = ওই দিনের জোড়া, দুপুর = পরের জোড়া, রাত = সকালের জোড়াই। তারপর যেকোনো ঘর নিচের টেবিলে হাতে বদলানো যায়।</p>
+          <div id="rsGroups"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px">
+            <button class="btn ghost" id="rsGrpAdd">➕ জোড়া যোগ</button>
+            <button class="btn ok" id="rsGrpSave">💾 জোড়া সেভ করুন</button>
+          </div>
+          <div class="filters">
+            <div class="field"><label>মাসের ১ তারিখের সকাল শিফটে কোন জোড়া</label><select id="rsStart"></select></div>
+            <div class="field"><label>&nbsp;</label><button class="btn purple" id="rsAuto">⚡ অটো ভরুন</button></div>
+          </div>
+        </div>
+
+        <div class="card tight"><div class="table-wrap"><table class="tbl rs-tbl"><thead><tr><th>তারিখ</th><th>বার</th><th id="rsH0"></th><th id="rsH1"></th><th id="rsH2"></th><th>ধূসর (ছুটি)</th></tr></thead>
+          <tbody id="rsBody"><tr><td colspan="6" class="loading-row">সাল ও মাস বেছে নিন।</td></tr></tbody></table></div></div>
+        <div class="card" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="btn ok" id="rsSave">💾 রোস্টার সেভ করুন</button>
+          <button class="btn" id="rsPrint">🖨️ প্রিন্ট</button>
+          <span id="rsDirty" class="badge b-warn" hidden>অসংরক্ষিত পরিবর্তন আছে</span>
+          <span class="muted small">শুক্রবার ও ছুটির তালিকার তারিখ নিজে ধূসর হয়; "ধূসর" বাটনে যেকোনো দিন বদলানো যায়।</span>
+        </div>
+
+        <div class="card">
+          <h2>✍️ শিরোনাম, নোট ও স্বাক্ষর (প্রতি মাসে একই থাকবে)</h2>
+          <div class="grid-2">
+            <div class="field"><label>শিরোনাম (১ম লাইন)</label><input id="rsT1" maxlength="120"></div>
+            <div class="field"><label>শিরোনাম (২য় লাইন; নিচে মাস/সাল নিজে বসে)</label><input id="rsT2" maxlength="120"></div>
+          </div>
+          <div class="grid-3">
+            <div class="field"><label>সকাল শিফটের শিরোনাম</label><input id="rsHd0" maxlength="60"></div>
+            <div class="field"><label>দুপুর শিফটের শিরোনাম</label><input id="rsHd1" maxlength="60"></div>
+            <div class="field"><label>রাত শিফটের শিরোনাম</label><input id="rsHd2" maxlength="60"></div>
+          </div>
+          <div class="field"><label>নিচের নোট (প্রতি লাইনে একটি বুলেট)</label><textarea id="rsNotes" rows="5" style="resize:vertical"></textarea></div>
+          <div class="grid-2">
+            <div class="field"><label>বাম স্বাক্ষর (প্রতি লাইন আলাদা: নাম, পদবি, প্রতিষ্ঠান)</label><textarea id="rsSigL" rows="4" style="resize:vertical"></textarea></div>
+            <div class="field"><label>ডান স্বাক্ষর</label><textarea id="rsSigR" rows="4" style="resize:vertical"></textarea></div>
+          </div>
+          <button class="btn ok" id="rsSetSave">💾 এই লেখাগুলো সেভ করুন</button>
+        </div>
+      </div>
+
       <div id="a-system" class="atab" hidden>
         <div class="card">
           <h2>💾 ব্যাকআপ</h2>
@@ -514,6 +598,7 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
 </div>
 
 <div id="printSheet"></div>
+<datalist id="rosterPeople"></datalist>
 <div id="waitBox" hidden><span class="spin dark"></span> অপেক্ষা করুন…</div>
 <div id="toasts"></div>
 <div id="modalRoot"></div>
@@ -1508,7 +1593,7 @@ window.addEventListener('beforeunload', e => { if (E.dirty) { e.preventDefault()
 let adminTabNow = '', adminDrivers = [], adminEditingId = null, adminAssign = { assignments: [], candidates: [] }, adminUsers = [], logData = [];
 
 function initAdmin(tab) {
-  if (!['drivers', 'assign', 'users', 'summary', 'log', 'system'].includes(tab)) tab = 'drivers';
+  if (!['drivers', 'assign', 'users', 'summary', 'log', 'roster', 'system'].includes(tab)) tab = 'drivers';
   adminTabNow = tab;
   document.querySelectorAll('#aPills button').forEach(b => b.classList.toggle('active', b.dataset.t === tab));
   document.querySelectorAll('.atab').forEach(t => t.hidden = t.id !== 'a-' + tab);
@@ -1518,6 +1603,7 @@ function initAdmin(tab) {
   else if (tab === 'users') adminLoadUsers();
   else if (tab === 'summary') initSummary();
   else if (tab === 'system') initSystem();
+  else if (tab === 'roster') initRoster();
   else initLog();
 }
 $('aPills').onclick = e => { const b = e.target.closest('button'); if (b) location.hash = '#/admin/' + b.dataset.t; };
@@ -1747,7 +1833,7 @@ $('smLock').onclick = async () => {
 const ACT = { login: 'প্রবেশ', login_fail: 'ভুল প্রবেশ-চেষ্টা', logout: 'বের হওয়া', create_bill: 'নতুন বিল', update_bill: 'বিল আপডেট', lock_bill: 'বিল লক', unlock_bill: 'বিল আনলক', lock_month: 'মাসের সব লক',
   change_password: 'পাসওয়ার্ড বদল', reset_password: 'পাসওয়ার্ড রিসেট', add_user: 'ইউজার যুক্ত', edit_user: 'ইউজার সম্পাদনা', add_driver: 'চালক যুক্ত', edit_driver: 'চালক সম্পাদনা',
   set_assignment: 'মাসের গাড়ি/বেতন', delete_assignment: 'মাসের তথ্য মুছা', fill_month: 'মাস পূরণ', save_permissions: 'অনুমতি সেভ', create_driver_users: 'চালক-ইউজার তৈরি', setup: 'সিস্টেম সেটআপ',
-  backup: 'ব্যাকআপ', backup_fail: 'ব্যাকআপ ব্যর্থ', set_holiday: 'ছুটি সেট', delete_holiday: 'ছুটি মুছা', save_settings: 'সেটিংস সেভ' };
+  backup: 'ব্যাকআপ', backup_fail: 'ব্যাকআপ ব্যর্থ', set_holiday: 'ছুটি সেট', delete_holiday: 'ছুটি মুছা', save_settings: 'সেটিংস সেভ', roster_dummies: 'ডামি চালক সেভ', roster_settings: 'রোস্টারের লেখা সেভ', roster_save: 'ডিউটি রোস্টার সেভ' };
 let logInit = false;
 function initLog() {
   if (!logInit) {
@@ -1823,6 +1909,208 @@ $('hlBody').addEventListener('click', async e => {
   if (!await confirmBox(`${b.dataset.hdel} তারিখের ছুটি মুছবেন?`, 'মুছুন', true)) return;
   try { must(await api('adminDeleteHoliday', { date: b.dataset.hdel })); toast('মুছে ফেলা হয়েছে', 'ok'); loadHolidays(); } catch (er) { aErr(er); }
 });
+
+
+/* ---------- ডিউটি রোস্টার ও ডামি চালক ---------- */
+const WD = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+const RS_DEF = () => ({
+  title1: 'রাজশাহী মেডিকেল কলেজ হাসপাতালের', title2: 'ড্রাইভারদের ডিউটি রোস্টারঃ',
+  heads: ['সকাল ৮ঃ০০ টা - দুপুর ২ঃ০০ টা', 'দুপুর ২ঃ০০ টা - রাত ৮ঃ০০ টা', 'রাত ৮ঃ০০ টা - সকাল ৮ঃ০০ টা'],
+  notes: ['জনাব মোঃ আমির হোসেন, ড্রাইভার ইনচার্জ প্রতিদিন ডিউটি পালন করবে এবং রোস্টারের কেউ ছুটিতে থাকলে তার ডিউটির ব্যবস্থা করবেন ।',
+          'জনাব মোঃ আমির হোসেন, ড্রাইভার ইনচার্জ প্রতিদিন ডিউটি পালন করবে এবং পরিচালক মহোদয়ের গাড়ি নম্বর ঢাকা মেট্রো-ঘ-১১-৬৬৬৮ চালানোর দায়িত্ব পালন করবেন ।',
+          'জনাব মোঃ আমির হোসেন, কার্ডিয়াক অ্যাম্বুলেন্সের রক্ষণাবেক্ষনের দায়িত্ব পালন করবেন ।'],
+  sigs: [['(মোঃ বুলবুল খান)', 'প্রশাসনিক কর্মকর্তা (ভারপ্রাপ্ত)', 'রাজশাহী মেডিকেল কলেজ হাসপাতাল'], ['(মোঃ আমির হোসেন)', 'ড্রাইভার ইনচার্জ', 'রাজশাহী মেডিকেল কলেজ হাসপাতাল']],
+  groups: []
+});
+let R = null, rosterInit = false;
+const rsLabel = g => (g.a && g.b) ? g.a + '/' + g.b : (g.a || g.b || '');
+const rsLabels = () => R.st.groups.map(rsLabel).filter(Boolean);
+function rsDirty(on) { if (!R) return; R.dirty = on !== false; $('rsDirty').hidden = !R.dirty; }
+
+function initRoster() {
+  if (!rosterInit) {
+    fillYears($('rsYear'), 'সাল'); fillMonths($('rsMonth'), 'মাস');
+    const ty = +CONFIG.today.slice(0, 4);
+    $('rsYear').value = CONFIG.years.includes(ty) ? ty : CONFIG.years[0]; $('rsMonth').value = CONFIG.today.slice(5, 7);
+    const onPeriod = async () => {
+      if (R && R.dirty && !await confirmBox('এই মাসের অসংরক্ষিত পরিবর্তন হারিয়ে যাবে। এগিয়ে যাবেন?', 'হ্যাঁ', true)) { $('rsYear').value = R.year; $('rsMonth').value = pad2(R.month); return; }
+      loadRoster();
+    };
+    $('rsYear').onchange = onPeriod; $('rsMonth').onchange = onPeriod;
+    $('rsDumAdd').onclick = rsAddDummies;
+    $('rsDumList').onclick = rsDelDummy;
+    $('rsGrpAdd').onclick = () => { R.st.groups.push({ a: '', b: '' }); rsRenderGroups(); };
+    $('rsGrpSave').onclick = () => rsSaveSettings($('rsGrpSave'));
+    $('rsSetSave').onclick = () => rsSaveSettings($('rsSetSave'));
+    $('rsGroups').addEventListener('input', e => {
+      const i = e.target.dataset.gi, k = e.target.dataset.gk; if (i === undefined) return;
+      R.st.groups[+i][k] = e.target.value.trim();
+    });
+    $('rsGroups').addEventListener('change', e => { if (e.target.dataset.gi !== undefined) { rsRenderStart(); rsRenderTable(); } });
+    $('rsGroups').addEventListener('click', e => {
+      const b = e.target.closest('[data-gdel]'); if (!b) return;
+      R.st.groups.splice(+b.dataset.gdel, 1); rsRenderGroups(); rsRenderTable();
+    });
+    $('rsAuto').onclick = rsAutoFill;
+    $('rsBody').addEventListener('change', rsCellChange);
+    $('rsBody').addEventListener('click', e => {
+      const b = e.target.closest('[data-g]'); if (!b) return;
+      const i = +b.dataset.g, d = R.days[i], eff = rsGray(i), auto = rsAutoGray(i + 1);
+      d.off = (!eff) === auto ? '' : (!eff ? 'g' : 'w');
+      rsDirty(); rsRenderTable();
+    });
+    $('rsSave').onclick = rsSave;
+    $('rsPrint').onclick = rsPrint;
+    rosterInit = true;
+  }
+  loadRoster();
+}
+
+async function loadRoster() {
+  const y = +$('rsYear').value, m = +$('rsMonth').value;
+  if (!y || !m) return;
+  $('rsBody').innerHTML = '<tr><td colspan="6" class="loading-row">লোড হচ্ছে…</td></tr>';
+  try {
+    const r = must(await api('adminRosterGet', { year: y, month: m }));
+    const def = RS_DEF(), sv = r.settings;
+    const st = sv ? { title1: sv.title1, title2: sv.title2, heads: [0, 1, 2].map(i => (sv.heads || [])[i] || def.heads[i]),
+                      notes: sv.notes || [], sigs: [0, 1].map(i => (sv.sigs || [])[i] || []), groups: sv.groups || [] } : def;
+    const nd = daysIn(y, m), saved = (r.roster && r.roster.days) || [], days = [];
+    for (let i = 0; i < nd; i++) { const x = saved[i] || {}; days.push({ s: [0, 1, 2].map(k => ((x.s || [])[k]) || ''), off: x.off || '' }); }
+    const hols = {}; (r.holidays || []).forEach(h => { hols[h.day] = h.type; });
+    R = { year: y, month: m, st, days, start: (r.roster && r.roster.start) || 0, dummies: r.dummies || [], drivers: r.drivers || [], hols, dirty: false };
+    $('rsDirty').hidden = true;
+    rsRenderAll();
+  } catch (e) { aErr(e); $('rsBody').innerHTML = '<tr><td colspan="6" class="empty">লোড করা যায়নি।</td></tr>'; }
+}
+
+function rsRenderAll() {
+  rsRenderPeople(); rsRenderDummies(); rsRenderGroups(); rsRenderStart(); rsFillSettings(); rsRenderTable();
+}
+function rsRenderPeople() {
+  const names = []; R.dummies.forEach(d => names.push(d.name)); R.drivers.forEach(n => { if (names.indexOf(n) < 0) names.push(n); });
+  $('rosterPeople').innerHTML = names.map(n => `<option value="${esc(n)}"></option>`).join('');
+}
+function rsRenderDummies() {
+  $('rsDumList').innerHTML = R.dummies.length ? R.dummies.map(d => `<span class="rs-chip">${esc(d.name)}<button type="button" data-ddel="${d.id}" title="তালিকা থেকে সরান">×</button></span>`).join('')
+    : '<span class="muted small">এখনো কোনো ডামি চালক যুক্ত করা হয়নি।</span>';
+}
+async function rsAddDummies() {
+  const names = $('rsDumIn').value.split(/[\n,،]+/).map(x => x.trim()).filter(Boolean);
+  if (!names.length) { toast('এক বা একাধিক নাম লিখুন।', 'warn'); $('rsDumIn').focus(); return; }
+  const have = R.dummies.map(d => d.name), add = [];
+  names.forEach(n => { if (have.indexOf(n) < 0 && add.indexOf(n) < 0) add.push(n); });
+  if (!add.length) { toast('এই নামগুলো আগেই যুক্ত আছে।', 'warn'); return; }
+  setBusy($('rsDumAdd'), true);
+  try {
+    const r = must(await api('adminRosterSaveDummies', { dummies: R.dummies.concat(add.map(n => ({ id: 0, name: n }))) }));
+    R.dummies = r.dummies; $('rsDumIn').value = ''; rsRenderPeople(); rsRenderDummies(); toast(toBn(add.length) + ' জন যুক্ত হয়েছে', 'ok');
+  } catch (e) { aErr(e); } finally { setBusy($('rsDumAdd'), false); }
+}
+async function rsDelDummy(e) {
+  const b = e.target.closest('[data-ddel]'); if (!b) return;
+  const d = R.dummies.find(x => String(x.id) === b.dataset.ddel); if (!d) return;
+  if (!await confirmBox(`"${d.name}" কে ডামি তালিকা থেকে সরাবেন?\nআগে সেভ করা রোস্টারে নামটি যেমন আছে তেমনই থাকবে।`, 'সরান', true)) return;
+  try {
+    const r = must(await api('adminRosterSaveDummies', { dummies: R.dummies.filter(x => x !== d) }));
+    R.dummies = r.dummies; rsRenderPeople(); rsRenderDummies();
+  } catch (er) { aErr(er); }
+}
+
+function rsRenderGroups() {
+  if (!R.st.groups.length) { $('rsGroups').innerHTML = '<div class="muted small" style="margin-bottom:8px">এখনো কোনো জোড়া নেই — "জোড়া যোগ" চাপুন।</div>'; rsRenderStart(); return; }
+  $('rsGroups').innerHTML = R.st.groups.map((g, i) => `<div class="rs-grp"><b>${toBn(i + 1)}.</b>
+    <input list="rosterPeople" data-gi="${i}" data-gk="a" value="${esc(g.a)}" placeholder="১ম জনের নাম" maxlength="60">
+    <input list="rosterPeople" data-gi="${i}" data-gk="b" value="${esc(g.b)}" placeholder="২য় জনের নাম (ঐচ্ছিক)" maxlength="60">
+    <button type="button" class="btn sm bad" data-gdel="${i}" title="জোড়া মুছুন">×</button></div>`).join('');
+}
+function rsRenderStart() {
+  const labs = rsLabels(), cur = Math.min(R.start || 0, Math.max(labs.length - 1, 0));
+  $('rsStart').innerHTML = labs.length ? labs.map((l, i) => `<option value="${i}"${i === cur ? ' selected' : ''}>${esc(l)}</option>`).join('') : '<option value="0">— আগে জোড়া দিন —</option>';
+}
+function rsFillSettings() {
+  const st = R.st;
+  $('rsT1').value = st.title1; $('rsT2').value = st.title2;
+  [0, 1, 2].forEach(i => { $('rsHd' + i).value = st.heads[i]; $('rsH' + i).textContent = st.heads[i]; });
+  $('rsNotes').value = st.notes.join('\n'); $('rsSigL').value = st.sigs[0].join('\n'); $('rsSigR').value = st.sigs[1].join('\n');
+}
+function rsReadFields() {
+  const lines = id => $(id).value.split('\n').map(x => x.trim()).filter(Boolean);
+  const st = R.st;
+  st.title1 = $('rsT1').value.trim(); st.title2 = $('rsT2').value.trim();
+  st.heads = [0, 1, 2].map(i => $('rsHd' + i).value.trim());
+  st.notes = lines('rsNotes'); st.sigs = [lines('rsSigL'), lines('rsSigR')];
+  st.groups = st.groups.filter(g => g.a || g.b);
+}
+async function rsSaveSettings(btn) {
+  rsReadFields();
+  setBusy(btn, true);
+  try {
+    must(await api('adminRosterSaveSettings', { settings: R.st }));
+    toast('সেভ হয়েছে', 'ok'); rsRenderGroups(); rsRenderStart(); rsFillSettings(); rsRenderTable();
+  } catch (e) { aErr(e); } finally { setBusy(btn, false); }
+}
+
+const rsWeekday = d => new Date(Date.UTC(R.year, R.month - 1, d)).getUTCDay();
+const rsAutoGray = d => rsWeekday(d) === 5 || !!R.hols[d];
+const rsGray = i => { const o = R.days[i].off; return o === 'g' ? true : o === 'w' ? false : rsAutoGray(i + 1); };
+
+function rsCellOpts(val) {
+  const labs = rsLabels();
+  let o = '<option value=""></option>' + labs.map(l => `<option value="${esc(l)}"${l === val ? ' selected' : ''}>${esc(l)}</option>`).join('');
+  if (val && labs.indexOf(val) < 0) o += `<option value="${esc(val)}" selected>${esc(val)}</option>`;
+  return o + '<option value="__other">✎ অন্য নাম বাছুন…</option>';
+}
+function rsRenderTable() {
+  [0, 1, 2].forEach(i => { $('rsH' + i).textContent = R.st.heads[i]; });
+  $('rsBody').innerHTML = R.days.map((d, i) => {
+    const day = i + 1, gray = rsGray(i), hol = R.hols[day];
+    return `<tr data-i="${i}"${gray ? ' class="rs-off"' : ''}><td style="white-space:nowrap">${toBn(pad2(day))}/${toBn(pad2(R.month))}/${toBn(R.year)}</td>
+      <td style="white-space:nowrap">${WD[rsWeekday(day)]}${hol ? `<div class="muted small">${esc(hol)}</div>` : ''}</td>
+      ${[0, 1, 2].map(k => `<td><select data-k="${k}">${rsCellOpts(d.s[k])}</select></td>`).join('')}
+      <td><button type="button" class="btn sm ${gray ? 'ok' : 'ghost'}" data-g="${i}">${gray ? '✔ ধূসর' : 'সাদা'}</button></td></tr>`;
+  }).join('');
+}
+function rsCellChange(e) {
+  const sel = e.target.closest('select[data-k]'); if (!sel) return;
+  const i = +sel.closest('tr').dataset.i, k = +sel.dataset.k;
+  if (sel.value !== '__other') { R.days[i].s[k] = sel.value; rsDirty(); return; }
+  const m = modal({ title: 'নাম বাছুন', dismissible: false, html: `<div class="field"><label>১ম জন</label><input id="rsO1" list="rosterPeople" maxlength="60"></div>
+      <div class="field"><label>২য় জন (ঐচ্ছিক)</label><input id="rsO2" list="rosterPeople" maxlength="60"></div>`,
+    buttons: [{ label: 'বাতিল', cls: 'ghost', onClick: () => rsRenderTable() },
+      { label: 'ঠিক আছে', onClick: back => {
+        const a = back.querySelector('#rsO1').value.trim(), b = back.querySelector('#rsO2').value.trim();
+        R.days[i].s[k] = rsLabel({ a, b }); rsDirty(); rsRenderTable();
+      } }] });
+  setTimeout(() => m.el.querySelector('#rsO1').focus(), 50);
+}
+async function rsAutoFill() {
+  const gs = rsLabels();
+  if (!gs.length) { toast('আগে অন্তত একটি জোড়া দিন।', 'warn'); return; }
+  if (R.days.some(d => d.s.some(Boolean)) && !await confirmBox('এই মাসের সব ঘর নতুন করে ভরা হবে (আগের হাতে-বদল মুছে যাবে)। এগিয়ে যাবেন?', 'হ্যাঁ, ভরুন', true)) return;
+  const o = +$('rsStart').value || 0, n = gs.length;
+  R.start = o;
+  R.days.forEach((d, i) => { const a = gs[(o + i) % n], b = gs[(o + i + 1) % n]; d.s = [a, b, a]; });
+  rsDirty(); rsRenderTable();
+}
+async function rsSave() {
+  R.start = +$('rsStart').value || 0;
+  setBusy($('rsSave'), true);
+  try { must(await api('adminRosterSave', { year: R.year, month: R.month, roster: { days: R.days, start: R.start } })); rsDirty(false); toast('রোস্টার সেভ হয়েছে', 'ok'); }
+  catch (e) { aErr(e); } finally { setBusy($('rsSave'), false); }
+}
+function rsPrint() {
+  rsReadFields();
+  const st = R.st;
+  const rows = R.days.map((d, i) => `<tr${rsGray(i) ? ' class="off"' : ''}><td>${toBn(pad2(i + 1))}/${toBn(pad2(R.month))}/${toBn(R.year)}</td><td>${WD[rsWeekday(i + 1)]}</td>${d.s.map(x => `<td>${esc(x)}</td>`).join('')}</tr>`).join('');
+  const sig = lines => `<div>${lines.map(x => esc(x)).join('<br>')}</div>`;
+  $('printSheet').innerHTML = `<div class="roster-page">
+    <div class="rt">${esc(st.title1)}<br>${esc(st.title2)}<br>${esc(monthNameOf(R.month))}/${toBn(R.year)}</div>
+    <table><thead><tr><th>তারিখ</th><th>বার</th>${st.heads.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>
+    ${st.notes.length ? `<ul>${st.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+    <div class="sigs">${sig(st.sigs[0])}${sig(st.sigs[1])}</div></div>`;
+  setTimeout(doPrint, 60);
+}
 
 /* ---------- চালু ---------- */
 boot();
