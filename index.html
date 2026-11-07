@@ -217,6 +217,14 @@ a.btn{text-decoration:none}
 
 
 /* ---------- ডিউটি রোস্টার ---------- */
+.rs-lbl{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
+.rs-dumrow{display:flex;gap:8px;align-items:center}
+.rs-dumrow input{flex:1;min-width:0;height:42px;box-sizing:border-box}
+.rs-dumrow .btn{height:42px;box-sizing:border-box;white-space:nowrap;padding-top:0;padding-bottom:0}
+.rs-more{margin-top:10px}
+.rs-more summary,.rs-fold summary{cursor:pointer;font-weight:700;list-style-position:inside}
+.rs-fold summary{font-size:16px;margin:-2px 0 0}
+.rs-fold[open] summary{margin-bottom:12px}
 .rs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .rs-chip{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:99px;padding:3px 6px 3px 12px;font-weight:600}
 .rs-chip button{border:none;background:#fff;border-radius:50%;width:20px;height:20px;line-height:18px;cursor:pointer;color:#b91c1c;font-weight:700;padding:0}
@@ -516,12 +524,13 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
 
         <div class="card">
           <h2>👥 ডামি চালক (শুধু রোস্টারের জন্য)</h2>
-          <p class="muted small" style="margin:0 0 10px">এদের ইউজার আইডি, বেতন, গাড়ি নম্বর বা ওভারটাইম বিল নেই; শুধু রোস্টারে নাম বসানো যায়। একসাথে একাধিক নাম যুক্ত করতে প্রতি লাইনে একটি করে নাম (বা কমা দিয়ে) লিখুন।</p>
-          <div class="grid-2" style="align-items:end">
-            <div class="field"><label>নাম (এক বা একাধিক)</label><textarea id="rsDumIn" rows="3" maxlength="1500" placeholder="যেমন:&#10;ইসমাইল&#10;সিরাজুল" style="resize:vertical"></textarea></div>
-            <div class="field"><button class="btn ok" id="rsDumAdd">➕ যুক্ত করুন</button></div>
+          <p class="muted small" style="margin:0 0 10px">এদের ইউজার আইডি, বেতন, গাড়ি নম্বর বা ওভারটাইম বিল নেই; শুধু রোস্টারে নাম বসানো যায়।</p>
+          <label class="rs-lbl" for="rsDumIn">নাম</label>
+          <div class="rs-dumrow">
+            <input id="rsDumIn" maxlength="60" placeholder="যেমন: ইসমাইল" autocomplete="off">
+            <button class="btn ok" id="rsDumAdd">➕ যুক্ত করুন</button>
           </div>
-          <div id="rsDumList" class="rs-chips"></div>
+          <details class="rs-more" id="rsDumBox"><summary>ডামি চালকের তালিকা (<span id="rsDumCount">০</span> জন)</summary><div id="rsDumList" class="rs-chips"></div></details>
         </div>
 
         <div class="card">
@@ -548,8 +557,8 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
           <span class="muted small">শুক্রবার ও ছুটির তালিকার তারিখ নিজে ধূসর হয়; "ধূসর" বাটনে যেকোনো দিন বদলানো যায়।</span>
         </div>
 
-        <div class="card">
-          <h2>✍️ শিরোনাম, নোট ও স্বাক্ষর (প্রতি মাসে একই থাকবে)</h2>
+        <details class="card rs-fold">
+          <summary>✍️ শিরোনাম, নোট ও স্বাক্ষর (প্রতি মাসে একই থাকবে)</summary>
           <div class="grid-2">
             <div class="field"><label>শিরোনাম (১ম লাইন)</label><input id="rsT1" maxlength="120"></div>
             <div class="field"><label>শিরোনাম (২য় লাইন; নিচে মাস/সাল নিজে বসে)</label><input id="rsT2" maxlength="120"></div>
@@ -565,7 +574,7 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
             <div class="field"><label>ডান স্বাক্ষর</label><textarea id="rsSigR" rows="4" style="resize:vertical"></textarea></div>
           </div>
           <button class="btn ok" id="rsSetSave">💾 এই লেখাগুলো সেভ করুন</button>
-        </div>
+        </details>
       </div>
 
       <div id="a-system" class="atab" hidden>
@@ -794,7 +803,13 @@ async function apiCall(action, payload) {
   if (res.status === 'auth_error' && res.code === 'session') { forceLogout(res.expired ? '' : res.message); throw new Error(res.message); }
   return res;
 }
-function must(res) { if (res.status !== 'success') throw new Error(res.message || 'কাজটি করা যায়নি।'); return res; }
+function must(res) {
+  if (res.status !== 'success') {
+    if (res.message === 'অজানা অনুরোধ।') throw new Error('সার্ভারে পুরোনো Code.gs চলছে, তাই এই কাজ চেনে না। নতুন Code.gs পেস্ট করে Deploy → Manage deployments → ✏️ → Version: "New version" → Deploy করুন (বাঁ পাশের মেনুর নিচে "সংস্করণ ১৪" দেখাবে)।');
+    throw new Error(res.message || 'কাজটি করা যায়নি।');
+  }
+  return res;
+}
 
 // ক্যাশে থাকলে সাথে সাথে দেখায়, তারপর সার্ভার থেকে নতুন তথ্য এনে আবার দেখায়
 async function cachedApi(key, action, payload, cb) {
@@ -1939,6 +1954,7 @@ function initRoster() {
     };
     $('rsYear').onchange = onPeriod; $('rsMonth').onchange = onPeriod;
     $('rsDumAdd').onclick = rsAddDummies;
+    $('rsDumIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); rsAddDummies(); } });
     $('rsDumList').onclick = rsDelDummy;
     $('rsGrpAdd').onclick = () => { R.st.groups.push({ a: '', b: '' }); rsRenderGroups(); };
     $('rsGrpSave').onclick = () => rsSaveSettings($('rsGrpSave'));
@@ -1994,19 +2010,20 @@ function rsRenderPeople() {
   $('rosterPeople').innerHTML = names.map(n => `<option value="${esc(n)}"></option>`).join('');
 }
 function rsRenderDummies() {
+  $('rsDumCount').textContent = toBn(R.dummies.length);
   $('rsDumList').innerHTML = R.dummies.length ? R.dummies.map(d => `<span class="rs-chip">${esc(d.name)}<button type="button" data-ddel="${d.id}" title="তালিকা থেকে সরান">×</button></span>`).join('')
     : '<span class="muted small">এখনো কোনো ডামি চালক যুক্ত করা হয়নি।</span>';
 }
 async function rsAddDummies() {
   const names = $('rsDumIn').value.split(/[\n,،]+/).map(x => x.trim()).filter(Boolean);
-  if (!names.length) { toast('এক বা একাধিক নাম লিখুন।', 'warn'); $('rsDumIn').focus(); return; }
+  if (!names.length) { toast('ডামি চালকের নাম লিখুন।', 'warn'); $('rsDumIn').focus(); return; }
   const have = R.dummies.map(d => d.name), add = [];
   names.forEach(n => { if (have.indexOf(n) < 0 && add.indexOf(n) < 0) add.push(n); });
   if (!add.length) { toast('এই নামগুলো আগেই যুক্ত আছে।', 'warn'); return; }
   setBusy($('rsDumAdd'), true);
   try {
     const r = must(await api('adminRosterSaveDummies', { dummies: R.dummies.concat(add.map(n => ({ id: 0, name: n }))) }));
-    R.dummies = r.dummies; $('rsDumIn').value = ''; rsRenderPeople(); rsRenderDummies(); toast(toBn(add.length) + ' জন যুক্ত হয়েছে', 'ok');
+    R.dummies = r.dummies; $('rsDumIn').value = ''; rsRenderPeople(); rsRenderDummies(); toast('"' + add[0] + '" যুক্ত হয়েছে', 'ok'); $('rsDumIn').focus();
   } catch (e) { aErr(e); } finally { setBusy($('rsDumAdd'), false); }
 }
 async function rsDelDummy(e) {
