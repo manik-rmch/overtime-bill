@@ -46,6 +46,7 @@ h3{font-size:15px;margin:0 0 8px}
 .login-card p.sub{text-align:center;color:var(--muted);margin:0 0 20px;font-size:13.5px}
 .err{background:var(--bad-l);color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;font-size:13.5px;margin-bottom:12px}
 .pw-wrap{position:relative}
+.pw-wrap input{padding-right:64px}
 .pw-wrap button{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:6px}
 
 /* ---------- ফর্ম উপাদান ---------- */
@@ -301,8 +302,7 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
     <div class="field"><label for="loginUser" id="loginUserLabel">ইউজার আইডি</label>
       <input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="40"></div>
     <div class="field"><label for="loginPass">পাসওয়ার্ড</label>
-      <div class="pw-wrap"><input id="loginPass" name="password" type="password" autocomplete="current-password" maxlength="100">
-        <button type="button" id="pwToggle" tabindex="-1">দেখুন</button></div></div>
+      <input id="loginPass" name="password" type="password" autocomplete="current-password" maxlength="100"></div>
     <button class="btn block" id="loginBtn" type="submit">প্রবেশ করুন</button>
     <p class="muted small" style="text-align:center;margin:14px 0 0" id="loginHelp">আইডি বা পাসওয়ার্ড ভুলে গেলে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
     <p class="muted small" style="text-align:center;margin:10px 0 0">রাজশাহী মেডিকেল কলেজ হাসপাতাল — গাড়িচালক শাখা</p>
@@ -954,7 +954,7 @@ const dropCaches = () => { LS.dropPrefix('c_'); };
 
 /* ---------- প্রবেশ / সেশন ---------- */
 function showLogin(msg) {
-  $('splash').hidden = true; $('appView').hidden = true; $('loginView').hidden = false;
+  $('splash').hidden = true; $('appView').hidden = true; $('loginView').hidden = false; resetPw($('loginPass'));
   const er = $('loginErr');
   if (msg) { er.textContent = msg; er.hidden = false; } else er.hidden = true;
   const last = LS.get('lastuid_' + loginMode);
@@ -980,10 +980,20 @@ function forceLogout(msg) {
   showLogin(msg || '');
 }
 
-$('pwToggle').onclick = () => {
-  const p = $('loginPass'); const show = p.type === 'password';
-  p.type = show ? 'text' : 'password'; $('pwToggle').textContent = show ? 'লুকান' : 'দেখুন';
-};
+/* সব পাসওয়ার্ড ঘরে "দেখুন/লুকান" বোতাম (পরে খোলা পপআপের ঘরেও নিজে থেকে বসে) */
+function attachPw(inp) {
+  if (inp.dataset.pw) return; inp.dataset.pw = '1';
+  const wrap = document.createElement('div'); wrap.className = 'pw-wrap';
+  inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'pw-eye'; b.tabIndex = -1; b.textContent = 'দেখুন';
+  b.onmousedown = e => e.preventDefault();             // ঘরের ফোকাস না হারাতে
+  b.onclick = () => { const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; b.textContent = show ? 'লুকান' : 'দেখুন'; inp.focus(); };
+  inp._pwBtn = b; wrap.appendChild(b);
+}
+function scanPw(root) { (root || document).querySelectorAll('input[type=password]').forEach(attachPw); }
+function resetPw(inp) { if (inp && inp._pwBtn) { inp.type = 'password'; inp._pwBtn.textContent = 'দেখুন'; } }
+scanPw();
+new MutationObserver(() => scanPw()).observe(document.body, { childList: true, subtree: true });
 
 /* ---------- ইউজার / অ্যাডমিন লগইন (আলাদা চেহারা) ---------- */
 let loginMode = (location.hash || '').toLowerCase() === '#admin' ? 'admin' : 'user';   // #admin ঠিকানা = অ্যাডমিন লগইন; মূল ঠিকানা = ইউজার লগইন
@@ -1912,7 +1922,8 @@ function renderUsers() {
       <td><span class="badge ${on ? 'b-ok' : 'b-gray'}">${on ? 'চালু' : 'বন্ধ'}</span>${u.mustChange ? ' <span class="badge b-warn">পাসওয়ার্ড বদল বাকি</span>' : ''}</td>
       <td class="small muted">${esc(u.lastLogin || '—')}</td>
       <td class="act"><button class="btn sm ghost" data-reset="${esc(u.id)}">🔑 পাসওয়ার্ড রিসেট</button>
-        <button class="btn sm ${on ? 'bad' : 'ok'}" data-utog="${esc(u.id)}"${me ? ' disabled' : ''}>${on ? 'বন্ধ করুন' : 'চালু করুন'}</button></td></tr>`;
+        <button class="btn sm ${on ? 'bad' : 'ok'}" data-utog="${esc(u.id)}"${me ? ' disabled' : ''}>${on ? 'বন্ধ করুন' : 'চালু করুন'}</button>
+        <button class="btn sm bad" data-udel="${esc(u.id)}"${me ? ' disabled' : ''} title="চিরতরে মুছুন">🗑 মুছুন</button></td></tr>`;
   }).join('');
 }
 function renderMatrix() {
@@ -1934,7 +1945,13 @@ $('uMakeAll').onclick = async () => {
   try { const r = must(await api('adminCreateDriverUsers')); toast(r.message, 'ok'); credModal(r.credentials, 'নতুন ইউজারদের প্রবেশ-তথ্য'); adminLoadUsers(); } catch (e) { aErr(e); } finally { setBusy($('uMakeAll'), false); }
 };
 $('uBody').addEventListener('click', async e => {
-  const r = e.target.closest('[data-reset]'), t = e.target.closest('[data-utog]');
+  const r = e.target.closest('[data-reset]'), t = e.target.closest('[data-utog]'), dl = e.target.closest('[data-udel]');
+  if (dl) {
+    const id = dl.dataset.udel;
+    if (!await confirmBox(`${id} ইউজারটি চিরতরে মুছে ফেলবেন? এটি ফেরানো যাবে না। (শুধু ইউজার আইডি মুছবে; চালকের তথ্য ও বিল থাকবে।)`, 'চিরতরে মুছুন', true)) return;
+    try { must(await api('adminDeleteUser', { userId: id })); toast('ইউজার মুছে ফেলা হয়েছে', 'ok'); adminLoadUsers(); } catch (er) { aErr(er); }
+    return;
+  }
   if (r) {
     if (!await confirmBox(`${r.dataset.reset} এর পাসওয়ার্ড রিসেট করবেন? পুরোনো পাসওয়ার্ড আর চলবে না এবং তিনি সব ডিভাইস থেকে বের হয়ে যাবেন।`, 'রিসেট করুন', true)) return;
     try { const res = must(await api('adminResetPassword', { userId: r.dataset.reset })); credModal(res.credentials, 'নতুন পাসওয়ার্ড'); adminLoadUsers(); } catch (er) { aErr(er); }
@@ -2022,7 +2039,7 @@ $('smLock').onclick = async () => {
 
 /* ---------- কার্যকলাপ লগ ---------- */
 const ACT = { login: 'প্রবেশ', login_fail: 'ভুল প্রবেশ-চেষ্টা', logout: 'বের হওয়া', create_bill: 'নতুন বিল', update_bill: 'বিল আপডেট', lock_bill: 'বিল লক', unlock_bill: 'বিল আনলক', lock_month: 'মাসের সব লক',
-  change_password: 'পাসওয়ার্ড বদল', reset_password: 'পাসওয়ার্ড রিসেট', add_user: 'ইউজার যুক্ত', edit_user: 'ইউজার সম্পাদনা', add_driver: 'চালক যুক্ত', edit_driver: 'চালক সম্পাদনা',
+  change_password: 'পাসওয়ার্ড বদল', reset_password: 'পাসওয়ার্ড রিসেট', add_user: 'ইউজার যুক্ত', edit_user: 'ইউজার সম্পাদনা', delete_user: 'ইউজার মোছা', add_driver: 'চালক যুক্ত', edit_driver: 'চালক সম্পাদনা',
   set_assignment: 'মাসের গাড়ি/বেতন', delete_assignment: 'মাসের তথ্য মুছা', fill_month: 'মাস পূরণ', save_permissions: 'অনুমতি সেভ', create_driver_users: 'চালক-ইউজার তৈরি', setup: 'সিস্টেম সেটআপ',
   backup: 'ব্যাকআপ', backup_fail: 'ব্যাকআপ ব্যর্থ', set_holiday: 'ছুটি সেট', delete_holiday: 'ছুটি মুছা', save_settings: 'সেটিংস সেভ', roster_dummies: 'ডামি চালক সেভ', roster_settings: 'রোস্টারের লেখা সেভ', roster_save: 'ডিউটি রোস্টার সেভ', trip_save: 'ঢাকা যাতায়াত সেভ', trip_delete: 'ঢাকা যাতায়াত মোছা' };
 let logInit = false;
