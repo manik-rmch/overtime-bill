@@ -750,20 +750,21 @@ const COOKIE_PATH = location.pathname.replace(/[^/]*$/, '') || '/';
 const COOKIE_TAIL = '; path=' + COOKIE_PATH + '; SameSite=Strict' + (location.protocol === 'https:' ? '; Secure' : '');
 function readCookie(name) { let c = ''; try { c = document.cookie; } catch (e) {} const m = c.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : ''; }
 const cookieOK = (() => { try { document.cookie = 'rmch_t=1' + COOKIE_TAIL; const ok = readCookie('rmch_t') === '1'; document.cookie = 'rmch_t=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + COOKIE_TAIL; return ok; } catch (e) { return false; } })();
+let MEM_TOKEN = '';      // কুকি/স্টোরেজ আটকানো ব্রাউজারেও এই ট্যাবে সেশন চালু রাখে
 const LS = {
   remembered() { try { return Number(localStorage.getItem('rmch_remember')) > Date.now(); } catch (e) { return false; } },
   setRemember(on) { try { if (on) localStorage.setItem('rmch_remember', String(Date.now() + 7 * 86400000)); else localStorage.removeItem('rmch_remember'); } catch (e) {} },
   get(k) {
-    if (k === 'session') { let t = ''; try { t = cookieOK ? readCookie(COOKIE_NAME) : (sessionStorage.getItem('rmch_session_t') || ''); } catch (e) {} if (!t && LS.remembered()) { try { t = localStorage.getItem('rmch_session_p') || ''; } catch (e) {} } return t ? { token: t } : null; }
+    if (k === 'session') { let t = ''; try { t = cookieOK ? readCookie(COOKIE_NAME) : (sessionStorage.getItem('rmch_session_t') || ''); } catch (e) {} if (!t && LS.remembered()) { try { t = localStorage.getItem('rmch_session_p') || ''; } catch (e) {} } if (!t) t = MEM_TOKEN; return t ? { token: t } : null; }
     try { return JSON.parse(localStorage.getItem('rmch_' + k)); } catch (e) { return null; }
   },
   set(k, v) {
-    if (k === 'session') { let exp = ''; if (LS.remembered()) { try { exp = '; expires=' + new Date(Number(localStorage.getItem('rmch_remember'))).toUTCString(); localStorage.setItem('rmch_session_p', v.token); } catch (e) {} }
+    if (k === 'session') { MEM_TOKEN = v.token; let exp = ''; if (LS.remembered()) { try { exp = '; expires=' + new Date(Number(localStorage.getItem('rmch_remember'))).toUTCString(); localStorage.setItem('rmch_session_p', v.token); } catch (e) {} }
       if (cookieOK) { try { document.cookie = COOKIE_NAME + '=' + encodeURIComponent(v.token) + exp + COOKIE_TAIL; } catch (e) {} } else { try { sessionStorage.setItem('rmch_session_t', v.token); } catch (e) {} } return; }
     try { localStorage.setItem('rmch_' + k, JSON.stringify(v)); } catch (e) {}
   },
   del(k) {
-    if (k === 'session') { try { document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + COOKIE_TAIL; } catch (e) {} try { sessionStorage.removeItem('rmch_session_t'); localStorage.removeItem('rmch_session_p'); localStorage.removeItem('rmch_remember'); } catch (e) {} return; }
+    if (k === 'session') { MEM_TOKEN = ''; try { document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + COOKIE_TAIL; } catch (e) {} try { sessionStorage.removeItem('rmch_session_t'); localStorage.removeItem('rmch_session_p'); localStorage.removeItem('rmch_remember'); } catch (e) {} return; }
     try { localStorage.removeItem('rmch_' + k); } catch (e) {}
   },
   dropPrefix(p) { try { Object.keys(localStorage).filter(k => k.indexOf('rmch_' + p) === 0).forEach(k => localStorage.removeItem(k)); } catch (e) {} },
@@ -1089,7 +1090,7 @@ function enterApp() {
   appShown = true;
   paintChrome();
   route();
-  if (USER.mustChange) openChangePassword(true);
+  if (USER && USER.mustChange) openChangePassword(true);
 }
 
 async function boot() {
