@@ -1133,9 +1133,13 @@ function idleTick() {
 setInterval(idleTick, 2000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) idleTick(); });
 
-$('logoutBtn').onclick = async () => {
-  try { await api('logout'); } catch (e) {}
+$('logoutBtn').onclick = () => {
+  const b = $('logoutBtn'); if (b.disabled) return;
+  b.disabled = true; b.textContent = 'বের হচ্ছে…';
+  apiCall('logout').catch(() => {});          // সার্ভারে জানানো হয় পেছনে; উত্তরের অপেক্ষা না করে সাথে সাথে বের হয়ে যায়
   forceLogout('');
+  b.disabled = false; b.textContent = 'বের হোন';
+  toast('✔ সফলভাবে বের হয়েছেন', 'ok', 2500);
 };
 
 function openChangePassword(forced) {
