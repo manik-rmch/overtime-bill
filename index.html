@@ -252,6 +252,7 @@ a.btn{text-decoration:none}
 .roster-page .sigs div{min-width:42%}
 
 /* ---------- ইউজার / অ্যাডমিন লগইন আলাদা চেহারা ---------- */
+.req{color:#dc2626;font-weight:700}
 .remember{display:flex;align-items:center;gap:8px;margin:2px 0 14px;font-size:15px;cursor:pointer;user-select:none}
 .remember input{width:18px;height:18px;margin:0;flex:none;accent-color:var(--pri)}
 .remember small{color:#64748b;font-size:12.5px}
@@ -464,17 +465,18 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
         <div class="card">
           <h2 id="drvFormTitle">নতুন চালক যুক্ত করুন</h2>
           <div class="grid-5">
-            <div class="field"><label>নাম</label><input id="fName" maxlength="80"></div>
-            <div class="field"><label>মোবাইল নম্বর</label><input id="fMobile" maxlength="30"></div>
-            <div class="field"><label>প্রাথমিক গাড়ি নং</label><input id="fCar" maxlength="60"></div>
-            <div class="field"><label>প্রাথমিক মূল বেতন</label><input id="fBasic" maxlength="12" inputmode="numeric"></div>
-            <div class="field"><label>অবস্থা</label><select id="fStatus"><option value="Active">Active (কর্মরত)</option><option value="Inactive">Inactive (বদলি / অবসর)</option></select></div>
+            <div class="field"><label>নাম <span class="req">*</span></label><input id="fName" maxlength="80"></div>
+            <div class="field"><label>মোবাইল নম্বর <span class="req">*</span></label><input id="fMobile" maxlength="30"></div>
+            <div class="field"><label>প্রাথমিক গাড়ি নং <span class="req">*</span></label><input id="fCar" maxlength="60"></div>
+            <div class="field"><label>প্রাথমিক মূল বেতন <span class="req">*</span></label><input id="fBasic" maxlength="12" inputmode="numeric"></div>
+            <div class="field" id="fUidRow"><label>ইউজার আইডি <span class="req">*</span></label><input id="fUid" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ইংরেজিতে, যেমন rafiq01"></div>
+            <div class="field"><label>অবস্থা <span class="req">*</span></label><select id="fStatus"><option value="Active">Active (কর্মরত)</option><option value="Inactive">Inactive (বদলি / অবসর)</option></select></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn ok" id="fSubmit">➕ যুক্ত করুন</button>
             <button class="btn ghost" id="fCancel" hidden>বাতিল</button>
           </div>
-          <p class="muted small" style="margin:12px 0 0">নতুন চালক যুক্ত করলে ইউজার আইডি নিজে তৈরি হয় না — "ইউজার ও অনুমতি" ট্যাবে গিয়ে নিজের পছন্দের আইডি তৈরি করুন। "প্রাথমিক গাড়ি/বেতন" শুধু ওই চালকের প্রথম মাসের জন্য; এরপর মাসভিত্তিক ট্যাব থেকে বদলান (বার্ষিক ইনক্রিমেন্টও সেখানে)। কাউকে মুছে ফেলা হয় না — বদলি/অবসরে Inactive করুন; তাঁর পুরোনো বিল অক্ষুণ্ণ থাকবে।</p>
+          <p class="muted small" style="margin:12px 0 0">ইউজার আইডি নিজে তৈরি হয় না: যুক্ত করার সময় "ইউজার আইডি" ঘরে নিজের পছন্দের আইডি দিন (ফাঁকা রাখলে পরে "ইউজার ও অনুমতি" ট্যাব থেকে তৈরি করুন)। "প্রাথমিক গাড়ি/বেতন" শুধু ওই চালকের প্রথম মাসের জন্য; এরপর মাসভিত্তিক ট্যাব থেকে বদলান (বার্ষিক ইনক্রিমেন্টও সেখানে)। কাউকে মুছে ফেলা হয় না — বদলি/অবসরে Inactive করুন; তাঁর পুরোনো বিল অক্ষুণ্ণ থাকবে।</p>
         </div>
         <div class="card tight"><div class="table-wrap"><table class="tbl"><thead><tr><th>আইডি</th><th>নাম</th><th>মোবাইল</th><th>প্রাথমিক গাড়ি নং</th><th class="num">প্রাথমিক বেতন</th><th>অবস্থা</th><th class="act">কাজ</th></tr></thead>
           <tbody id="drvBody"></tbody></table></div></div>
@@ -505,7 +507,6 @@ table.bill td .place-back{position:absolute;right:4px;top:50%;transform:translat
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
             <h2 style="margin:0">ইউজার তালিকা</h2><span class="spacer"></span>
             <button class="btn" id="uLogoutAll">⏏ সবাইকে বের করুন</button>
-            <button class="btn" id="uMakeAll">👥 সব Active চালকের ইউজার তৈরি করুন</button>
           </div>
           <p class="muted small" style="margin:8px 0 0">প্রত্যেক Active চালকই একজন ইউজার। চালক Inactive হলে তাঁর আইডিতে আর প্রবেশ করা যায় না। পাসওয়ার্ড রিসেট করলে নতুন পাসওয়ার্ড একবারই দেখানো হয়; ইউজারকে প্রথম প্রবেশে তা বদলাতে হয়।</p>
         </div>
@@ -1868,7 +1869,7 @@ function renderAdminDrivers() {
 }
 function adminResetForm() {
   adminEditingId = null;
-  ['fName', 'fMobile', 'fCar', 'fBasic'].forEach(i => $(i).value = '');
+  ['fName', 'fMobile', 'fCar', 'fBasic', 'fUid'].forEach(i => $(i).value = ''); $('fUidRow').hidden = false;
   $('fStatus').value = 'Active'; $('drvFormTitle').textContent = 'নতুন চালক যুক্ত করুন';
   $('fSubmit').textContent = '➕ যুক্ত করুন'; $('fCancel').hidden = true;
 }
@@ -1881,8 +1882,12 @@ async function adminSendDriver(driver) {
 $('fSubmit').onclick = async () => {
   const name = $('fName').value.trim();
   if (!name) { toast('চালকের নাম লিখুন।', 'warn'); return; }
+  if (adminEditingId === null) {       // নতুন চালক: সব ঘর বাধ্যতামূলক
+    const miss = [['fMobile', 'মোবাইল নম্বর'], ['fCar', 'গাড়ি নং'], ['fBasic', 'মূল বেতন'], ['fUid', 'ইউজার আইডি']].find(([i]) => !$(i).value.trim() || (i === 'fBasic' && !(numIn($('fBasic').value) > 0)));
+    if (miss) { toast(`${miss[1]} দিন — নতুন চালকের সব ঘর পূরণ করতে হবে।`, 'warn'); $(miss[0]).focus(); return; }
+  }
   setBusy($('fSubmit'), true);
-  try { await adminSendDriver({ id: adminEditingId, name, mobile: $('fMobile').value.trim(), carNo: $('fCar').value.trim(), basicPay: numIn($('fBasic').value), status: $('fStatus').value }); adminResetForm(); }
+  try { await adminSendDriver({ id: adminEditingId, name, mobile: $('fMobile').value.trim(), carNo: $('fCar').value.trim(), basicPay: numIn($('fBasic').value), status: $('fStatus').value, userId: adminEditingId === null ? $('fUid').value.trim() : '' }); adminResetForm(); }
   catch (e) { aErr(e); } finally { setBusy($('fSubmit'), false); }
 };
 $('fCancel').onclick = adminResetForm;
@@ -1890,7 +1895,7 @@ $('drvBody').addEventListener('click', async e => {
   const ed = e.target.closest('[data-edit]'), tg = e.target.closest('[data-tog]');
   if (ed) {
     const d = adminDrivers.find(x => x.id === +ed.dataset.edit); if (!d) return;
-    adminEditingId = d.id; $('fName').value = d.name; $('fMobile').value = d.mobile; $('fCar').value = d.carNo; $('fBasic').value = d.basicPay || ''; $('fStatus').value = d.status;
+    adminEditingId = d.id; $('fUidRow').hidden = true; $('fName').value = d.name; $('fMobile').value = d.mobile; $('fCar').value = d.carNo; $('fBasic').value = d.basicPay || ''; $('fStatus').value = d.status;
     $('drvFormTitle').textContent = 'চালকের তথ্য সম্পাদনা (আইডি ' + d.id + ')'; $('fSubmit').textContent = '💾 আপডেট করুন'; $('fCancel').hidden = false; window.scrollTo(0, 0);
   } else if (tg) {
     const d = adminDrivers.find(x => x.id === +tg.dataset.tog); if (!d) return;
@@ -1989,10 +1994,6 @@ $('uLogoutAll').onclick = async () => {
   if (!await confirmBox('নিজে ছাড়া সব ইউজারকে সব ডিভাইস থেকে বের করে দেবেন? পাসওয়ার্ড একই থাকবে; সবাই আবার প্রবেশ করতে পারবেন। অসংরক্ষিত লেখা হারাতে পারে।', 'সবাইকে বের করুন', true)) return;
   setBusy($('uLogoutAll'), true);
   try { const r = must(await api('adminForceLogout', { all: true })); toast(r.message, 'ok'); } catch (e) { aErr(e); } finally { setBusy($('uLogoutAll'), false); }
-};
-$('uMakeAll').onclick = async () => {
-  setBusy($('uMakeAll'), true);
-  try { const r = must(await api('adminCreateDriverUsers')); toast(r.message, 'ok'); credModal(r.credentials, 'নতুন ইউজারদের প্রবেশ-তথ্য'); adminLoadUsers(); } catch (e) { aErr(e); } finally { setBusy($('uMakeAll'), false); }
 };
 $('uBody').addEventListener('click', async e => {
   const r = e.target.closest('[data-reset]'), t = e.target.closest('[data-utog]'), dl = e.target.closest('[data-udel]'), lo = e.target.closest('[data-ulogout]');
