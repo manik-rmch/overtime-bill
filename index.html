@@ -775,6 +775,7 @@ const LS = {
 };
 if (!LS.get('session')) LS.clearSession();   // কুকি নেই = ব্রাউজার বন্ধ হয়েছিল বা বের হওয়া হয়েছে → আগের সব সেশন-তথ্য মুছে ফেলা
 let lastApi = Date.now();
+let pwChanging = false;
 let sessionEpoch = 0;     // প্রবেশ/পাসওয়ার্ড বদলালে বাড়ে; তার আগে শুরু হওয়া অনুরোধের পুরোনো টোকেন আর বসানো হয় না
 
 /* ---------- ছোট UI সহায়ক ---------- */
@@ -963,7 +964,11 @@ async function apiCall(action, payload) {
   } catch (e) { throw new Error('সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।'); }
   lastApi = Date.now();
   if (res.nt && USER && epoch === sessionEpoch && LS.get('session') && !res.token) { LS.set('session', { token: res.nt }); }   // সক্রিয় থাকলে সেশনের মেয়াদ বাড়ে
-  if (res.status === 'auth_error' && res.code === 'session') { forceLogout(res.expired ? '' : res.message); throw new Error(res.message); }
+  if (res.status === 'auth_error' && res.code === 'session') {
+    // পাসওয়ার্ড বদলানোর সময় বা তার পরে ফিরে আসা পুরোনো-টোকেনের অনুরোধ যেন নতুন সেশন বাতিল না করে
+    if (pwChanging || epoch !== sessionEpoch) throw new Error(res.message);
+    forceLogout(res.expired ? '' : res.message); throw new Error(res.message);
+  }
   return res;
 }
 function must(res) {
@@ -1158,8 +1163,15 @@ function openChangePassword(forced) {
       if (!o || !n) return fail('সব ঘর পূরণ করুন।');
       if (n !== n2) return fail('নতুন পাসওয়ার্ড দুইবার একই হয়নি।');
       try {
-        const res = await api('changePassword', { oldPassword: o, newPassword: n });
-        if (res.status === 'success') { sessionEpoch++; SESSION = { token: res.token }; LS.set('session', SESSION); USER.mustChange = false; LS.set('user', USER); close(); toast('পাসওয়ার্ড বদলানো হয়েছে', 'ok'); }
+        pwChanging = true;
+        let res;
+        try { res = await api('changePassword', { oldPassword: o, newPassword: n }); } finally { pwChanging = false; }
+        if (res.status === 'success') {
+          sessionEpoch++; SESSION = { token: res.token }; LS.set('session', SESSION);
+          if (USER) { USER.mustChange = false; LS.set('user', USER); }
+          close(); toast('পাসওয়ার্ড বদলানো হয়েছে', 'ok');
+          if (!USER || !appShown) { try { await boot(); } catch (e) {} }      // কোনো কারণে ইউজারের তথ্য হারিয়ে গেলে নতুন টোকেনে আবার তুলে আনা
+        }
         else fail(res.message || 'বদলানো যায়নি।');
       } catch (e) { fail(e.message); }
     } }]) });
